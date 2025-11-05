@@ -2,12 +2,13 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
 import { useCart } from "@/context/cart-context"
+import { useAuth } from "@/context/auth-context"
 
 
 declare global {
@@ -21,6 +22,10 @@ export function CheckoutForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [discount, setDiscount] = useState(0);
   const {items} = useCart();
+  const {user} = useAuth();
+  const [localUser, setLocalUser] = useState(user)
+  console.log(items)
+
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shipping =  0 
@@ -65,59 +70,85 @@ export function CheckoutForm() {
     }
   }
 
+    useEffect(() => { 
+    if (user) setLocalUser(user)
+  }, [user])
+
+  if (isLoading || !localUser) {
+    return <div className="text-center mt-10 text-lg">Loading user details...</div>
+  }
+
+
  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsLoading(true);
 
   try {
-    // 1️⃣ Save shipping (and billing) address to user profile
-    const addressPayload = {
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: formData.email,
-      phone: formData.phone,
-      address: formData.address,
-      city: formData.city,
-      state: formData.state,
-      zipCode: formData.zipCode,
-      country: formData.country,
-    };
-
-    const addressResponse = await fetch("/auth/address", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ address: addressPayload }),
-    });
-
-    const addressData = await addressResponse.json();
-    if (!addressResponse.ok) {
-      throw new Error(addressData.message || "Failed to save address");
-    }
-
-    console.log("Address saved:", addressData.user.address);
-
-    // 2️⃣ Proceed to Razorpay payment
-    const razorpayResponse = await fetch("/api/razorpay/order", {
+    // 1️Create order on your Node.js backend
+    const response = await fetch("http://localhost:5000/api/order/createOrder", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ amount: total }),
     });
 
-    const razorpayData = await razorpayResponse.json();
-    if (!razorpayData.orderId) {
+    const data = await response.json();
+    if (!data.success || !data.orderId) {
       throw new Error("Unable to create Razorpay order");
     }
 
+    const purchasedProducts = items.map((item) => ({
+      productId: item.id,
+      name: item.name,
+      price: item.price,
+      quantity: item.quantity,
+    }));
+
+      const customerDetails = {
+      firstName: formData.firstName,
+      lastName: formData.lastName,
+      email: formData.email,
+      phone: formData.phone,
+      address: formData.address,
+    };
+
+    // 2️Configure Razorpay Checkout
     const options = {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      amount: total,
-      currency: "INR",
-      name: "Ecom",
+      amount: data.amount,
+      currency: data.currency,
+      name: "Ecom Store",
       description: "Order Payment",
-      order_id: razorpayData.orderId,
-      handler: function (response: any) {
-        alert("Payment successful! Payment ID: " + response.razorpay_payment_id);
-        router.push("/order-success");
+      order_id: data.orderId,
+      handler: async function (response: any) {
+
+        // Payment success — verify it with backend
+        try {
+          const verifyResponse = await fetch("http://localhost:5000/api/order/verifyPayment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+              totalAmount: total,
+              customerId: localUser._id,
+              purchasedProducts,
+              customerDetails
+            }),
+          });
+
+          const verifyData = await verifyResponse.json();
+
+          if (verifyData.success) {
+            alert("Payment Verified Successfully!");
+            router.push("/order-success");
+          } else {
+            alert("Payment verification failed!");
+          }
+        } catch (err) {
+          console.error("Payment verification error:", err);
+          alert("Payment verification failed.");
+        }
       },
       prefill: {
         name: `${formData.firstName} ${formData.lastName}`,
@@ -125,22 +156,27 @@ export function CheckoutForm() {
         contact: formData.phone,
       },
       notes: {
-        address: `${formData.address}, ${formData.city}, ${formData.state}, ${formData.zipCode}, ${formData.country}`,
+        address: formData.address,
       },
       theme: { color: "#0d9488" },
     };
 
-    const rzp = new window.Razorpay(options);
+    // 3️Open Razorpay payment window
+    const rzp = new (window as any).Razorpay(options);
     rzp.open();
 
+    // Optional: handle failed payments
+    rzp.on("payment.failed", function (response: any) {
+      alert("Payment Failed: " + response.error.description);
+    });
+
   } catch (error) {
-    console.error("Checkout Error:", error);
-    alert((error as Error).message || "Something went wrong. Please try again.");
+    console.error("Razorpay Checkout Error:", error);
+    alert("Something went wrong. Please try again.");
   } finally {
     setIsLoading(false);
   }
 };
-
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
