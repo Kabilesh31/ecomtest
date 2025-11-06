@@ -3,14 +3,33 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import toast from "react-hot-toast";
 
+export interface Address {
+  firstName: string
+  lastName: string
+  email: string
+  phone: string
+  street: string
+  city: string
+  state: string
+  zipCode: string
+  country: string
+  billingSameAsShipping?: boolean
+  billingFirstName?: string
+  billingLastName?: string
+  billingStreet?: string
+  billingCity?: string
+  billingState?: string
+  billingZipCode?: string
+}
+
 // ✅ Common user type
-interface User {
+export interface User {
   _id: string;
   name: string;
   email: string;
   role: "admin" | "customer";
   mobile?: string
-  address?: string
+  addresses?: Address[];
 }
 
 // ✅ Context type

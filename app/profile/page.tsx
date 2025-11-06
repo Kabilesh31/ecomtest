@@ -7,8 +7,12 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import axios from "axios"
 import { toast } from "react-hot-toast"
+import { useRouter } from "next/navigation"
 
-export default function ProfilePage() {
+export default function OrdersPage() {
+  const router = useRouter()
+
+
   const { user, isLoading } = useAuth()
   const [localUser, setLocalUser] = useState(user)
   const [isEditing, setIsEditing] = useState(false)
@@ -52,7 +56,11 @@ const handleSave = async () => {
   return (
     <div className="max-w-2xl mx-auto mt-10 bg-white shadow-md rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
+        <Button variant="outline" onClick={() => router.back()}>
+            ← Back
+          </Button>
         <h1 className="text-2xl font-semibold">My Profile</h1>
+
         <Button onClick={() => setIsEditing(!isEditing)}>
           {isEditing ? "Cancel" : "Edit"}
         </Button>

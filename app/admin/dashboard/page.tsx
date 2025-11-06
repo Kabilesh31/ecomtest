@@ -57,7 +57,7 @@ export default function AdminDashboard() {
 
 
   return (
-   
+   <ProtectedRoute>
       <AdminLayout>
         <div className="space-y-8">
           <AdminHeader title="Dashboard" description="Welcome to your admin panel" />
@@ -154,6 +154,7 @@ export default function AdminDashboard() {
           </Card> */}
         </div>
       </AdminLayout>
+      </ProtectedRoute>
    
   )
 }
