@@ -69,6 +69,43 @@ export function CheckoutForm() {
       setFormData((prev) => ({ ...prev, [name]: value }))
     }
   }
+const saveUserAddress = async () => {
+  if (!localUser) return;
+
+  const address = {
+    firstName: formData.firstName,
+    lastName: formData.lastName,
+    email: formData.email,
+    phone: formData.phone,
+    street: formData.address,
+    city: formData.city,
+    state: formData.state,
+    zipCode: formData.zipCode,
+    country: formData.country,
+    billingSameAsShipping: formData.sameAsShipping,
+    billingFirstName: formData.billingFirstName,
+    billingLastName: formData.billingLastName,
+    billingStreet: formData.billingAddress,
+    billingCity: formData.billingCity,
+    billingState: formData.billingState,
+    billingZipCode: formData.billingZipCode,
+  };
+
+  try {
+    const res = await fetch("http://localhost:5000/api/user/save-address", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId: localUser._id, address }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      console.log("Address saved:", data.addresses);
+    }
+  } catch (err) {
+    console.error("Save address error:", err);
+  }
+};
 
     useEffect(() => { 
     if (user) setLocalUser(user)
@@ -82,7 +119,7 @@ export function CheckoutForm() {
  const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsLoading(true);
-
+ await saveUserAddress();
   try {
     // 1️Create order on your Node.js backend
     const response = await fetch("http://localhost:5000/api/order/createOrder", {
@@ -109,6 +146,11 @@ export function CheckoutForm() {
       email: formData.email,
       phone: formData.phone,
       address: formData.address,
+      street: formData.address,
+    city: formData.city,
+    state: formData.state,
+    zipCode: formData.zipCode,
+    country: formData.country,
     };
 
     // 2️Configure Razorpay Checkout

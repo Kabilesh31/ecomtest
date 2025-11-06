@@ -79,7 +79,7 @@ export default function ProductsPage() {
   };
 
   return (
-   
+   <ProtectedRoute>
       <AdminLayout>
         <div className="space-y-6">
           <div className="flex items-center justify-between">
@@ -184,6 +184,7 @@ export default function ProductsPage() {
   </div>
 )}
       </AdminLayout>
+      </ProtectedRoute>
    
   );
 }

@@ -19,9 +19,18 @@ export function ClientHeader() {
   const { items } = useCart()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [confirmLogout, setConfirmLogout] = useState(false)
-  
 
   const toggleMenu = () => setMobileMenuOpen((prev) => !prev)
+
+  // 🔹 Define visible links (Orders only if user logged in)
+  const navLinks = [
+    { name: "Home", href: "/" },
+    { name: "Products", href: "/products" },
+    { name: "About", href: "/about" },
+    { name: "Contact", href: "/contact" },
+    ...(user ? [{ name: "Orders", href: "/orders" }] : []),
+    ...(user ? [{ name: "Profile", href: "/profile" }] : []),
+  ]
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
@@ -37,13 +46,13 @@ export function ClientHeader() {
 
           {/* 🔹 Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8">
-            {["Home", "Products", "About", "Contact", "Orders", "Profile"].map((item) => (
+            {navLinks.map((link) => (
               <Link
-                key={item}
-                href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
+                key={link.name}
+                href={link.href}
                 className="text-foreground hover:text-primary transition-colors"
               >
-                {item}
+                {link.name}
               </Link>
             ))}
           </nav>
@@ -53,13 +62,13 @@ export function ClientHeader() {
             {/* Cart Button */}
             <Link href="/cart" className="relative">
               <Button variant="ghost" size="icon">
-    <ShoppingCart className="w-5 h-5" />
-    {items.length > 0 && (
-      <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-semibold">
-        {items.length}
-      </span>
-    )}
-  </Button>
+                <ShoppingCart className="w-5 h-5" />
+                {items.length > 0 && (
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center font-semibold">
+                    {items.length}
+                  </span>
+                )}
+              </Button>
             </Link>
 
             {/* 🔹 Admin or User Button */}
@@ -71,63 +80,60 @@ export function ClientHeader() {
                   </Button>
                 </Link>
               ) : (
-                  <Link href="/profile">
-                    <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-                      {user.name}
-                    </Button>
-                  </Link>
+                <Link href="/profile">
+                  <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+                    {user.name}
+                  </Button>
+                </Link>
               )
             ) : null}
 
             {/* 🔹 Auth Buttons */}
             {user ? (
-  <>
-    <Button
-      onClick={() => setConfirmLogout(true)}
-      variant="outline"
-      size="sm"
-      className="hidden sm:inline-flex"
-    >
-      Logout
-    </Button>
+              <>
+                <Button
+                  onClick={() => setConfirmLogout(true)}
+                  variant="outline"
+                  size="sm"
+                  className="hidden sm:inline-flex"
+                >
+                  Logout
+                </Button>
 
-    {/* Logout Confirmation Dialog */}
-    <Dialog open={confirmLogout} onOpenChange={setConfirmLogout}>
-      <DialogContent className="sm:max-w-[400px]">
-        <DialogHeader>
-          <DialogTitle>Confirm Logout</DialogTitle>
-        </DialogHeader>
-        <p className="text-sm text-muted-foreground">
-          Are you sure you want to log out of your account?
-        </p>
-        <DialogFooter className="mt-4 flex justify-end gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setConfirmLogout(false)}
-          >
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            onClick={() => {
-              logout()
-              setConfirmLogout(false)
-            }}
-          >
-            Logout
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  </>
-) : (
-  <Link href="/account/login">
-    <Button variant="outline" size="sm" className="hidden sm:inline-flex">
-      <User className="w-4 h-4 mr-2" />
-      Login
-    </Button>
-  </Link>
-)}
+                {/* Logout Confirmation Dialog */}
+                <Dialog open={confirmLogout} onOpenChange={setConfirmLogout}>
+                  <DialogContent className="sm:max-w-[400px]">
+                    <DialogHeader>
+                      <DialogTitle>Confirm Logout</DialogTitle>
+                    </DialogHeader>
+                    <p className="text-sm text-muted-foreground">
+                      Are you sure you want to log out of your account?
+                    </p>
+                    <DialogFooter className="mt-4 flex justify-end gap-2">
+                      <Button variant="outline" onClick={() => setConfirmLogout(false)}>
+                        Cancel
+                      </Button>
+                      <Button
+                        variant="destructive"
+                        onClick={() => {
+                          logout()
+                          setConfirmLogout(false)
+                        }}
+                      >
+                        Logout
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </>
+            ) : (
+              <Link href="/account/login">
+                <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+                  <User className="w-4 h-4 mr-2" />
+                  Login
+                </Button>
+              </Link>
+            )}
 
             {/* 🔹 Mobile Menu Toggle */}
             <button
@@ -142,54 +148,32 @@ export function ClientHeader() {
         {/* 🔹 Mobile Menu */}
         {mobileMenuOpen && (
           <nav className="md:hidden pb-4 space-y-2 animate-in fade-in slide-in-from-top-2">
-            {["Home", "Products", "About", "Contact", "Orders", "Profile"].map((item) => (
+            {navLinks.map((link) => (
               <Link
-                key={item}
-                href={item === "Home" ? "/" : `/${item.toLowerCase()}`}
+                key={link.name}
+                href={link.href}
                 className="block px-4 py-2 text-foreground hover:bg-muted rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                {item}
+                {link.name}
               </Link>
             ))}
 
-            {/* 🔹 Mobile user/admin button */}
             {user ? (
-              user.role === "admin" ? (
-                <Link href="/admin/dashboard" onClick={() => setMobileMenuOpen(false)}>
-                  <Button variant="outline" className="w-full">
-                    Admin Dashboard
-                  </Button>
-                </Link>
-              ) : (
-                <Button variant="outline" disabled className="w-full">
-                  <Link
-    href="/profile"
-    className="bg-gray-800 text-white px-3 py-1 rounded-md text-sm font-medium hover:bg-gray-700 transition"
-  >
-    {user.name}
-  </Link>
+              <Button
+                onClick={() => setConfirmLogout(true)}
+                variant="outline"
+                className="w-full"
+              >
+                Logout
+              </Button>
+            ) : (
+              <Link href="/account/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full">
+                  Login
                 </Button>
-              )
-            ) : null}
-
-            {user ? (
-  <>
-    <Button
-      onClick={() => setConfirmLogout(true)}
-      variant="outline"
-      className="w-full"
-    >
-      Logout
-    </Button>
-  </>
-) : (
-  <Link href="/account/login" onClick={() => setMobileMenuOpen(false)}>
-    <Button variant="outline" className="w-full">
-      Login
-    </Button>
-  </Link>
-)}
+              </Link>
+            )}
           </nav>
         )}
       </div>

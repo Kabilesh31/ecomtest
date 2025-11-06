@@ -158,7 +158,7 @@ export default function AdminHeroPage() {
   };
 
   return (
-    
+    <ProtectedRoute>
       <AdminLayout>
         <div className="p-6">
           <h1 className="text-2xl font-semibold mb-4">🎞️ Homepage Management</h1>
@@ -322,6 +322,7 @@ export default function AdminHeroPage() {
           )}
         </div>
       </AdminLayout>
+      </ProtectedRoute>
     
   );
 }
