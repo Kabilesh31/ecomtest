@@ -26,3 +26,11 @@ export interface Order {
   customerDetails: CustomerDetails;
   status: string; 
 }
+
+
+export interface Counts {
+  orderCount : number,
+  productCount : number,
+  totalRevenue : number,
+  userCount : number
+}
