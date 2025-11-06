@@ -85,7 +85,7 @@ export default function OrdersPage() {
   }     
   
   return (
-
+<ProtectedRoute>
     <AdminLayout>
         <div className="space-y-6">
           <AdminHeader title="Orders" description="Manage customer orders" />
@@ -137,6 +137,7 @@ export default function OrdersPage() {
             </Card>
         </div>
       </AdminLayout>
+      </ProtectedRoute>
 
   )
 }
