@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import axios from "axios"
 import { toast } from "react-hot-toast"
 import { useRouter } from "next/navigation"
+import { ClientLayout } from "@/components/client/client-layout"
 
 export default function OrdersPage() {
   const router = useRouter()
@@ -54,11 +55,10 @@ const handleSave = async () => {
 
 
   return (
+    <ClientLayout>
     <div className="max-w-2xl mx-auto mt-10 bg-white shadow-md rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
-        <Button variant="outline" onClick={() => router.back()}>
-            ← Back
-          </Button>
+        
         <h1 className="text-2xl font-semibold">My Profile</h1>
 
         <Button onClick={() => setIsEditing(!isEditing)}>
@@ -99,10 +99,11 @@ const handleSave = async () => {
         ) : (
           <>
             <p><span className="font-medium">Mobile:</span> {localUser.mobile || "—"}</p>
-            <p><span className="font-medium">Address:</span> {localUser.address || "—"}</p>
+            
           </>
         )}
       </div>
     </div>
+    </ClientLayout>
   )
 }

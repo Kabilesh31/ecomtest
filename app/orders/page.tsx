@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useRouter } from "next/navigation"
+import { ClientLayout } from "@/components/client/client-layout"
 
 export default function OrdersPage() {
   const router = useRouter()
@@ -34,13 +35,13 @@ export default function OrdersPage() {
   ]
 
   return (
+    
     <ProtectedRoute requiredRole="customer">
+      <ClientLayout>
       <div className="container mx-auto py-10">
         {/* Back Button */}
         <div className="mb-6 flex items-center justify-between">
-          <Button variant="outline" onClick={() => router.back()}>
-            ← Back
-          </Button>
+          
           <h1 className="text-3xl font-bold text-center flex-1 -ml-10">
             My Orders
           </h1>
@@ -115,6 +116,7 @@ export default function OrdersPage() {
           </p>
         )}
       </div>
+      </ClientLayout>
     </ProtectedRoute>
   )
 }

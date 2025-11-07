@@ -22,7 +22,7 @@ export function ClientHeader() {
 
   const toggleMenu = () => setMobileMenuOpen((prev) => !prev)
 
-  // 🔹 Define visible links (Orders only if user logged in)
+  // 🔹 Define visible links (Orders/Profile only if user logged in)
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Products", href: "/products" },
@@ -30,6 +30,13 @@ export function ClientHeader() {
     { name: "Contact", href: "/contact" },
     ...(user ? [{ name: "Orders", href: "/orders" }] : []),
     ...(user ? [{ name: "Profile", href: "/profile" }] : []),
+    {
+      name: "More",
+      children: [
+        { name: "Return and Refund", href: "/return-refund" },
+        { name: "Policy and Privacy", href: "/policy-privacy" },
+      ],
+    },
   ]
 
   return (
@@ -45,16 +52,35 @@ export function ClientHeader() {
           </Link>
 
           {/* 🔹 Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="text-foreground hover:text-primary transition-colors"
-              >
-                {link.name}
-              </Link>
-            ))}
+          <nav className="hidden md:flex items-center gap-8 relative">
+            {navLinks.map((link) =>
+              link.children ? (
+                <div key={link.name} className="relative group">
+                  <span className="cursor-pointer text-foreground hover:text-primary transition-colors">
+                    {link.name}
+                  </span>
+                  <div className="absolute top-full left-0 mt-2 w-48 bg-background border border-border rounded-md shadow-lg opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-opacity">
+                    {link.children.map((child) => (
+                      <Link
+                        key={child.name}
+                        href={child.href}
+                        className="block px-4 py-2 text-foreground hover:bg-muted"
+                      >
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="text-foreground hover:text-primary transition-colors"
+                >
+                  {link.name}
+                </Link>
+              )
+            )}
           </nav>
 
           {/* 🔹 Right Section */}
@@ -71,7 +97,7 @@ export function ClientHeader() {
               </Button>
             </Link>
 
-            {/* 🔹 Admin or User Button */}
+            {/* Admin/User Button */}
             {user ? (
               user.role === "admin" ? (
                 <Link href="/admin/dashboard">
@@ -88,7 +114,7 @@ export function ClientHeader() {
               )
             ) : null}
 
-            {/* 🔹 Auth Buttons */}
+            {/* Auth Buttons */}
             {user ? (
               <>
                 <Button
@@ -135,7 +161,7 @@ export function ClientHeader() {
               </Link>
             )}
 
-            {/* 🔹 Mobile Menu Toggle */}
+            {/* Mobile Menu Toggle */}
             <button
               onClick={toggleMenu}
               className="md:hidden p-2 hover:bg-muted rounded-lg transition-colors"
@@ -148,16 +174,32 @@ export function ClientHeader() {
         {/* 🔹 Mobile Menu */}
         {mobileMenuOpen && (
           <nav className="md:hidden pb-4 space-y-2 animate-in fade-in slide-in-from-top-2">
-            {navLinks.map((link) => (
-              <Link
-                key={link.name}
-                href={link.href}
-                className="block px-4 py-2 text-foreground hover:bg-muted rounded-lg"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                {link.name}
-              </Link>
-            ))}
+            {navLinks.map((link) =>
+              link.children ? (
+                <div key={link.name} className="space-y-1">
+                  <span className="block px-4 py-2 text-foreground font-semibold">{link.name}</span>
+                  {link.children.map((child) => (
+                    <Link
+                      key={child.name}
+                      href={child.href}
+                      className="block px-6 py-2 text-foreground hover:bg-muted rounded-lg"
+                      onClick={() => setMobileMenuOpen(false)}
+                    >
+                      {child.name}
+                    </Link>
+                  ))}
+                </div>
+              ) : (
+                <Link
+                  key={link.name}
+                  href={link.href}
+                  className="block px-4 py-2 text-foreground hover:bg-muted rounded-lg"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {link.name}
+                </Link>
+              )
+            )}
 
             {user ? (
               <Button
@@ -180,3 +222,4 @@ export function ClientHeader() {
     </header>
   )
 }
+  

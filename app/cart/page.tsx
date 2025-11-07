@@ -57,7 +57,7 @@ export default function CartPage() {
                     Sign In
                   </Button>
                 </Link>
-                <Link href="/account/signup"> {/* ✅ fixed path */}
+                <Link href="/account/login/sign-in"> {/* ✅ fixed path */}
                   <Button variant="outline">Sign Up</Button>
                 </Link>
               </div>
