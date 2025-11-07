@@ -1,4 +1,4 @@
-"use client";
+ "use client";    
 
 import { ProtectedRoute } from "@/components/protected-route";
 import { Card } from "@/components/ui/card";
@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useAuth } from "@/context/auth-context";
 import { Order } from "@/types/order";
+import { ClientLayout } from "@/components/client/client-layout"
 import jsPDF from "jspdf";
 export default function OrdersPage() {
   const router = useRouter();
@@ -149,13 +150,13 @@ const handlePdfOrderDownload = () => {
 };
 
   return (
+    
     <ProtectedRoute requiredRole="customer">
+      <ClientLayout>
       <div className="container mx-auto py-10">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          <Button variant="outline" onClick={() => router.back()}>
-            ← Back
-          </Button>
+          
           <h1 className="text-3xl font-bold text-center flex-1 -ml-10">
             My Orders
           </h1>
@@ -383,6 +384,7 @@ const handlePdfOrderDownload = () => {
           </DialogContent>
         </Dialog>
       </div>
+      </ClientLayout>
     </ProtectedRoute>
   );
 }

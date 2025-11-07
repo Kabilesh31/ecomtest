@@ -29,7 +29,7 @@ export interface User {
   email: string;
   role: "admin" | "customer";
   mobile?: string
-  addresses?: Address[];
+  address?: string
 }
 
 // ✅ Context type
