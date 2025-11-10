@@ -32,25 +32,27 @@
         })
 
         if (adminRes.ok) {
-  const adminData = await adminRes.json()
-   console.log("Logged in admin:", adminData);
-  const finalUser: User = {
-  _id: adminData.admin._id,
-  name: adminData.admin.name,
-  email: adminData.admin.email,
-  role: "admin",
-};
-localStorage.setItem("token", adminData.token || ""); // set token if your API returns it
-localStorage.setItem("user", JSON.stringify(finalUser));
-setUser(finalUser);
-toast.success("Welcome back, Admin!");
-router.push("/");
-router.refresh();
-  toast.success("Welcome back, Admin!")
-  router.push("/")
-  router.refresh()
-  return
-}
+        const adminData = await adminRes.json()
+        console.log("Logged in admin:", adminData);
+        const finalUser: User = {
+        _id: adminData.admin._id,
+        name: adminData.admin.name,
+        email: adminData.admin.email,
+        role: "admin",
+      };
+
+      console.log(adminData)
+      localStorage.setItem("token", adminData.token || ""); // set token if your API returns it
+      // localStorage.setItem("user", JSON.stringify(finalUser));
+      setUser(finalUser);
+      toast.success("Welcome back, Admin!");
+      router.push("/");
+      router.refresh();
+        toast.success("Welcome back, Admin!")
+        router.push("/")
+        router.refresh()
+        return
+      }
 
         // 🔹 If admin login failed, try user login
         const userRes = await fetch("http://localhost:5000/api/users/login", {
@@ -64,7 +66,7 @@ router.refresh();
           const finalUser = userData.user || { ...userData, role: "customer", _id: userData._id }
 
           localStorage.setItem("token", userData.token)
-          localStorage.setItem("user", JSON.stringify(finalUser))
+          // localStorage.setItem("user", JSON.stringify(finalUser))
           setUser(finalUser) // ✅ instantly updates header
           toast.success("Login Successfully!")
   router.push("/")

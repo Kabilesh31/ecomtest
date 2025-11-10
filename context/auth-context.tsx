@@ -2,24 +2,13 @@
 
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { jwtDecode } from "jwt-decode";
 
-export interface Address {
-  firstName: string
-  lastName: string
-  email: string
-  phone: string
-  street: string
-  city: string
-  state: string
-  zipCode: string
-  country: string
-  billingSameAsShipping?: boolean
-  billingFirstName?: string
-  billingLastName?: string
-  billingStreet?: string
-  billingCity?: string
-  billingState?: string
-  billingZipCode?: string
+// ✅ JWT Payload type
+interface JwtPayload {
+  id: string;
+  exp?: number;
+  iat?: number;
 }
 
 // ✅ Common user type
@@ -28,11 +17,10 @@ export interface User {
   name: string;
   email: string;
   role: "admin" | "customer";
-  mobile?: string
-  address?: string
+  mobile?: string;
+  address?: string;
 }
 
-// ✅ Context type
 interface AuthContextType {
   user: User | null;
   isLoading: boolean;
@@ -44,7 +32,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// ✅ Custom hook
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) throw new Error("useAuth must be used within an AuthProvider");
@@ -52,66 +39,90 @@ export const useAuth = () => {
 };
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("user");
-      return storedUser ? JSON.parse(storedUser) : null;
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // ✅ Fetch user/admin by ID
+  const fetchUserById = async (id: string) => {
+    console.log("Fetching user by ID:", id);
+    try {
+      const res = await fetch(`http://localhost:5000/api/users/getUser/${id}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Failed to fetch user");
+
+      // ✅ Handle both admin and user response
+      const fetchedUser = data.user || data.admin;
+      setUser(fetchedUser);
+
+
+    } catch (error) {
+      console.error("Error fetching user by ID:", error);
+      logout();
+    } finally {
+      setIsLoading(false);
     }
-    return null;
-  });
+  };
 
-  const [isLoading, setIsLoading] = useState(false);
+  // ✅ Load from token on mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode<JwtPayload>(token);
 
+        // ✅ Check token expiry
+        if (decoded.exp && decoded.exp * 1000 < Date.now()) {
+          console.warn("Token expired");
+          logout();
+        } else if (decoded.id) {
+          fetchUserById(decoded.id);
+        } else {
+          console.warn("No ID found in token");
+          logout();
+        }
+      } catch (err) {
+        console.error("Error decoding token:", err);
+        logout();
+      }
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // ✅ Login
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Admin login
-      const adminRes = await fetch("http://localhost:5000/api/admin/login", {
+      const res = await fetch("http://localhost:5000/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
 
-      if (adminRes.ok) {
-        const adminData = await adminRes.json();
-        const adminUser: User = {
-          _id: adminData._id,
-          name: adminData.name,
-          email: adminData.email,
-          role: "admin",
-        };
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Login failed");
 
-        localStorage.setItem("token", adminData.token);
-        localStorage.setItem("user", JSON.stringify(adminUser));
-        setUser(adminUser);
-        toast.success("Welcome, Admin!");
-        return;
+      // ✅ Save token
+      localStorage.setItem("token", data.token);
+
+      // ✅ Decode and fetch user by ID
+      const decoded = jwtDecode<JwtPayload>(data.token);
+      if (decoded.id) {
+        await fetchUserById(decoded.id);
+      } else {
+        throw new Error("Invalid token: missing user ID");
       }
 
-      // Normal user login
-      const userRes = await fetch("http://localhost:5000/api/users/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const userData = await userRes.json();
-      if (!userRes.ok) throw new Error(userData.message || "Invalid credentials");
-
-      const normalUser: User = {
-        _id: userData.user._id,
-        name: userData.user.name,
-        email: userData.user.email,
-        role: userData.user.role || "customer",
-      };
-
-      localStorage.setItem("token", userData.token);
-      localStorage.setItem("user", JSON.stringify(normalUser));
-      setUser(normalUser);
       toast.success("Login successful!");
-    } catch (err: any) {
-      console.error("Login error:", err);
-      toast.error(err.message || "Login failed");
+    } catch (err) {
+      console.error("Login failed:", err);
+      toast.error("Invalid email or password");
       throw err;
     } finally {
       setIsLoading(false);

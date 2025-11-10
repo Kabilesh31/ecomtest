@@ -107,8 +107,7 @@ export default function AdminHeroPage() {
 
       const token =
         localStorage.getItem("adminToken") ||
-        localStorage.getItem("token") ||
-        JSON.parse(localStorage.getItem("user") || "{}")?.token;
+        localStorage.getItem("token")
 
       let res;
       if (editing._id) {
@@ -140,10 +139,7 @@ export default function AdminHeroPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      const token =
-        localStorage.getItem("adminToken") ||
-        localStorage.getItem("token") ||
-        JSON.parse(localStorage.getItem("user") || "{}")?.token;
+      const token = localStorage.getItem("token")
 
       await axios.delete(`${API_URL}/hero/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
