@@ -17,20 +17,24 @@ import { Counts } from "@/types/order"
 export default function AdminDashboard() {
 
    const router = useRouter()
-   const {user} = useAuth()
+   const {user, isLoading} = useAuth()
    const [countData, setCountData] = useState<Counts>({
       orderCount: 0,
       productCount: 0,
       totalRevenue: 0,
       userCount: 0
     })
+  
+    console.log(user)
     
     useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}")
-    if (!user || user.role !== "admin") {
-      router.push("/login")
+    const token = localStorage.getItem("token")
+    if (!isLoading) {
+      if (!token || !user || user.role !== "admin") {
+        router.push("/account/login")
+      }
     }
-  }, [])
+    }, [user, isLoading])
 
       const getCounts = async () => {
       try {
