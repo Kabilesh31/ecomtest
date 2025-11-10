@@ -5,6 +5,8 @@ import { AdminLayout } from "@/components/admin/admin-layout"
 import { AdminHeader } from "@/components/admin/admin-header"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 import Link from "next/link"
 import { BarChart3, Package, ShoppingCart, Users } from "lucide-react"
 import { useEffect, useState } from "react"
@@ -13,58 +15,97 @@ import { useAuth } from "@/context/auth-context"
 import axios from "axios"
 import { Counts } from "@/types/order"
 
-
 export default function AdminDashboard() {
+  const router = useRouter()
+  const { user, isLoading } = useAuth()
 
-   const router = useRouter()
-   const {user, isLoading} = useAuth()
-   const [countData, setCountData] = useState<Counts>({
-      orderCount: 0,
-      productCount: 0,
-      totalRevenue: 0,
-      userCount: 0
-    })
-  
-    console.log(user)
-    
-    useEffect(() => {
+  const [countData, setCountData] = useState<Counts>({
+    orderCount: 0,
+    productCount: 0,
+    totalRevenue: 0,
+    userCount: 0,
+  })
+
+  const [filter, setFilter] = useState<"today" | "7days" | "30days" | "custom">("today")
+  const [fromDate, setFromDate] = useState("")
+  const [toDate, setToDate] = useState("")
+
+  useEffect(() => {
     const token = localStorage.getItem("token")
     if (!isLoading) {
       if (!token || !user || user.role !== "admin") {
         router.push("/account/login")
       }
     }
-    }, [user, isLoading])
+  }, [user, isLoading])
 
-      const getCounts = async () => {
-      try {
-        const response = await axios.get("http://localhost:5000/api/getCounts", {
-          params: { role: user?.role },
-        });
+  const getCounts = async (filterType: string, from?: string, to?: string) => {
+    try {
+      const response = await axios.get("http://localhost:5000/api/getCounts", {
+        params: { role: user?.role, filter: filterType, from, to },
+      })
 
-        if (response.data.success) {
-          setCountData(response.data);
-        } else {
-          alert(response.data.message);
-        }
-      } catch (err) {
-        console.error("Failed to fetch orders:", err);
+      if (response.data.success) {
+        setCountData(response.data)
+      } else {
+        alert(response.data.message)
       }
-    };
+    } catch (err) {
+      console.error("Failed to fetch counts:", err)
+    }
+  }
 
-    useEffect(() => {
-      if (user && !countData.orderCount && !countData.productCount) {
-        getCounts();
+  useEffect(() => {
+    if (user) {
+      if (filter !== "custom") {
+        getCounts(filter)
+      } else if (fromDate && toDate) {
+        getCounts("custom", fromDate, toDate)
       }
-    }, [user]);
-
-
+    }
+  }, [user, filter, fromDate, toDate])
 
   return (
-   <ProtectedRoute>
+    <ProtectedRoute>
       <AdminLayout>
         <div className="space-y-8">
-          <AdminHeader title="Dashboard" description="Welcome to your admin panel" />
+          {/* Header with filter dropdown */}
+          <div className="flex items-center justify-between">
+            <AdminHeader title="Dashboard" description="Welcome to your admin panel" />
+
+            {/* Filter dropdown */}
+            <div className="flex items-center space-x-3">
+              <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
+                <SelectTrigger className="w-[170px]">
+                  <SelectValue placeholder="Select Filter" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Today</SelectItem>
+                  <SelectItem value="7days">Last 7 Days</SelectItem>
+                  <SelectItem value="30days">Last 30 Days</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
+
+              {filter === "custom" && (
+                <div className="flex items-center space-x-2">
+                  <Input
+                    type="date"
+                    value={fromDate}
+                    onChange={(e) => setFromDate(e.target.value)}
+                    className="w-[130px]"
+                  />
+                  <span className="text-muted-foreground">to</span>
+                  <Input
+                    type="date"
+                    value={toDate}
+                    onChange={(e) => setToDate(e.target.value)}
+                    className="w-[130px]"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -130,35 +171,8 @@ export default function AdminDashboard() {
               </Link>
             </div>
           </Card>
-
-          {/* Recent Activity */}
-          {/* <Card className="p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Recent Activity</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between py-2 border-b border-border">
-                <div>
-                  <p className="text-sm font-medium text-foreground">New order #1001</p>
-                  <p className="text-xs text-muted-foreground">2 hours ago</p>
-                </div>
-                <span className="text-sm font-semibold text-primary">$299.99</span>
-              </div>
-              <div className="flex items-center justify-between py-2 border-b border-border">
-                <div>
-                  <p className="text-sm font-medium text-foreground">Product added: Premium Watch</p>
-                  <p className="text-xs text-muted-foreground">5 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-center justify-between py-2">
-                <div>
-                  <p className="text-sm font-medium text-foreground">New customer registered</p>
-                  <p className="text-xs text-muted-foreground">1 day ago</p>
-                </div>
-              </div>
-            </div>
-          </Card> */}
         </div>
       </AdminLayout>
-      </ProtectedRoute>
-   
+    </ProtectedRoute>
   )
 }

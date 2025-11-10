@@ -84,7 +84,7 @@ const handlePdfOrderDownload = () => {
 
   doc.line(15, 35, 195, 35); // separator line
 
-  // ----- CUSTOMER INFO -----
+  // ----- CUSTOMER INFO (LEFT SIDE) -----
   doc.setFontSize(14);
   doc.text("Customer Information", 15, 45);
   doc.setFontSize(11);
@@ -95,24 +95,28 @@ const handlePdfOrderDownload = () => {
   doc.text(`Phone: ${customer?.phone || ""}`, 15, 69);
   doc.text(`Address: ${customer?.address || ""}`, 15, 76);
 
-  // ----- ORDER INFO -----
+  // ----- ORDER INFO (RIGHT SIDE) -----
   doc.setFontSize(14);
-  doc.text("Order Details", 15, 90);
+  doc.text("Order Details", 120, 45);
   doc.setFontSize(11);
-  doc.text(`Order ID: ${selectedOrder._id}`, 15, 100);
-  doc.text(`Payment ID: ${selectedOrder.razorpayPaymentId || "N/A"}`, 15, 107);
-  doc.text(`Status: ${selectedOrder.status}`, 15, 114);
-  doc.text(`Date: ${selectedOrder.createdAt?.slice(0, 10).split("-").reverse().join("-")}`, 15, 121);
 
-  // ----- PRODUCT TABLE -----
+  const orderX = 120; // starting X position on right side
+  const orderY = 55;
+
+  doc.text(`Order ID: ${selectedOrder._id}`, orderX, orderY);
+  doc.text(`Payment ID: ${selectedOrder.razorpayPaymentId || "N/A"}`, orderX, orderY + 7);
+  doc.text(`Status: ${selectedOrder.status}`, orderX, orderY + 14);
+  doc.text(`Date: ${selectedOrder.createdAt?.slice(0, 10).split("-").reverse().join("-")}`, orderX, orderY + 21);
+
+  // ----- PRODUCTS TABLE -----
+  const startTableY = 100;
   doc.setFontSize(14);
-  doc.text("Purchased Products", 15, 135);
+  doc.text("Purchased Products", 15, startTableY);
 
   const headers = ["Product", "Qty", "Price", "Total"];
-  const startY = 142;
-  let currentY = startY;
+  let currentY = startTableY + 7;
 
-  // table headers
+  // Table header
   doc.setFontSize(11);
   doc.setFont("helvetica", "bold");
   doc.text(headers[0], 15, currentY);
@@ -123,8 +127,8 @@ const handlePdfOrderDownload = () => {
   doc.line(15, currentY + 2, 195, currentY + 2);
   currentY += 8;
 
+  // Table rows
   doc.setFont("helvetica", "normal");
-
   selectedOrder.purchasedProducts?.forEach((p) => {
     doc.text(p.name, 15, currentY);
     doc.text(String(p.quantity), 95, currentY);
@@ -137,7 +141,7 @@ const handlePdfOrderDownload = () => {
   doc.line(15, currentY + 3, 195, currentY + 3);
   currentY += 12;
   doc.setFont("helvetica", "bold");
-  doc.text(`Grand Total: Rs. ${selectedOrder.totalAmount}`, 160, currentY, { align: "right" });
+  doc.text(`Grand Total: Rs. ${selectedOrder.totalAmount}`, 190, currentY, { align: "right" });
 
   // ----- FOOTER -----
   doc.setFontSize(10);

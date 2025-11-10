@@ -102,10 +102,12 @@ export default function ProductsPage() {
                 <table className="w-full">
                   <thead className="bg-muted border-b border-border">
                     <tr>
+                      <th className="px-6 py-3 text-left text-sm font-semibold"></th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Product</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Category</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Price</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Quantity</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Created At</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
                     </tr>
                   </thead>
@@ -125,12 +127,14 @@ export default function ProductsPage() {
             alt={product.name}
             className="w-20 h-18 object-cover rounded-md"
           />
-          <span className="text-lg font-medium ml-10 ">{product.name}</span>
+          
         </div>
       </td>
+      <td className="text-lg px-6 py-2 font-medium">{product.name}</td>
       <td className="px-6 py-2 text-sm text-muted-foreground">{product.category}</td>
       <td className="px-6 py-2 text-sm font-semibold">₹{product.price}</td>
       <td className="px-6 py-2 text-sm font-semibold">{product.quantity}</td>
+      <td className="px-6 py-2 text-sm font-semibold">{product?.createdAt.slice(0, 10).split("-").reverse().join("-")}</td>
       <td className="px-6 py-2">
         <div className="flex items-center gap-2">
           <Link href={`/admin/products/${product._id}/edit`}>
