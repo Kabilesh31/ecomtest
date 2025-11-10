@@ -129,7 +129,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // ✅ Logout
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -141,14 +140,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        setUser,
-        isLoading,
-        login,
-        logout,
-        isAuthenticated,
-      }}
+      value={{ user, setUser, isLoading, login, logout, isAuthenticated }}
     >
       {children}
     </AuthContext.Provider>

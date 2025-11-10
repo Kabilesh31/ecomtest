@@ -20,6 +20,7 @@ export default function EditProductPage() {
     price: "",
     quantity: "",
     category: "",
+    createdAt: "",
   });
 
   const [mainImage, setMainImage] = useState<File | null>(null);
@@ -44,6 +45,7 @@ export default function EditProductPage() {
           price: data.price || "",
           quantity: data.quantity || "",
           category: data.category || "",
+           createdAt: data.createdAt || "",
         });
         setMainImageUrl(data.mainImage || "");
         setDescriptions(data.descriptions || []);
@@ -214,11 +216,22 @@ export default function EditProductPage() {
                   Main Image
                 </label>
                 {mainImageUrl && !mainImage && (
+                  <div className="flex items-center gap-4 mb-2">
                   <img
                     src={mainImageUrl}
                     alt="Current"
                     className="w-32 h-32 object-cover rounded mb-2 border"
                   />
+                   <div className="text-sm text-gray-600">
+        <p>
+  <span className="font-medium">Product Added:</span>{" "}
+  {product.createdAt
+    ? new Date(product.createdAt).toLocaleDateString()
+    : "N/A"}
+</p>
+
+      </div>
+      </div>
                 )}
                 <FileButton
                   label="Choose New Main Image"

@@ -4,7 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 import "@/styles/cropper.css";
-import { AuthProvider } from "../context/auth-context"
+import { AuthProvider } from "@/context/auth-context"
 import { CartProvider } from "../context/cart-context"
 import { Toaster } from "react-hot-toast";
 import Script from "next/script"
