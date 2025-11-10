@@ -149,15 +149,13 @@ const handlePdfOrderDownload = () => {
   doc.save(`Order_${selectedOrder.razorpayPaymentId || selectedOrder._id}.pdf`);
 };
 
-  return (
-    
-    <ProtectedRoute requiredRole="customer">
-      <ClientLayout>
-      <div className="container mx-auto py-10">
+   return (
+  <ProtectedRoute requiredRole="customer">
+    <ClientLayout>
+      <div className="container mx-auto px-3 sm:px-6 py-6 sm:py-10">
         {/* Header */}
         <div className="mb-6 flex items-center justify-between">
-          
-          <h1 className="text-3xl font-bold text-center flex-1 -ml-10">
+          <h1 className="text-2xl sm:text-3xl font-bold text-center flex-1 -ml-6 sm:-ml-10">
             My Orders
           </h1>
         </div>
@@ -165,14 +163,22 @@ const handlePdfOrderDownload = () => {
         {/* Orders Table */}
         <Card className="p-0 overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left min-w-[600px] sm:min-w-full">
               <thead className="bg-gray-100">
                 <tr className="text-gray-700">
-                  <th className="px-6 py-3 font-semibold">Payment ID</th>
-                  <th className="px-6 py-3 font-semibold">Date</th>
-                  <th className="px-6 py-3 font-semibold">Status</th>
-                  <th className="px-6 py-3 font-semibold text-right">Total</th>
-                  <th className="px-6 py-3 font-semibold text-center">Action</th>
+                  <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">
+                    Payment ID
+                  </th>
+                  <th className="px-4 sm:px-6 py-3 font-semibold whitespace-nowrap">
+                    Date
+                  </th>
+                  <th className="px-4 sm:px-6 py-3 font-semibold">Status</th>
+                  <th className="px-4 sm:px-6 py-3 font-semibold text-right">
+                    Total
+                  </th>
+                  <th className="px-4 sm:px-6 py-3 font-semibold text-center">
+                    Action
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -181,31 +187,31 @@ const handlePdfOrderDownload = () => {
                     key={order._id}
                     className="border-b hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4 font-medium">
+                    <td className="px-4 sm:px-6 py-4 font-medium">
                       {order.razorpayPaymentId}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       {order.createdAt
                         ?.slice(0, 10)
                         .split("-")
                         .reverse()
                         .join("-")}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 sm:px-6 py-4">
                       <Badge className={getStatusColor(order.status)}>
                         {order.status}
                       </Badge>
                     </td>
-                    <td className="px-6 py-4 text-right font-semibold">
+                    <td className="px-4 sm:px-6 py-4 text-right font-semibold">
                       ₹{order.totalAmount}
                     </td>
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 sm:px-6 py-4 text-center">
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleViewDetails(order)}
                       >
-                        View Details
+                        View
                       </Button>
                     </td>
                   </tr>
@@ -223,9 +229,9 @@ const handlePdfOrderDownload = () => {
 
         {/* ---------------- Dialog for Order Details ---------------- */}
         <Dialog open={showOrderDetails} onOpenChange={closeModal}>
-          <DialogContent className="sm:max-w-2xl p-6 rounded-2xl">
-            <DialogHeader className="border-b pb-4">
-              <DialogTitle className="text-xl font-semibold text-foreground">
+          <DialogContent className="sm:max-w-2xl w-[95vw] max-h-[90vh] overflow-y-auto rounded-2xl p-5 sm:p-6">
+            <DialogHeader className="border-b pb-3">
+              <DialogTitle className="text-lg sm:text-xl font-semibold text-foreground">
                 Order Details
               </DialogTitle>
               <DialogDescription className="text-muted-foreground text-sm">
@@ -235,60 +241,48 @@ const handlePdfOrderDownload = () => {
 
             {selectedOrder ? (
               <div className="space-y-6 pt-4">
-                {/* Customer Info + Order Info */}
-                <div className="grid md:grid-cols-2 gap-5">
+                {/* Customer + Order Info */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                   {/* Customer Info */}
-                  <div className="rounded-xl border bg-white dark:bg-muted/20 p-5 shadow-sm">
+                  <div className="rounded-xl border bg-white dark:bg-muted/20 p-4 shadow-sm">
                     <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase">
                       Customer Info
                     </h3>
                     <div className="space-y-2 text-sm leading-relaxed">
                       <p>
-                        <span className="font-semibold text-foreground">
-                          Name:
-                        </span>{" "}
+                        <span className="font-semibold">Name:</span>{" "}
                         {selectedOrder.customerDetails?.firstName}{" "}
                         {selectedOrder.customerDetails?.lastName}
                       </p>
                       <p>
-                        <span className="font-semibold text-foreground">
-                          Email:
-                        </span>{" "}
+                        <span className="font-semibold">Email:</span>{" "}
                         {selectedOrder.customerDetails?.email}
                       </p>
                       <p>
-                        <span className="font-semibold text-foreground">
-                          Phone:
-                        </span>{" "}
+                        <span className="font-semibold">Phone:</span>{" "}
                         {selectedOrder.customerDetails?.phone}
                       </p>
                       <p>
-                        <span className="font-semibold text-foreground">
-                          Address:
-                        </span>{" "}
+                        <span className="font-semibold">Address:</span>{" "}
                         {selectedOrder.customerDetails?.address}
                       </p>
                     </div>
                   </div>
 
                   {/* Order Info */}
-                  <div className="rounded-xl border bg-white dark:bg-muted/20 p-5 shadow-sm">
+                  <div className="rounded-xl border bg-white dark:bg-muted/20 p-4 shadow-sm">
                     <h3 className="text-sm font-semibold text-muted-foreground mb-3 uppercase">
                       Order Info
                     </h3>
                     <div className="space-y-2 text-sm leading-relaxed">
                       <p>
-                        <span className="font-semibold text-foreground">
-                          Payment ID:
-                        </span>{" "}
+                        <span className="font-semibold">Payment ID:</span>{" "}
                         {selectedOrder.razorpayPaymentId}
                       </p>
-                      <p className="flex items-center gap-2">
-                        <span className="font-semibold text-foreground">
-                          Status:
-                        </span>{" "}
+                      <p>
+                        <span className="font-semibold">Status:</span>{" "}
                         <span
-                          className={`text-xs font-semibold px-3 py-1 rounded-full ${getStatusColor(
+                          className={`text-xs font-semibold px-2 py-1 rounded-full ${getStatusColor(
                             selectedOrder.status
                           )}`}
                         >
@@ -296,9 +290,7 @@ const handlePdfOrderDownload = () => {
                         </span>
                       </p>
                       <p>
-                        <span className="font-semibold text-foreground">
-                          Date:
-                        </span>{" "}
+                        <span className="font-semibold">Date:</span>{" "}
                         {selectedOrder.createdAt
                           ?.slice(0, 10)
                           .split("-")
@@ -306,10 +298,8 @@ const handlePdfOrderDownload = () => {
                           .join("-")}
                       </p>
                       <p>
-                        <span className="font-semibold text-foreground">
-                          Total:
-                        </span>{" "}
-                        <span className="text-base font-semibold text-green-700 dark:text-green-300">
+                        <span className="font-semibold">Total:</span>{" "}
+                        <span className="font-semibold text-green-700">
                           ₹{selectedOrder.totalAmount}
                         </span>
                       </p>
@@ -317,57 +307,52 @@ const handlePdfOrderDownload = () => {
                   </div>
                 </div>
 
-                {/* Purchased Products */}
-                <div className="border rounded-lg overflow-hidden">
-                  <h3 className="font-semibold text-lg bg-muted px-4 py-2">
+                {/* Products Table */}
+                <div className="border rounded-lg overflow-x-auto">
+                  <h3 className="font-semibold text-base sm:text-lg bg-muted px-4 py-2">
                     Purchased Products
                   </h3>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted/70 border-b border-border">
-                        <tr>
-                          <th className="px-4 py-2 text-left font-medium">
-                            Product Name
-                          </th>
-                          <th className="px-4 py-2 text-left font-medium">Qty</th>
-                          <th className="px-4 py-2 text-left font-medium">
-                            Price
-                          </th>
-                          <th className="px-4 py-2 text-left font-medium">
-                            Total
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedOrder.purchasedProducts?.map((p, i) => (
-                          <tr
-                            key={i}
-                            className="border-b hover:bg-muted/40 transition"
-                          >
-                            <td className="px-4 py-2 font-medium">{p.name}</td>
-                            <td className="px-4 py-2">{p.quantity}</td>
-                            <td className="px-4 py-2">₹{p.price}</td>
-                            <td className="px-4 py-2 font-semibold">
-                              ₹{p.price * p.quantity}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr className="bg-muted/50 font-semibold">
-                          <td
-                            colSpan={3}
-                            className="px-4 py-3 text-right text-foreground"
-                          >
-                            Grand Total
-                          </td>
-                          <td className="px-4 py-3">
-                            ₹{selectedOrder.totalAmount}
+                  <table className="w-full text-sm min-w-[400px]">
+                    <thead className="bg-muted/70 border-b">
+                      <tr>
+                        <th className="px-3 py-2 text-left font-medium">
+                          Product
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium">Qty</th>
+                        <th className="px-3 py-2 text-left font-medium">
+                          Price
+                        </th>
+                        <th className="px-3 py-2 text-left font-medium">
+                          Total
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selectedOrder.purchasedProducts?.map((p, i) => (
+                        <tr key={i} className="border-b">
+                          <td className="px-3 py-2">{p.name}</td>
+                          <td className="px-3 py-2">{p.quantity}</td>
+                          <td className="px-3 py-2">₹{p.price}</td>
+                          <td className="px-3 py-2 font-semibold">
+                            ₹{p.price * p.quantity}
                           </td>
                         </tr>
-                      </tfoot>
-                    </table>
-                  </div>
+                      ))}
+                    </tbody>
+                    <tfoot>
+                      <tr className="bg-muted/50 font-semibold">
+                        <td
+                          colSpan={3}
+                          className="px-3 py-3 text-right text-foreground"
+                        >
+                          Grand Total
+                        </td>
+                        <td className="px-3 py-3">
+                          ₹{selectedOrder.totalAmount}
+                        </td>
+                      </tr>
+                    </tfoot>
+                  </table>
                 </div>
               </div>
             ) : (
@@ -384,7 +369,8 @@ const handlePdfOrderDownload = () => {
           </DialogContent>
         </Dialog>
       </div>
-      </ClientLayout>
-    </ProtectedRoute>
-  );
+    </ClientLayout>
+  </ProtectedRoute>
+)
+
 }

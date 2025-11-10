@@ -51,35 +51,21 @@ export const useAuth = () => {
   return context;
 };
 
-// ✅ Provider component
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // 🔹 Load user & token from localStorage on mount
-  useEffect(() => {
-    try {
-      const token = localStorage.getItem("token");
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window !== "undefined") {
       const storedUser = localStorage.getItem("user");
-
-      if (token && storedUser) {
-        const parsedUser = JSON.parse(storedUser) as User;
-        setUser(parsedUser);
-      }
-    } catch (err) {
-      console.error("Error loading stored user:", err);
-      localStorage.removeItem("user");
-    } finally {
-      setIsLoading(false);
+      return storedUser ? JSON.parse(storedUser) : null;
     }
-  }, []);
+    return null;
+  });
 
-  // ✅ Login (tries admin first, then user)
+  const [isLoading, setIsLoading] = useState(false);
+
   const login = async (email: string, password: string) => {
     setIsLoading(true);
-
     try {
-      // --- 1️⃣ Try Admin Login ---
+      // Admin login
       const adminRes = await fetch("http://localhost:5000/api/admin/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -88,7 +74,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (adminRes.ok) {
         const adminData = await adminRes.json();
-
         const adminUser: User = {
           _id: adminData._id,
           name: adminData.name,
@@ -99,13 +84,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem("token", adminData.token);
         localStorage.setItem("user", JSON.stringify(adminUser));
         setUser(adminUser);
-
         toast.success("Welcome, Admin!");
-        setIsLoading(false);
         return;
       }
 
-      // --- 2️⃣ Try User Login ---
+      // Normal user login
       const userRes = await fetch("http://localhost:5000/api/users/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -113,10 +96,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
 
       const userData = await userRes.json();
-
-      if (!userRes.ok) {
-        throw new Error(userData.message || "Invalid credentials");
-      }
+      if (!userRes.ok) throw new Error(userData.message || "Invalid credentials");
 
       const normalUser: User = {
         _id: userData.user._id,
@@ -128,7 +108,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem("token", userData.token);
       localStorage.setItem("user", JSON.stringify(normalUser));
       setUser(normalUser);
-
       toast.success("Login successful!");
     } catch (err: any) {
       console.error("Login error:", err);
@@ -139,7 +118,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // ✅ Logout
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -151,14 +129,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{
-        user,
-        setUser,
-        isLoading,
-        login,
-        logout,
-        isAuthenticated,
-      }}
+      value={{ user, setUser, isLoading, login, logout, isAuthenticated }}
     >
       {children}
     </AuthContext.Provider>

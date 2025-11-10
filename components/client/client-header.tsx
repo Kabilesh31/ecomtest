@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog"
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 
 export function ClientHeader() {
   const { user, logout } = useAuth()
@@ -20,21 +20,36 @@ export function ClientHeader() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [confirmLogout, setConfirmLogout] = useState(false)
 
+  // 🔹 For More dropdown
+  const [moreOpen, setMoreOpen] = useState(false)
+  const moreRef = useRef<HTMLDivElement | null>(null)
+
+  // 🔹 Close More dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
+        setMoreOpen(false)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
   const toggleMenu = () => setMobileMenuOpen((prev) => !prev)
 
-  // 🔹 Define visible links (Orders/Profile only if user logged in)
+  // 🔹 Navigation Links
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Products", href: "/products" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
-    ...(user ? [{ name: "Orders", href: "/orders" }] : []),
-    ...(user ? [{ name: "Profile", href: "/profile" }] : []),
+    ...(user && user.role === "customer" ? [{ name: "Orders", href: "/orders" }] : []),
+    
     {
       name: "More",
       children: [
         { name: "Return and Refund", href: "/return-refund" },
-        { name: "Policy and Privacy", href: "/policy-privacy" },
+        { name: "Privacy and Policy  ", href: "/policy-privacy" },
       ],
     },
   ]
@@ -55,21 +70,29 @@ export function ClientHeader() {
           <nav className="hidden md:flex items-center gap-8 relative">
             {navLinks.map((link) =>
               link.children ? (
-                <div key={link.name} className="relative group">
-                  <span className="cursor-pointer text-foreground hover:text-primary transition-colors">
+                // 👇 Updated: Click-based dropdown for "More"
+                <div key={link.name} className="relative" ref={moreRef}>
+                  <button
+                    onClick={() => setMoreOpen((prev) => !prev)}
+                    className="text-foreground hover:text-primary transition-colors cursor-pointer"
+                  >
                     {link.name}
-                  </span>
-                  <div className="absolute top-full left-0 mt-2 w-48 bg-background border border-border rounded-md shadow-lg opacity-0 group-hover:opacity-100 invisible group-hover:visible transition-opacity">
-                    {link.children.map((child) => (
-                      <Link
-                        key={child.name}
-                        href={child.href}
-                        className="block px-4 py-2 text-foreground hover:bg-muted"
-                      >
-                        {child.name}
-                      </Link>
-                    ))}
-                  </div>
+                  </button>
+
+                  {moreOpen && (
+                    <div className="absolute top-full left-0 mt-2 w-48 bg-background border border-border rounded-md shadow-lg animate-in fade-in slide-in-from-top-1">
+                      {link.children.map((child) => (
+                        <Link
+                          key={child.name}
+                          href={child.href}
+                          className="block px-4 py-2 text-foreground hover:bg-muted rounded-md"
+                          onClick={() => setMoreOpen(false)}
+                        >
+                          {child.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <Link
@@ -97,7 +120,7 @@ export function ClientHeader() {
               </Button>
             </Link>
 
-            {/* Admin/User Button */}
+            {/* Admin/User */}
             {user ? (
               user.role === "admin" ? (
                 <Link href="/admin/dashboard">
@@ -171,7 +194,7 @@ export function ClientHeader() {
           </div>
         </div>
 
-        {/* 🔹 Mobile Menu */}
+        {/* 🔹 Mobile Menu (unchanged) */}
         {mobileMenuOpen && (
           <nav className="md:hidden pb-4 space-y-2 animate-in fade-in slide-in-from-top-2">
             {navLinks.map((link) =>
@@ -202,11 +225,7 @@ export function ClientHeader() {
             )}
 
             {user ? (
-              <Button
-                onClick={() => setConfirmLogout(true)}
-                variant="outline"
-                className="w-full"
-              >
+              <Button onClick={() => setConfirmLogout(true)} variant="outline" className="w-full">
                 Logout
               </Button>
             ) : (
@@ -222,4 +241,3 @@ export function ClientHeader() {
     </header>
   )
 }
-  
