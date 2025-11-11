@@ -53,6 +53,7 @@ export default function ProductDetails({ product }: Props) {
   const featureImages = ["/coin1.png", "/coin2.png", "/creame.png", "/coin4.png"]
   const descriptionImages = ["/coin1.png", "/coin2.png", "/creame.png", "/coin4.png"]
 
+   const mainImage = product.mainImages?.[0] || "/placeholder.jpg"
   // --- Cart functions ---
   const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
   e.preventDefault();
@@ -66,7 +67,7 @@ export default function ProductDetails({ product }: Props) {
     id: product._id || product.id || "",
     name: product.name,
     price: product.price,
-    mainImage: product.mainImage || "/placeholder.jpg",
+     mainImage: mainImage,
   });
 
   setShowQuantity(true); // ✅ Show quantity selector
@@ -94,7 +95,7 @@ const handleBuyNowClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       id: product._id || product.id || "",
       name: product.name,
       price: product.price,
-      mainImage: product.mainImage || "/placeholder.jpg",
+      mainImage: product.mainImages || "/placeholder.jpg",
     });
   }
 
@@ -115,7 +116,7 @@ const handleBuyNowClick = (e: React.MouseEvent<HTMLButtonElement>) => {
           onAnimationComplete={() => setMerged(true)}
         >
           <motion.img
-            src={product.mainImage || "/placeholder.jpg"}
+            src={mainImage}
             alt={product.name}
             className="w-40 md:w-56 object-contain drop-shadow-2xl"
           />
@@ -129,7 +130,7 @@ const handleBuyNowClick = (e: React.MouseEvent<HTMLButtonElement>) => {
           style={{ scale, x, rotate, opacity }}
         >
           <motion.img
-            src={product.mainImage || "/placeholder.jpg"}
+            src={mainImage}
             alt={product.name}
             className="w-40 md:w-56 object-contain drop-shadow-2xl"
           />

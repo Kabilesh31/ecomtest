@@ -19,7 +19,8 @@ interface Product {
   quantity: number;
   category: string;
   image: string;
-  mainImage?: string; // ✅ add this field
+   mainImages: string[]; 
+  createdAt:string // ✅ add this field
 }
 
 export default function ProductsPage() {
@@ -116,17 +117,18 @@ export default function ProductsPage() {
     <tr key={product._id} className="hover:bg-muted/50 transition-colors">
       <td className="px-6 py-3">
         <div className="flex items-center gap-2">
-          <img
-            src={
-              product.mainImage?.startsWith("http")
-                ? product.mainImage
-                : product.mainImage
-                ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
-                : "/placeholder.svg"
-            }
-            alt={product.name}
-            className="w-20 h-18 object-cover rounded-md"
-          />
+      <img
+  src={
+    Array.isArray(product.mainImages) && product.mainImages.length > 0
+      ? product.mainImages[0] // show first image
+      : "/placeholder.svg"
+  }
+  alt={product.name}
+  className="w-20 h-20 object-cover rounded-md border"
+  onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+/>
+
+
           
         </div>
       </td>

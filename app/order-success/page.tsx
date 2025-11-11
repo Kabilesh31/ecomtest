@@ -7,6 +7,7 @@ import Link from "next/link"
 import { CheckCircle, Package, Truck, Mail } from "lucide-react"
 import { useEffect } from "react"
 import { useCart } from "@/context/cart-context"
+import { StepProgress } from "@/components/client/StepProgress";
 
 export default function OrderSuccessPage() {
 
@@ -21,6 +22,7 @@ export default function OrderSuccessPage() {
     <ClientLayout>
       <div className="min-h-screen bg-background flex items-center justify-center py-12">
         <div className="max-w-2xl w-full px-4">
+          <StepProgress currentStep={3} />
           {/* Success Card */}
           <Card className="p-8 md:p-12 text-center space-y-6">
             {/* Success Icon */}
@@ -48,7 +50,7 @@ export default function OrderSuccessPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total Amount</span>
-                <span className="font-semibold text-foreground">$1,009.99</span>
+                <span className="font-semibold text-foreground"></span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Estimated Delivery</span>

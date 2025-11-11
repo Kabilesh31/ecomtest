@@ -9,6 +9,7 @@ import Link from "next/link"
 import { ShoppingCart, LogIn } from "lucide-react"
 import { useCart } from "@/context/cart-context"
 import { useEffect, useState } from "react"
+import { StepProgress } from "@/components/client/StepProgress";
 
 export default function CartPage() {
   const { items } = useCart()
@@ -25,6 +26,7 @@ export default function CartPage() {
   return (
     <ClientLayout>
       <div className="min-h-screen bg-background">
+        <StepProgress currentStep={1} />
         {/* 🧭 Breadcrumb */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -33,14 +35,7 @@ export default function CartPage() {
             </Link>
             <span>/</span>
             <span className="text-foreground">Shopping Cart</span>
-            <h3
-  className="text-3xl font-bold text-foreground mb-2 md:text-2xl md:mt-5 md:ml-100 
-             bg-gray-300 hover:bg-gray-700 hover:text-white transition-all duration-300 
-             rounded-xl px-6 py-3 text-center cursor-pointer shadow-md hover:shadow-lg 
-             select-none"
->
-  Step 1
-</h3>
+   
           </div>
           
         </div>
