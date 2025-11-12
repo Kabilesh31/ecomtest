@@ -23,15 +23,15 @@ export default function EditProductPage() {
     createdAt: "",
   });
 
-  const [mainImage, setMainImage] = useState<File | null>(null);
-  const [mainImageUrl, setMainImageUrl] = useState<string>("");
-
+  const [mainImages, setMainImages] = useState<File[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [descriptions, setDescriptions] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>([]);
 
   const categories = ["Devine", "Cosmetics", "Accessories"];
 
-  // 🟢 Fetch product by ID
+  // 🟢 Fetch product details
   useEffect(() => {
     if (!id) return;
     const fetchProduct = async () => {
@@ -45,9 +45,10 @@ export default function EditProductPage() {
           price: data.price || "",
           quantity: data.quantity || "",
           category: data.category || "",
-           createdAt: data.createdAt || "",
+          createdAt: data.createdAt || "",
         });
-        setMainImageUrl(data.mainImage || "");
+
+        setExistingImages(data.mainImages || []);
         setDescriptions(data.descriptions || []);
         setFeatures(data.features || []);
       } catch (error) {
@@ -60,6 +61,7 @@ export default function EditProductPage() {
     fetchProduct();
   }, [id]);
 
+  // 🧩 Handle basic input
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -67,6 +69,7 @@ export default function EditProductPage() {
     setProduct((prev) => ({ ...prev, [name]: value }));
   };
 
+  // 🧩 Handle description / feature updates
   const handleArrayChange = (
     index: number,
     value: string,
@@ -79,6 +82,27 @@ export default function EditProductPage() {
     });
   };
 
+  // 🧩 Handle image selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files ? Array.from(e.target.files) : [];
+    setMainImages((prev) => [...prev, ...files]);
+
+    const newPreviews = files.map((file) => URL.createObjectURL(file));
+    setPreviewUrls((prev) => [...prev, ...newPreviews]);
+  };
+
+  // 🧩 Remove a newly selected image (before upload)
+  const removeNewImage = (index: number) => {
+    setMainImages((prev) => prev.filter((_, i) => i !== index));
+    setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  // 🧩 Remove existing image (from server set)
+  const removeExistingImage = (url: string) => {
+    setExistingImages((prev) => prev.filter((img) => img !== url));
+  };
+
+  // 🧩 Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const formData = new FormData();
@@ -87,10 +111,14 @@ export default function EditProductPage() {
     formData.append("price", product.price);
     formData.append("quantity", product.quantity);
     formData.append("category", product.category);
-    if (mainImage) formData.append("mainImage", mainImage);
-
     formData.append("descriptions", JSON.stringify(descriptions));
     formData.append("features", JSON.stringify(features));
+    formData.append("existingImages", JSON.stringify(existingImages));
+
+    // append new images
+    mainImages.forEach((file) => {
+      formData.append("mainImages", file);
+    });
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
@@ -100,49 +128,15 @@ export default function EditProductPage() {
       const data = await res.json();
 
       if (res.ok) {
-        toast.success("✅ Product updated successfully!");
+        toast.success(" Product updated successfully!");
         router.push("/admin/products");
       } else {
         toast.error("❌ " + (data.message || "Failed to update product."));
       }
     } catch (err) {
       console.error(err);
-      toast.error("❌ Something went wrong while updating.");
+      toast.error(" Something went wrong while updating.");
     }
-  };
-
-  const FileButton = ({
-    label,
-    file,
-    onChange,
-  }: {
-    label: string;
-    file: File | null;
-    onChange: (file: File) => void;
-  }) => {
-    const inputRef = useRef<HTMLInputElement | null>(null);
-    const handleClick = () => inputRef.current?.click();
-
-    return (
-      <div className="flex items-center gap-3">
-        <Button type="button" variant="outline" onClick={handleClick}>
-          {label}
-        </Button>
-        <span className="text-sm text-gray-600">
-          {file ? file.name : "No file chosen"}
-        </span>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const selected = e.target.files?.[0];
-            if (selected) onChange(selected);
-          }}
-        />
-      </div>
-    );
   };
 
   if (loading)
@@ -155,44 +149,22 @@ export default function EditProductPage() {
         <Card>
           <CardContent className="space-y-8">
             <button
-  onClick={() => router.back()}
-  className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-900 rounded-md hover:bg-white-50 hover:text-white-700 transition-all duration-200"
->
-  ← Back
-</button>
+              onClick={() => router.back()}
+              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm font-medium text-gray-600 border border-gray-900 rounded-md hover:bg-white/10 hover:text-white transition-all duration-200"
+            >
+              ← Back
+            </button>
 
             <h1 className="text-2xl font-semibold mb-4">Edit Product</h1>
 
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* 🧩 Basic Info */}
               <div className="grid md:grid-cols-2 gap-4">
-                <Input
-                  name="name"
-                  placeholder="Product Name"
-                  value={product.name}
-                  onChange={handleInputChange}
-                  required
-                />
-                <Input
-                  name="price"
-                  type="number"
-                  placeholder="Price"
-                  value={product.price}
-                  onChange={handleInputChange}
-                  required
-                />
-                <Input
-                  name="quantity"
-                  type="number"
-                  placeholder="Quantity"
-                  value={product.quantity}
-                  onChange={handleInputChange}
-                  required
-                />
+                <Input name="name" placeholder="Product Name" value={product.name} onChange={handleInputChange} required />
+                <Input name="price" type="number" placeholder="Price" value={product.price} onChange={handleInputChange} required />
+                <Input name="quantity" type="number" placeholder="Quantity" value={product.quantity} onChange={handleInputChange} required />
                 <div>
-                  <label className="block text-sm font-medium mb-1">
-                    Category
-                  </label>
+                  <label className="block text-sm font-medium mb-1">Category</label>
                   <select
                     name="category"
                     value={product.category}
@@ -210,34 +182,60 @@ export default function EditProductPage() {
                 </div>
               </div>
 
-              {/* 🧩 Main Image */}
+              {/* 🧩 Main Images */}
               <div>
-                <label className="block text-sm font-medium mb-1">
-                  Main Image
+                <label className="block text-sm font-medium mb-2">
+                  Main Product Images
                 </label>
-                {mainImageUrl && !mainImage && (
-                  <div className="flex items-center gap-4 mb-2">
-                  <img
-                    src={mainImageUrl}
-                    alt="Current"
-                    className="w-32 h-32 object-cover rounded mb-2 border"
-                  />
-                   <div className="text-sm text-gray-600">
-        <p>
-  <span className="font-medium">Product Added:</span>{" "}
-  {product.createdAt
-    ? new Date(product.createdAt).toLocaleDateString()
-    : "N/A"}
-</p>
 
-      </div>
-      </div>
+                {/* Existing images */}
+                {existingImages.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mb-3">
+                    {existingImages.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Image ${i + 1}`}
+                          className="w-24 h-24 object-cover rounded border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeExistingImage(url)}
+                          className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 opacity-0 group-hover:opacity-100 transition"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
-                <FileButton
-                  label="Choose New Main Image"
-                  file={mainImage}
-                  onChange={(file) => setMainImage(file)}
-                />
+
+                {/* New images */}
+                {previewUrls.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mb-3">
+                    {previewUrls.map((url, i) => (
+                      <div key={i} className="relative group">
+                        <img
+                          src={url}
+                          alt={`Preview ${i + 1}`}
+                          className="w-24 h-24 object-cover rounded border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeNewImage(i)}
+                          className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full w-5 h-5 opacity-0 group-hover:opacity-100 transition"
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                <input type="file" multiple accept="image/*" onChange={handleFileChange} className="mt-2" />
+                <p className="text-sm text-gray-400 mt-1">
+                  You can add or replace multiple transparent PNG images.
+                </p>
               </div>
 
               {/* 🧩 Descriptions */}
@@ -248,9 +246,7 @@ export default function EditProductPage() {
                     key={i}
                     placeholder={`Description ${i + 1}`}
                     value={desc}
-                    onChange={(e) =>
-                      handleArrayChange(i, e.target.value, setDescriptions)
-                    }
+                    onChange={(e) => handleArrayChange(i, e.target.value, setDescriptions)}
                     className="mb-2"
                   />
                 ))}
@@ -264,9 +260,7 @@ export default function EditProductPage() {
                     key={i}
                     placeholder={`Feature ${i + 1}`}
                     value={feat}
-                    onChange={(e) =>
-                      handleArrayChange(i, e.target.value, setFeatures)
-                    }
+                    onChange={(e) => handleArrayChange(i, e.target.value, setFeatures)}
                     className="mb-2"
                   />
                 ))}

@@ -14,7 +14,7 @@ interface Product {
   reviews: number
   inStock: boolean
   category: string
-  image?: string
+  mainImages?: string[]
 }
 
 interface ProductDetailsProps {
@@ -34,7 +34,7 @@ export function ProductDetails({ product }: ProductDetailsProps) {
         id: product.id,
         name: product.name,
         price: product.price,
-        image: product.image || "/placeholder.svg",
+        mainImage: product.mainImages?.[0] || "/placeholder.svg",
       })
     }
     setQuantity(1)

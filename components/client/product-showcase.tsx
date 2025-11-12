@@ -108,31 +108,39 @@ export function ProductShowcase() {
                   >
                     <Link href={`/products/${product._id}`}>
                       {/* Product Image */}
-                      <div className="relative h-48 bg-muted overflow-hidden group">
-                        <img
-                          src={
-                            product.mainImage?.startsWith("http")
-                              ? product.mainImage
-                              : product.mainImage
-                              ? `${process.env.NEXT_PUBLIC_API_URL}/uploads/${product.mainImage}`
-                              : "/placeholder.svg"
-                          }
-                          alt={product.name}
-                          className="w-full h-full object-contain bg-gray-200 group-hover/image:scale-110 transition-transform duration-300"
-                          onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
-                        />
+                     <div className="relative h-48 bg-muted overflow-hidden group">
+  <div className="flex overflow-x-auto h-full scroll-smooth snap-x snap-mandatory">
+    {product.mainImages && product.mainImages.length > 0 ? (
+      product.mainImages.map((img: string, index: number) => (
+        <img
+          key={index}
+          src={img}
+          alt={`${product.name}-${index}`}
+          className="w-full h-full object-contain flex-shrink-0 snap-center"
+          onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+        />
+      ))
+    ) : (
+      <img
+        src="/placeholder.svg"
+        alt="placeholder"
+        className="w-full h-full object-contain flex-shrink-0 snap-center"
+      />
+    )}
+  </div>
 
-                        {/* Favorite Button */}
-                        ?
+  {/* Left & Right overlay gradient for better visual look */}
+  <div className="absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white/80 to-transparent pointer-events-none" />
+  <div className="absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white/80 to-transparent pointer-events-none" />
 
-                        {/* ✅ Low Stock Badge */}
-                        {product.quantity <= 5 && (
-                          <div className="absolute bottom-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
-                            {product.quantity}{" "}
-                            {product.quantity === 1 ? "item" : "items"} left
-                          </div>
-                        )}
-                      </div>
+  {/* Optional low stock badge */}
+  {product.quantity <= 5 && (
+    <div className="absolute bottom-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
+      {product.quantity} left
+    </div>
+  )}
+</div>
+
                     </Link>
 
                     {/* Product Info */}

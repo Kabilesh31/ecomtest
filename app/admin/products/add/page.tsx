@@ -19,10 +19,10 @@ export default function AddProductPage() {
     category: "",
   });
 
-  const [mainImage, setMainImage] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [mainImages, setMainImages] = useState<File[]>([]);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [descriptions, setDescriptions] = useState(["", "", ""]);
-  const [features, setFeatures] = useState(["", "", "", ""]); // ✅ Now 4 feature fields
+  const [features, setFeatures] = useState(["", "", "", ""]);
 
   const categories = ["Devine", "Cosmetics", "Accessories"];
 
@@ -45,7 +45,7 @@ export default function AddProductPage() {
     });
   };
 
-  // 🧩 Form Submit
+  // 🧩 Submit form with multiple images
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -54,7 +54,10 @@ export default function AddProductPage() {
     formData.append("price", product.price);
     formData.append("quantity", product.quantity);
     formData.append("category", product.category);
-    if (mainImage) formData.append("mainImage", mainImage);
+
+    // ✅ append all selected images
+    mainImages.forEach((img) => formData.append("mainImages", img));
+
     formData.append("descriptions", JSON.stringify(descriptions));
     formData.append("features", JSON.stringify(features));
 
@@ -66,14 +69,14 @@ export default function AddProductPage() {
 
       const data = await res.json();
       if (res.ok) {
-        toast.success("Product added successfully!");
+        toast.success(" Product added successfully!");
         setProduct({ name: "", price: "", quantity: "", category: "" });
-        setMainImage(null);
-        setPreviewUrl(null);
+        setMainImages([]);
+        setPreviewUrls([]);
         setDescriptions(["", "", ""]);
         setFeatures(["", "", "", ""]);
       } else {
-        toast.error("Failed: " + (data.message || "Unknown error"));
+        toast.error(" Failed: " + (data.message || "Unknown error"));
       }
     } catch (err) {
       console.error(err);
@@ -81,30 +84,14 @@ export default function AddProductPage() {
     }
   };
 
-  const FileButton = () => {
-    const inputRef = useRef<HTMLInputElement | null>(null);
-    const handleClick = () => inputRef.current?.click();
+  // 🧩 Add images handler
+  const handleImageSelect = (files: FileList | null) => {
+    if (!files) return;
+    const fileArray = Array.from(files);
+    setMainImages((prev) => [...prev, ...fileArray]);
 
-    return (
-      <div className="flex items-center gap-3">
-        <Button type="button" variant="outline" onClick={handleClick}>
-          Choose Product Image
-        </Button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const selected = e.target.files?.[0];
-            if (selected) {
-              setMainImage(selected);
-              setPreviewUrl(URL.createObjectURL(selected));
-            }
-          }}
-        />
-      </div>
-    );
+    const newPreviews = fileArray.map((file) => URL.createObjectURL(file));
+    setPreviewUrls((prev) => [...prev, ...newPreviews]);
   };
 
   return (
@@ -166,21 +153,65 @@ export default function AddProductPage() {
                 </div>
               </div>
 
+              {/* ✅ Multiple Image Upload */}
               <div>
                 <label className="block text-sm font-medium mb-2">
-                 <span className="text-orange-600 text-2xl">*</span> Main Product Image
+                  <span className="text-orange-600 text-2xl">*</span> Main Product Images
                 </label>
-                <FileButton />
-                {previewUrl && (
-                  <img
-                    src={previewUrl}
-                    alt="Preview"
-                    className="w-20 h-20 object-cover mt-2 rounded-md border"
+
+                <div className="flex flex-wrap gap-3 items-center">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => document.getElementById("mainImages")?.click()}
+                  >
+                    + Add More Images
+                  </Button>
+                  <input
+                    id="mainImages"
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageSelect(e.target.files)}
                   />
+                </div>
+
+                {previewUrls.length > 0 && (
+                  <div className="flex flex-wrap gap-3 mt-3">
+                    {previewUrls.map((url, i) => (
+                      <div key={i} className="relative">
+                        <img
+                          src={url}
+                          alt={`Preview ${i + 1}`}
+                          className="w-20 h-20 object-cover rounded-md border"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setMainImages((prev) => prev.filter((_, idx) => idx !== i));
+                            setPreviewUrls((prev) => prev.filter((_, idx) => idx !== i));
+                          }}
+                          className="absolute top-0 right-0 bg-red-500 text-white rounded-full px-1 text-xs"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
                 )}
-                <p className="text-sm text-gray-400 mt-2">image must be a Transperant PNG </p>
+                <p className="text-sm text-gray-400 mt-1">
+                  You can upload multiple transparent PNG images.
+                </p>
+                <p className="text-sm text-gray-400 ">
+                  Total Image collection should not be more than 10mb.
+                </p>
+                <p className="text-sm text-gray-400 ">
+                  First image should be a main image.
+                </p>
               </div>
 
+              {/* Descriptions */}
               <div>
                 <h2 className="font-semibold mb-2">Descriptions</h2>
                 {descriptions.map((desc, i) => (
@@ -197,6 +228,7 @@ export default function AddProductPage() {
                 ))}
               </div>
 
+              {/* Features */}
               <div>
                 <h2 className="font-semibold mb-2">Features</h2>
                 {features.map((feat, i) => (
