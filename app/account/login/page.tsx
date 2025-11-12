@@ -118,6 +118,14 @@
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? "Logging in..." : "Login"}
             </Button>
+              <div className="text-right mt-2">
+    <Link
+      href="/forget"
+      className="text-sm text-primary hover:underline"
+    >
+      Forgot Password?
+    </Link>
+  </div>
           </form>
         </Card>
 

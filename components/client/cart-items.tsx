@@ -10,7 +10,7 @@ interface CartItemsProps {
 }
 
 export function CartItems({ items }: CartItemsProps) {
-  const { updateQuantity, removeFromCart } = useCart()
+  const { updateQuantity, removeFromCart, addToCart } = useCart()
 
   return (
     <div className="space-y-4">
@@ -19,12 +19,16 @@ export function CartItems({ items }: CartItemsProps) {
           <div className="flex gap-4 md:gap-6">
             {/* Product Image */}
             <Link href={`/products/${product.id}`} className="flex-shrink-0">
-              <img
-                src={product.mainImage || "/placeholder.svg"}
-                alt={product.name}
-                className="w-24 h-24 md:w-32 md:h-32 object-cover bg-gray-200 rounded-lg hover:opacity-80 transition-opacity"
-              />
-            </Link>
+ <img
+  src={
+    Array.isArray(product.mainImages)
+      ? product.mainImages[0]
+      : product.mainImages || "/placeholder.svg"
+  }
+  alt={product.name}
+  className="w-24 h-24 md:w-32 md:h-32 object-cover bg-gray-200 rounded-lg hover:opacity-80 transition-opacity"
+/>
+</Link>
 
             {/* Product Details */}
             <div className="flex-1 flex flex-col justify-between">
