@@ -19,6 +19,8 @@ export function ProductForm({ isEditing = false }: ProductFormProps) {
     price: "",
     stock: "",
     category: "",
+    haveOffer: "false", 
+    offerPercentage: "", 
   })
 
   const [images, setImages] = useState<File[]>([])
@@ -61,7 +63,10 @@ export function ProductForm({ isEditing = false }: ProductFormProps) {
       formDataToSend.append("price", formData.price)
       formDataToSend.append("stock", formData.stock)
       formDataToSend.append("category", formData.category)
-
+      formDataToSend.append("haveOffer", formData.haveOffer)
+      if (formData.haveOffer === "true") {
+        formDataToSend.append("offerPercentage", formData.offerPercentage)
+      }
       images.forEach((image) => {
         formDataToSend.append("images", image)
       })
@@ -78,7 +83,15 @@ export function ProductForm({ isEditing = false }: ProductFormProps) {
       }
 
       // Reset form and redirect
-      setFormData({ name: "", description: "", price: "", stock: "", category: "" })
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        stock: "",
+        category: "",
+        haveOffer: "false",
+        offerPercentage: "",
+      })
       setImages([])
       setImagePreviews([])
       // Redirect to products page
@@ -153,6 +166,49 @@ export function ProductForm({ isEditing = false }: ProductFormProps) {
           </div>
         </div>
 
+         <div className="mt-6">
+          <label className="block text-sm font-medium text-foreground mb-2">Have Offer?</label>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="haveOffer"
+                value="true"
+                checked={formData.haveOffer === "true"}
+                onChange={handleInputChange}
+              />
+              Yes
+            </label>
+
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                name="haveOffer"
+                value="false"
+                checked={formData.haveOffer === "false"}
+                onChange={handleInputChange}
+              />
+              No
+            </label>
+          </div>
+
+          {formData.haveOffer === "true" && (
+            <div className="mt-3">
+              <label className="block text-sm font-medium text-foreground mb-2">Offer Percentage (%)</label>
+              <Input
+                type="number"
+                name="offerPercentage"
+                value={formData.offerPercentage}
+                onChange={handleInputChange}
+                placeholder="Enter offer percentage"
+                min="1"
+                max="100"
+                required
+              />
+            </div>
+          )}
+        </div>
+        
         <div className="mt-4">
           <label className="block text-sm font-medium text-foreground mb-2">Description</label>
           <textarea

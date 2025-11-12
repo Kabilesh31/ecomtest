@@ -17,6 +17,8 @@ export default function AddProductPage() {
     price: "",
     quantity: "",
     category: "",
+    haveOffer: "false", 
+    offerPercentage: "",
   });
 
   const [mainImages, setMainImages] = useState<File[]>([]);
@@ -54,8 +56,11 @@ export default function AddProductPage() {
     formData.append("price", product.price);
     formData.append("quantity", product.quantity);
     formData.append("category", product.category);
-
-    // ✅ append all selected images
+    formData.append("haveOffer", product.haveOffer);
+    if (product.haveOffer === "true") {
+      formData.append("offerPercentage", product.offerPercentage);
+    }
+    // append all selected images
     mainImages.forEach((img) => formData.append("mainImages", img));
 
     formData.append("descriptions", JSON.stringify(descriptions));
@@ -70,7 +75,14 @@ export default function AddProductPage() {
       const data = await res.json();
       if (res.ok) {
         toast.success(" Product added successfully!");
-        setProduct({ name: "", price: "", quantity: "", category: "" });
+        setProduct({
+          name: "",
+          price: "",
+          quantity: "",
+          category: "",
+          haveOffer: "false",
+          offerPercentage: "",
+        });
         setMainImages([]);
         setPreviewUrls([]);
         setDescriptions(["", "", ""]);
@@ -152,6 +164,57 @@ export default function AddProductPage() {
                   </select>
                 </div>
               </div>
+
+          <div className="grid md:grid-cols-2 gap-4 items-center">
+           {/* Left column — Have Offer radios */}
+          <div>
+            <label className="block text-sm font-medium mb-2">Have Offer?</label>
+            <div className="flex items-center gap-6">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="haveOffer"
+                  value="true"
+                  checked={product.haveOffer === "true"}
+                  onChange={handleInputChange}
+                  className="accent-primary w-4 h-4"
+                />
+                <span className="text-sm font-medium text-gray-800">Yes</span>
+              </label>
+
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="haveOffer"
+                  value="false"
+                  checked={product.haveOffer === "false"}
+                  onChange={handleInputChange}
+                  className="accent-primary w-4 h-4"
+                />
+                <span className="text-sm font-medium text-gray-800">No</span>
+              </label>
+            </div>
+          </div>
+
+          {/* Right column — Offer Percentage */}
+          {product.haveOffer === "true" && (
+            <div>
+              <label className="block text-sm font-medium mb-2">Offer Percentage (%)</label>
+              <Input
+                name="offerPercentage"
+                type="number"
+                value={product.offerPercentage}
+                onChange={handleInputChange}
+                placeholder="e.g. 10"
+                min={1}
+                max={100}
+                required
+              />
+              <p className="text-xs text-gray-400 mt-1">Enter a number between 1 and 100.</p>
+            </div>
+          )}
+        </div>
+
 
               {/* ✅ Multiple Image Upload */}
               <div>

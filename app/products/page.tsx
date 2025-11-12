@@ -4,7 +4,7 @@ import { ClientLayout } from "@/components/client/client-layout"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import Link from "next/link"
-import { ShoppingCart, Heart } from "lucide-react"
+import { ShoppingCart, Heart, Badge, Star } from "lucide-react"
 import { useState, useEffect } from "react"
 import axios from "axios"
 import { useCart, CartItem } from "@/context/cart-context"
@@ -158,37 +158,37 @@ export default function ProductsPage() {
                       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
                         {/* Image */}
                   <div className="relative h-48 bg-muted overflow-hidden group">
-  <div className="flex overflow-x-auto h-full scroll-smooth snap-x snap-mandatory">
-    {product.mainImages && product.mainImages.length > 0 ? (
-      product.mainImages.map((img: string, index: number) => (
-        <img
-          key={index}
-          src={img}
-          alt={`${product.name}-${index}`}
-          className="w-full h-full object-contain flex-shrink-0 snap-center"
-          onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
-        />
-      ))
-    ) : (
-      <img
-        src="/placeholder.svg"
-        alt="placeholder"
-        className="w-full h-full object-contain flex-shrink-0 snap-center"
-      />
-    )}
-  </div>
+                    <div className="flex overflow-x-auto h-full scroll-smooth snap-x snap-mandatory">
+                      {product.mainImages && product.mainImages.length > 0 ? (
+                        product.mainImages.map((img: string, index: number) => (
+                          <img
+                            key={index}
+                            src={img}
+                            alt={`${product.name}-${index}`}
+                            className="w-full h-full object-contain flex-shrink-0 snap-center"
+                            onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
+                          />
+                        ))
+                      ) : (
+                        <img
+                          src="/placeholder.svg"
+                          alt="placeholder"
+                          className="w-full h-full object-contain flex-shrink-0 snap-center"
+                        />
+                      )}
+                    </div>
 
-  {/* Left & Right overlay gradient for better visual look */}
-  <div className="absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white/80 to-transparent pointer-events-none" />
-  <div className="absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white/80 to-transparent pointer-events-none" />
+                    {/* Left & Right overlay gradient for better visual look */}
+                    <div className="absolute left-0 top-0 h-full w-10 bg-gradient-to-r from-white/80 to-transparent pointer-events-none" />
+                    <div className="absolute right-0 top-0 h-full w-10 bg-gradient-to-l from-white/80 to-transparent pointer-events-none" />
 
-  {/* Optional low stock badge */}
-  {product.quantity <= 5 && (
-    <div className="absolute bottom-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
-      {product.quantity} left
-    </div>
-  )}
-</div>
+                    {/* Optional low stock badge */}
+                    {product.quantity <= 5 && (
+                      <div className="absolute bottom-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
+                        {product.quantity} left
+                      </div>
+                    )}
+                  </div>
 
 
                         {/* Info */}
@@ -200,13 +200,48 @@ export default function ProductsPage() {
                             <h3 className="font-semibold text-foreground line-clamp-2 mt-1">
                               {product.name}
                             </h3>
+                            
+                              {product.rating ? (
+                                <div className="flex items-center gap-1">
+                                  <Button className="flex items-center gap-1">
+                                  {product.rating}
+                                  <Star size={14} className="fill-yellow-500 text-yellow-500" />
+                                  </Button>
+                                </div>
+                              ) : (
+                                <span className="text-black text-sm">No Ratings</span>
+                              )}
+                              
+                            
                           </div>
-
+                          
                           {/* Price & Action */}
                           <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
-                            <span className="text-lg font-bold text-foreground">
-                              ₹{product.price?.toLocaleString("en-IN")}
-                            </span>
+                            <div className="flex flex-col">
+                              {product.offerProduct === true || product.offerProduct === "true" ? (
+                                <div className="flex items-center gap-2">
+                                  {/* 🔽 Discounted Price */}
+                                  <span className="text-green-600 font-semibold text-lg">
+                                    ₹{(product.price - (product.price * product.offerPercentage) / 100).toFixed(0)}
+                                  </span>
+
+                                  {/* 🔽 Original Price */}
+                                  <span className="text-gray-400 line-through text-sm">
+                                    ₹{product.price?.toLocaleString("en-IN")}
+                                  </span>
+
+                                  {/* 🔽 Offer Badge */}
+                                  <span className="text-red-500 text-xs font-medium bg-red-100 px-2 py-0.5 rounded-full">
+                                    {product.offerPercentage}% OFF
+                                  </span>
+                                </div>
+                              ) : (
+                                // No Offer — Normal Price
+                                <span className="text-lg font-bold text-foreground">
+                                  ₹{product.price?.toLocaleString("en-IN")}
+                                </span>
+                              )}
+                            </div>
 
                             {/* ✅ Quantity Control */}
                             {quantityInCart === 0 ? (

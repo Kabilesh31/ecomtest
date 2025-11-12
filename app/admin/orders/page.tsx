@@ -10,6 +10,8 @@ import axios from "axios"
 import { useEffect, useState } from "react"
 import { useAuth } from "@/context/auth-context"
 import { Order } from "@/types/order"
+import { motion } from "framer-motion"
+
 
 // ✅ Add these imports for modal
 import {
@@ -85,21 +87,39 @@ export default function OrdersPage() {
     <ProtectedRoute>
       <AdminLayout>
         <div className="space-y-6">
+        {/* Header and Tabs Row */}
+        <div className="flex justify-between items-center">
           <AdminHeader title="Orders" description="Manage customer orders" />
 
-          {/* Filter Buttons */}
-          <div className="flex justify-center gap-4 mb-6">
+          {/* Tabs */}
+          <div className="relative flex bg-muted rounded-xl p-1">
             {(["All", "Pending", "Delivered"] as const).map((status) => (
               <Button
                 key={status}
-                variant={statusFilter === status ? "default" : "outline"}
+                variant="ghost"
                 onClick={() => setStatusFilter(status)}
-                className="px-6"
+                className={`relative z-10 px-6 py-2 rounded-lg font-medium transition-colors ${
+                  statusFilter === status
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
               >
                 {status}
+                {statusFilter === status && (
+                  <motion.span
+                    layoutId="activeTab"
+                    className="absolute inset-0 bg-primary/10 rounded-lg"
+                    transition={{
+                      type: "spring",
+                      stiffness: 350,
+                      damping: 25,
+                    }}
+                  />
+                )}
               </Button>
             ))}
           </div>
+        </div>
 
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
