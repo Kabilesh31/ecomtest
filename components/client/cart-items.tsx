@@ -56,11 +56,11 @@ export function CartItems({ items }: CartItemsProps) {
 
                   {/* Plus Button */}
                   <button
-  onClick={() => updateQuantity(product.id, product.quantity + 1)}
-  className="w-8 h-8 border border-border rounded-lg hover:bg-muted transition-colors flex items-center justify-center"
->
-  <Plus className="w-4 h-4" />
-</button>
+                    onClick={() => updateQuantity(product.id, product.quantity + 1)}
+                    className="w-8 h-8 border border-border rounded-lg hover:bg-muted transition-colors flex items-center justify-center"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
                 </div>
 
                 <div className="text-right">

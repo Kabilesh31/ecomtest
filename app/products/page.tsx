@@ -109,6 +109,7 @@ export default function ProductsPage() {
 
               {/* ✅ Product Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              
                 {sortedProducts.map((product) => {
                   const cartItem = items.find(
                     (i: CartItem) =>
@@ -122,12 +123,20 @@ export default function ProductsPage() {
                       toast.error("Not enough stock available")
                       return
                     }
+
+                    const finalPrice =
+                      product.offerProduct === true || product.offerProduct === "true"
+                        ? Number(
+                            (product.price - (product.price * product.offerPercentage) / 100).toFixed(0)
+                          )
+                        : product.price;
+
                     addToCart({
                       id: product._id,
                       name: product.name,
-                      price: product.price,
-                      mainImages: product.mainImage,
-                    })
+                      price: finalPrice,
+                      mainImage: product.mainImages?.[0] || "/placeholder.svg", 
+                    });
                   }
 
                   const handleIncrease = (e: React.MouseEvent) => {
@@ -136,12 +145,20 @@ export default function ProductsPage() {
                       toast.error("No more stock available")
                       return
                     }
+
+                    const finalPrice =
+                      product.offerProduct === true || product.offerProduct === "true"
+                        ? Number(
+                            (product.price - (product.price * product.offerPercentage) / 100).toFixed(0)
+                          )
+                        : product.price;
+
                     addToCart({
                       id: product._id,
                       name: product.name,
-                      price: product.price,
-                      mainImages: product.mainImage,
-                    })
+                      price: finalPrice,
+                      mainImage: product.mainImages?.[0] || "/placeholder.svg", 
+                    });
                   }
 
                   const handleDecrease = (e: React.MouseEvent) => {
@@ -160,22 +177,22 @@ export default function ProductsPage() {
                         {/* Image */}
                   <div className="relative h-48 bg-muted overflow-hidden group">
                     <div className="relative h-48 bg-muted overflow-hidden group">
-  {product.mainImages && product.mainImages.length > 0 ? (
-    <ImageCarousel images={product.mainImages} />
-  ) : (
-    <img
-      src="/placeholder.svg"
-      alt="placeholder"
-      className="w-full h-full object-contain flex-shrink-0 snap-center"
-    />
-  )}
+                      {product.mainImages && product.mainImages.length > 0 ? (
+                        <ImageCarousel images={product.mainImages} />
+                      ) : (
+                        <img
+                          src="/placeholder.svg"
+                          alt="placeholder"
+                          className="w-full h-full object-contain flex-shrink-0 snap-center"
+                        />
+                      )}
 
-  {product.quantity <= 5 && (
-    <div className="absolute bottom-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
-      {product.quantity} left
-    </div>
-  )}
-</div>
+                      {product.quantity <= 5 && (
+                        <div className="absolute bottom-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
+                          {product.quantity} left
+                        </div>
+                      )}
+                    </div>
 
 
                     {/* Left & Right overlay gradient for better visual look */}

@@ -17,7 +17,7 @@ export default function AddProductPage() {
     price: "",
     quantity: "",
     category: "",
-    haveOffer: "false", 
+    offerProduct: "false", 
     offerPercentage: "",
   });
 
@@ -56,8 +56,8 @@ export default function AddProductPage() {
     formData.append("price", product.price);
     formData.append("quantity", product.quantity);
     formData.append("category", product.category);
-    formData.append("haveOffer", product.haveOffer);
-    if (product.haveOffer === "true") {
+    formData.append("offerProduct", product.offerProduct);
+    if (product.offerProduct === "true") {
       formData.append("offerPercentage", product.offerPercentage);
     }
     // append all selected images
@@ -80,7 +80,7 @@ export default function AddProductPage() {
           price: "",
           quantity: "",
           category: "",
-          haveOffer: "false",
+          offerProduct: "false",
           offerPercentage: "",
         });
         setMainImages([]);
@@ -173,9 +173,9 @@ export default function AddProductPage() {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  name="haveOffer"
+                  name="offerProduct"
                   value="true"
-                  checked={product.haveOffer === "true"}
+                  checked={product.offerProduct === "true"}
                   onChange={handleInputChange}
                   className="accent-primary w-4 h-4"
                 />
@@ -185,9 +185,9 @@ export default function AddProductPage() {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  name="haveOffer"
+                  name="offerProduct"
                   value="false"
-                  checked={product.haveOffer === "false"}
+                  checked={product.offerProduct === "false"}
                   onChange={handleInputChange}
                   className="accent-primary w-4 h-4"
                 />
@@ -197,7 +197,7 @@ export default function AddProductPage() {
           </div>
 
           {/* Right column — Offer Percentage */}
-          {product.haveOffer === "true" && (
+          {product.offerProduct === "true" && (
             <div>
               <label className="block text-sm font-medium mb-2">Offer Percentage (%)</label>
               <Input
