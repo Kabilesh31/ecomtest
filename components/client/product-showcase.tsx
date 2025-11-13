@@ -8,6 +8,8 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, ShoppingCart, Minus, Plus } from "lucide-react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
+import { ImageCarousel } from "./ImageCarousel";
+
 
 export function ProductShowcase() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -152,25 +154,24 @@ export function ProductShowcase() {
                     >
                       <Link href={`/products/${product._id}`}>
                         <div className="relative h-48 bg-muted overflow-hidden group">
-                          <div className="flex overflow-x-auto h-full scroll-smooth snap-x snap-mandatory">
-                            {product.mainImages && product.mainImages.length > 0 ? (
-                              product.mainImages.map((img: string, index: number) => (
-                                <img
-                                  key={index}
-                                  src={img}
-                                  alt={`${product.name}-${index}`}
-                                  className="w-full h-full object-contain flex-shrink-0 snap-center"
-                                  onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
-                                />
-                              ))
-                            ) : (
-                              <img
-                                src="/placeholder.svg"
-                                alt="placeholder"
-                                className="w-full h-full object-contain flex-shrink-0 snap-center"
-                              />
-                            )}
-                          </div>
+                       <div className="relative h-48 bg-muted overflow-hidden group">
+  {product.mainImages && product.mainImages.length > 0 ? (
+    <ImageCarousel images={product.mainImages} />
+  ) : (
+    <img
+      src="/placeholder.svg"
+      alt="placeholder"
+      className="w-full h-full object-contain flex-shrink-0 snap-center"
+    />
+  )}
+
+  {product.quantity <= 5 && (
+    <div className="absolute bottom-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
+      {product.quantity} left
+    </div>
+  )}
+</div>
+
                           {product.quantity <= 5 && (
                             <div className="absolute bottom-2 left-2 bg-red-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
                               {product.quantity} left
@@ -237,7 +238,7 @@ export function ProductShowcase() {
                                     id: product._id,
                                     name: product.name,
                                     price: product.price,
-                                    mainImage: product.mainImage,
+                                    mainImages: product.mainImages,
                                   });
                                 } else {
                                   toast.error("Out of stock!");
