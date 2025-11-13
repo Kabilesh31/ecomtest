@@ -108,6 +108,7 @@ export default function ProductsPage() {
 
               {/* ✅ Product Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              
                 {sortedProducts.map((product) => {
                   const cartItem = items.find(
                     (i: CartItem) =>
@@ -121,12 +122,20 @@ export default function ProductsPage() {
                       toast.error("Not enough stock available")
                       return
                     }
+
+                    const finalPrice =
+                      product.offerProduct === true || product.offerProduct === "true"
+                        ? Number(
+                            (product.price - (product.price * product.offerPercentage) / 100).toFixed(0)
+                          )
+                        : product.price;
+
                     addToCart({
                       id: product._id,
                       name: product.name,
-                      price: product.price,
-                      mainImage: product.mainImage,
-                    })
+                      price: finalPrice,
+                      mainImage: product.mainImages?.[0] || "/placeholder.svg", // ✅ use first image
+                    });
                   }
 
                   const handleIncrease = (e: React.MouseEvent) => {
@@ -135,12 +144,20 @@ export default function ProductsPage() {
                       toast.error("No more stock available")
                       return
                     }
+
+                    const finalPrice =
+                      product.offerProduct === true || product.offerProduct === "true"
+                        ? Number(
+                            (product.price - (product.price * product.offerPercentage) / 100).toFixed(0)
+                          )
+                        : product.price;
+
                     addToCart({
                       id: product._id,
                       name: product.name,
-                      price: product.price,
-                      mainImage: product.mainImage,
-                    })
+                      price: finalPrice,
+                      mainImage: product.mainImages?.[0] || "/placeholder.svg", // ✅ use first image
+                    });
                   }
 
                   const handleDecrease = (e: React.MouseEvent) => {
