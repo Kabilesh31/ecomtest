@@ -8,6 +8,7 @@ export interface CartItem {
   price: number;
   mainImages?: string[]
   quantity: number;
+  stock?: number // <-- total stock
 }
 
 interface CartContextType {
@@ -39,28 +40,38 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items, isHydrated]);
 
   // Cart actions
-  const addToCart = useCallback(
-    (product: Omit<CartItem, "quantity">, quantity = 1) => {
-      setItems((prev) => {
-        const existing = prev.find((i) => i.id === product.id);
-        if (existing) {
-          return prev.map((i) =>
-            i.id === product.id ? { ...i, quantity: i.quantity + quantity } : i
-          );
-        }
-        return [...prev, { ...product, quantity }];
-      });
-    },
-    []
-  );
+const addToCart = useCallback(
+  (product: Omit<CartItem, "quantity">, quantity = 1) => {
+    const maxStock = product.stock ?? Infinity;
+    setItems(prev => {
+      const existing = prev.find(i => i.id === product.id);
+      if (existing) {
+        const newQty = Math.min(existing.quantity + quantity, maxStock);
+        return prev.map(i => i.id === product.id ? { ...i, quantity: newQty } : i);
+      }
+      return [...prev, { ...product, quantity: Math.min(quantity, maxStock) }];
+    });
+  },
+  []
+);
+
+
 
   const removeFromCart = useCallback((id: string | number) => {
     setItems((prev) => prev.filter((i) => i.id !== id));
   }, []);
+const updateQuantity = useCallback((id: string | number, quantity: number) => {
+  setItems(prev =>
+    prev.map(item => {
+      if (item.id === id) {
+        const maxStock = item.stock ?? Infinity
+        return { ...item, quantity: Math.min(quantity, maxStock) }
+      }
+      return item
+    })
+  )
+}, [])
 
-  const updateQuantity = useCallback((id: string | number, quantity: number) => {
-    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, quantity } : i)));
-  }, []);
 
   const clearCart = useCallback(() => {
     setItems([]);

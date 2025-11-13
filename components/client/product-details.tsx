@@ -30,12 +30,15 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        mainImage: product.mainImages?.[0] || "/placeholder.svg",
-      })
+       addToCart({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      mainImages: product.mainImages,
+                 // ✅ pass quantity directly
+      stock: product.inStock ? quantity : 0 // optional, if your cart tracks stock
+    })
+
     }
     setQuantity(1)
   }

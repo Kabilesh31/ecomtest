@@ -229,25 +229,32 @@ export function ProductShowcase() {
                             </div>
                           ) : (
                             <Button
-                              size="sm"
-                              className="bg-primary hover:bg-primary/90 text-primary-foreground gap-3 px-4 py-2 text-sm"
-                              onClick={(e) => {
-                                e.preventDefault();
-                                if (product.quantity > 0) {
-                                  addToCart({
-                                    id: product._id,
-                                    name: product.name,
-                                    price: product.price,
-                                    mainImages: product.mainImages,
-                                  });
-                                } else {
-                                  toast.error("Out of stock!");
-                                }
-                              }}
-                            >
-                              <ShoppingCart className="w-5 h-5" />
-                              <span className="hidden sm:inline">Add</span>
-                            </Button>
+  size="sm"
+  className="bg-primary hover:bg-primary/90 text-primary-foreground gap-3 px-4 py-2 text-sm"
+  onClick={(e) => {
+    e.preventDefault();
+    if (product.quantity > 0) {
+      const finalPrice =
+        product.offerProduct === true || product.offerProduct === "true"
+          ? Number((product.price - (product.price * product.offerPercentage) / 100).toFixed(0))
+          : product.price;
+
+      addToCart({
+        id: product._id,
+        name: product.name,
+        price: finalPrice,
+        mainImages: product.mainImages,
+        stock: product.quantity, // ✅ pass the stock here!
+      });
+    } else {
+      toast.error("Out of stock!");
+    }
+  }}
+>
+  <ShoppingCart className="w-5 h-5" />
+  <span className="hidden sm:inline">Add</span>
+</Button>
+
                           )}
                         </div>
                       </div>
