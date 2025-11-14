@@ -25,7 +25,7 @@ export default function ProductDetails({ product }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [merged, setMerged] = useState(false)
   const [quantity, setQuantity] = useState<number>(1)
-    const { items, addToCart, removeFromCart } = useCart();
+    const { items, addToCart, removeFromCart,updateQuantity  } = useCart();
     const [showQuantity, setShowQuantity] = useState(false);
     
     
@@ -57,35 +57,43 @@ export default function ProductDetails({ product }: Props) {
   // --- Cart functions ---
   const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
   e.preventDefault();
+  
+  const productId = product._id || product.id || "";
+  const existingQty = existingItem ? existingItem.quantity : 0;
 
-  if (currentQty >= maxStock) {
+  if (existingQty + 1 > maxStock) {
     toast.error("No more stock available!");
     return;
   }
 
-  addToCart({
-    id: product._id || product.id || "",
-    name: product.name,
-    price: product.price,
-     mainImage: mainImage,
-  });
+  addToCart(
+    {
+      id: productId,
+      name: product.name,
+      price: product.price,
+      mainImages: [mainImage] // ✅ correct property
+    },
+    1 // quantity to add
+  );
 
-  setShowQuantity(true); // ✅ Show quantity selector
+  setShowQuantity(true);
   toast.success("Added to cart!");
 };
 
-  const handleDecrease = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    if (!existingItem) return;
 
-    if (existingItem.quantity > 1) {
-      removeFromCart(existingItem.id); // remove one unit (depends on your remove logic)
-      toast("Quantity decreased");
-    } else {
-      toast("Item removed from cart");
-      removeFromCart(existingItem.id);
-    }
-  };
+const handleDecrease = (e: React.MouseEvent<HTMLButtonElement>) => {
+  e.preventDefault();
+  if (!existingItem) return;
+
+  if (existingItem.quantity > 1) {
+    updateQuantity(existingItem.id, existingItem.quantity - 1);
+    toast("Quantity decreased");
+  } else {
+    removeFromCart(existingItem.id);
+    toast("Item removed from cart");
+  }
+};
+;
 
 const handleBuyNowClick = (e: React.MouseEvent<HTMLButtonElement>) => {
   e.preventDefault();
@@ -95,7 +103,7 @@ const handleBuyNowClick = (e: React.MouseEvent<HTMLButtonElement>) => {
       id: product._id || product.id || "",
       name: product.name,
       price: product.price,
-      mainImage: product.mainImages || "/placeholder.jpg",
+      mainImages: [mainImage]
     });
   }
 

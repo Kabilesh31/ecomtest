@@ -15,7 +15,7 @@ export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All")
   const [sortBy, setSortBy] = useState("featured")
   const [products, setProducts] = useState<any[]>([])
-  const { items, addToCart, updateQuantity } = useCart()
+  const { items, addToCart, updateQuantity , removeFromCart} = useCart()
 
   // ✅ Fetch products from backend
   useEffect(() => {
@@ -135,7 +135,8 @@ export default function ProductsPage() {
                       id: product._id,
                       name: product.name,
                       price: finalPrice,
-                      mainImage: product.mainImages?.[0] || "/placeholder.svg", 
+                      mainImages: product.mainImages?.[0] || "/placeholder.svg",
+                       
                     });
                   }
 
@@ -157,7 +158,7 @@ export default function ProductsPage() {
                       id: product._id,
                       name: product.name,
                       price: finalPrice,
-                      mainImage: product.mainImages?.[0] || "/placeholder.svg", 
+                      mainImages: product.mainImages?.[0] || "/placeholder.svg", 
                     });
                   }
 
@@ -261,38 +262,70 @@ export default function ProductsPage() {
                             </div>
 
                             {/* ✅ Quantity Control */}
-                            {quantityInCart === 0 ? (
-                              <Button
-                                size="sm"
-                                className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
-                                onClick={handleAdd}
-                              >
-                                <ShoppingCart className="w-4 h-4" />
-                                <span className="hidden sm:inline">Add</span>
-                              </Button>
-                            ) : (
-                              <div className="flex items-center gap-2 bg-muted rounded-lg px-2 py-1">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="w-6 h-6 p-0 text-lg"
-                                  onClick={handleDecrease}
-                                >
-                                  −
-                                </Button>
-                                <span className="w-6 text-center text-sm font-medium">
-                                  {quantityInCart}
-                                </span>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="w-6 h-6 p-0 text-lg"
-                                  onClick={handleIncrease}
-                                >
-                                  +
-                                </Button>
-                              </div>
-                            )}
+                            {/* ✅ Quantity Control */}
+{quantityInCart === 0 ? (
+  <Button
+    size="sm"
+    className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2"
+    onClick={(e) => {
+      e.preventDefault();
+      if (product.quantity > 0) {
+        const finalPrice =
+          product.offerProduct === true || product.offerProduct === "true"
+            ? Number((product.price - (product.price * product.offerPercentage) / 100).toFixed(0))
+            : product.price;
+
+        addToCart({
+          id: product._id,
+          name: product.name,
+          price: finalPrice,
+          mainImages: product.mainImages?.[0] || "/placeholder.svg",
+          stock: product.quantity, // ✅ important!
+        });
+      } else {
+        toast.error("Out of stock!");
+      }
+    }}
+  >
+    <ShoppingCart className="w-4 h-4" />
+    <span className="hidden sm:inline">Add</span>
+  </Button>
+) : (
+  <div className="flex items-center gap-2 bg-muted rounded-lg px-2 py-1">
+    <Button
+      size="sm"
+      variant="ghost"
+      className="w-6 h-6 p-0 text-lg"
+      onClick={(e) => {
+        e.preventDefault();
+        if (quantityInCart > 1) {
+          updateQuantity(product._id, quantityInCart - 1);
+        } else {
+          removeFromCart(product._id);
+        }
+      }}
+    >
+      −
+    </Button>
+    <span className="w-6 text-center text-sm font-medium">{quantityInCart}</span>
+    <Button
+      size="sm"
+      variant="ghost"
+      className="w-6 h-6 p-0 text-lg"
+      onClick={(e) => {
+        e.preventDefault();
+        if (quantityInCart < product.quantity) {
+          updateQuantity(product._id, quantityInCart + 1);
+        } else {
+          toast.error("No more stock available!");
+        }
+      }}
+    >
+      +
+    </Button>
+  </div>
+)}
+
                           </div>
                         </div>
                       </Card>
