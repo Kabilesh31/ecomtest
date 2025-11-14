@@ -133,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     setUser(null);
+    setIsLoading(false);
     toast.success("Logged out successfully!");
   };
 
