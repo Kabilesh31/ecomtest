@@ -18,6 +18,7 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu"
+import { Input } from "@/components/ui/input"
 
 
 // ✅ Add these imports for modal
@@ -36,6 +37,9 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDatas, setOrderDatas] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState<"All" | "Pending" | "Delivered">("All");
+  const [searchTerm, setSearchTerm] = useState("");
+const [currentPage, setCurrentPage] = useState(1);
+const itemsPerPage = 10
 
   const getOrdersByAdmin = async () => {
     try {
@@ -140,6 +144,18 @@ const handleDeleteOrder = async (orderId: string) => {
             ))}
           </div>
         </div>
+        <div className="flex justify-between items-center mb-4">
+  <Input
+    placeholder="Search orders..."
+    value={searchTerm}
+    onChange={(e) => {
+      setSearchTerm(e.target.value);
+      setCurrentPage(1); // reset page when searching
+    }}
+    className="w-64"
+  />
+</div>
+
 
           <Card className="overflow-hidden">
             <div className="overflow-x-auto">
@@ -156,12 +172,39 @@ const handleDeleteOrder = async (orderId: string) => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {orderDatas
-                    .filter((order) => {
-                      if (statusFilter === "All") return true;
-                      return getFilterStatus(order.status) === statusFilter;
-                    })
-                    .map((order) => (
+                 {(() => {
+  // 🔍 Step 1: Status filter (already in your code)
+  let filtered = orderDatas.filter((order) => {
+    if (statusFilter === "All") return true;
+    return getFilterStatus(order.status) === statusFilter;
+  });
+
+  // 🔎 Step 2: Search filter
+  filtered = filtered.filter((order) => {
+    const term = searchTerm.toLowerCase();
+
+    const customerName =
+      (order.customerDetails.firstName + " " + order.customerDetails.lastName).toLowerCase();
+
+    const paymentId = order.razorpayPaymentId?.toLowerCase() || "";
+    const total = order.totalAmount.toString();
+    const status = order.status.toLowerCase();
+    const date = order.createdAt.slice(0, 10);
+
+    return (
+      customerName.includes(term) ||
+      paymentId.includes(term) ||
+      status.includes(term) ||
+      total.includes(term) ||
+      date.includes(term)
+    );
+  });
+
+  // 📄 Step 3: Pagination
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
+
+  return paginated.map((order) => (
                       <tr key={order._id} className="hover:bg-muted/50 transition-colors">
                         <td className="px-6 py-4 text-sm font-semibold text-foreground">{order.razorpayPaymentId}</td>
                         <td className="px-6 py-4">
@@ -219,10 +262,35 @@ const handleDeleteOrder = async (orderId: string) => {
                           </Button>
                         </td>
                       </tr>
-                    ))}
+                      ));
+})()}
                 </tbody>
               </table>
             </div>
+    <div className="flex justify-center items-center gap-4 py-4">
+  <Button
+    variant="outline"
+    disabled={currentPage === 1}
+    onClick={() => setCurrentPage((p) => p - 1)}
+    className="px-6"
+  >
+    Previous
+  </Button>
+
+  <span className="text-sm font-medium text-muted-foreground">
+    Page <span className="text-foreground">{currentPage}</span>
+  </span>
+
+  <Button
+    variant="outline"
+    disabled={orderDatas.length < itemsPerPage}
+    onClick={() => setCurrentPage((p) => p + 1)}
+    className="px-6"
+  >
+    Next
+  </Button>
+</div>
+
           </Card>
         </div>
 
@@ -309,6 +377,8 @@ const handleDeleteOrder = async (orderId: string) => {
                         </tr>
                       </tfoot>
                     </table>
+                    
+
                   </div>
                 </div>
               </div>

@@ -16,6 +16,8 @@ export default function ProductsPage() {
   const [sortBy, setSortBy] = useState("featured")
   const [products, setProducts] = useState<any[]>([])
   const { items, addToCart, updateQuantity , removeFromCart} = useCart()
+  const [priceRange, setPriceRange] = useState([0, 2000])
+  const [showPriceFilter, setShowPriceFilter] = useState(false)
 
   // ✅ Fetch products from backend
   useEffect(() => {
@@ -45,6 +47,14 @@ export default function ProductsPage() {
     if (sortBy === "price-high") return b.price - a.price
     return 0
   })
+  const priceFilteredProducts = sortedProducts.filter((p) => {
+  const finalPrice =
+    p.offerProduct === true || p.offerProduct === "true"
+      ? p.price - (p.price * p.offerPercentage) / 100
+      : p.price;
+
+  return finalPrice <= priceRange[1];
+});
 
   return (
     <ClientLayout>
@@ -92,10 +102,55 @@ export default function ProductsPage() {
 
             {/* Product Grid */}
             <div className="lg:col-span-3">
+            
+
               <div className="flex items-center justify-between mb-6">
-                <p className="text-sm text-muted-foreground">
+                {/* <p className="text-sm text-muted-foreground">
                   Showing {filteredProducts.length} products
-                </p>
+                </p> */}
+                <div>
+  
+
+  {/* Toggle Button */}
+  <button
+    onClick={() => setShowPriceFilter(!showPriceFilter)}
+    className="w-35 px-3 py-2 bg-primary text-white rounded-lg text-sm"
+  >
+    {showPriceFilter ? "Hide Filter" : "Show Price Filter"}
+  </button>
+
+  {/* Collapsible Content */}
+  {showPriceFilter && (
+    <div className="px-1 mt-4">
+      <input
+        type="range"
+        min={0}
+        max={2000}
+        step={500}
+        value={priceRange[1]}
+        onChange={(e) =>
+          setPriceRange([0, Number(e.target.value)])
+        }
+        className="w-full accent-primary h-[3px]"
+      />
+
+      {/* Price Steps Visual  */}
+      <div className="flex justify-between text-xs mt-1 text-muted-foreground">
+        <span>0</span>
+        
+        <span>1000</span>
+        
+        <span>2000</span>
+      </div>
+
+      {/* Live selection  */}
+      <div className="flex justify-between text-sm mt-2 text-muted-foreground">
+        <span>Selected:</span>
+        <span className="font-semibold">₹{priceRange[1]}</span>
+      </div>
+    </div>
+  )}
+</div>
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
@@ -110,7 +165,7 @@ export default function ProductsPage() {
               {/* ✅ Product Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               
-                {sortedProducts.map((product) => {
+               {priceFilteredProducts.map((product) => {
                   const cartItem = items.find(
                     (i: CartItem) =>
                       i.id === product._id || i.id === product.id
