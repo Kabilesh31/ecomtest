@@ -11,6 +11,13 @@ import { useEffect, useState } from "react"
 import { useAuth } from "@/context/auth-context"
 import { Order } from "@/types/order"
 import { motion } from "framer-motion"
+import { MoreHorizontal } from "lucide-react"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu"
 
 
 // ✅ Add these imports for modal
@@ -82,6 +89,19 @@ export default function OrdersPage() {
     setShowOrderDetails(false);
     setSelectedOrder(null);
   };
+  const handleMarkCompleted = async (orderId: string) => {
+  await axios.put("http://localhost:5000/api/order/update-status", {
+    orderId,
+    status: "Completed",
+  });
+
+  getOrdersByAdmin(); // refresh list
+};
+
+const handleDeleteOrder = async (orderId: string) => {
+  await axios.delete(`http://localhost:5000/api/order/${orderId}`);
+  getOrdersByAdmin(); // refresh list
+};
 
   return (
     <ProtectedRoute>
@@ -132,6 +152,7 @@ export default function OrdersPage() {
                     <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Status</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Date</th>
                     <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">Action</th>
+                    <th className="px-6 py-3 text-left text-sm font-semibold text-foreground">View</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -160,6 +181,33 @@ export default function OrdersPage() {
                         <td className="px-6 py-4 text-sm text-muted-foreground">
                           {order.createdAt.slice(0, 10).split("-").reverse().join("-")}
                         </td>
+                        <td className="px-6 py-4">
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="ghost" size="icon" className="h-8 w-8">
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+    </DropdownMenuTrigger>
+
+    <DropdownMenuContent align="end">
+      <DropdownMenuItem
+        onClick={() => handleMarkCompleted(order._id)}
+        className="cursor-pointer"
+      >
+        Mark as Completed
+      </DropdownMenuItem>
+
+      <DropdownMenuItem
+        onClick={() => handleDeleteOrder(order._id)}
+        className="cursor-pointer text-red-600"
+      >
+        Delete Order
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+</td>
+
+                        
                         <td className="px-6 py-4">
                           <Button
                             onClick={() => viewOrderDetailsHandler(order)}
