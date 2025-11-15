@@ -19,12 +19,18 @@ import { useAuth } from "@/context/auth-context";
 import { Order } from "@/types/order";
 import { ClientLayout } from "@/components/client/client-layout"
 import jsPDF from "jspdf";
+import { Eye, Star } from "lucide-react";
 export default function OrdersPage() {
   const router = useRouter();
   const { user } = useAuth();
   const [orderDatas, setOrderDatas] = useState<Order[]>([]);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [showReviewModal, setShowReviewModal] = useState(false);
+  const [reviewData, setReviewData] = useState(
+    {} as { [productId: string]: { rating: number; review: string } }
+    );
+const [reviewOrder, setReviewOrder] = useState<Order | null>(null);
 
   const getOrdersByAdmin = async () => {
     try {
@@ -153,6 +159,22 @@ const handlePdfOrderDownload = () => {
   doc.save(`Order_${selectedOrder.razorpayPaymentId || selectedOrder._id}.pdf`);
 };
 
+
+const StarRating = ({ value, onChange }: { value: number; onChange: (v: number) => void }) => {
+  return (
+    <div className="flex gap-1 cursor-pointer">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <Star
+          key={star}
+          size={20}
+          className={star <= value ? "text-yellow-500 fill-yellow-500" : "text-gray-300"}
+          onClick={() => onChange(star)}
+        />
+      ))}
+    </div>
+  );
+};
+
    return (
   <ProtectedRoute requiredRole="customer">
     <ClientLayout>
@@ -181,7 +203,10 @@ const handlePdfOrderDownload = () => {
                     Total
                   </th>
                   <th className="px-4 sm:px-6 py-3 font-semibold text-center">
-                    Action
+                    View
+                  </th>
+                  <th className="px-4 sm:px-6 py-3 font-semibold text-center">
+                    Review
                   </th>
                 </tr>
               </thead>
@@ -215,7 +240,21 @@ const handlePdfOrderDownload = () => {
                         size="sm"
                         onClick={() => handleViewDetails(order)}
                       >
-                        View
+                        <Eye size={14}/>
+                      </Button>
+                    </td>
+
+                     <td className="px-4 sm:px-6 py-4 text-center">
+                     <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setReviewOrder(order);
+                          setShowReviewModal(true);
+                        }}
+                      >
+                        <Star size={14} />
+                        Rate your Order
                       </Button>
                     </td>
                   </tr>
@@ -372,7 +411,75 @@ const handlePdfOrderDownload = () => {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+              {/* ---------------- Review Modal ---------------- */}
+        <Dialog open={showReviewModal} onOpenChange={() => setShowReviewModal(false)}>
+          <DialogContent className="sm:max-w-xl rounded-2xl">
+            <DialogHeader>
+              <DialogTitle className="text-lg sm:text-xl font-semibold">Rate Your Order</DialogTitle>
+              <DialogDescription>
+                Share your feedback for each product you purchased.
+              </DialogDescription>
+            </DialogHeader>
+
+            {reviewOrder ? (
+              <div className="space-y-5 max-h-[60vh] overflow-y-auto px-1">
+
+                {reviewOrder.purchasedProducts.map((p) => (
+                  <div key={p._id} className="border rounded-xl p-4 bg-white shadow-sm space-y-3">
+
+                    {/* Product Name */}
+                    <h3 className="font-semibold text-base">{p.name}</h3>
+
+                    {/* Star Rating */}
+                    <StarRating
+                      value={reviewData[p._id]?.rating || 0}
+                      onChange={(val) =>
+                        setReviewData((prev) => ({
+                          ...prev,
+                          [p._id]: { ...prev[p._id], rating: val }
+                        }))
+                      }
+                    />
+
+                    {/* Review Input */}
+                    <textarea
+                      className="w-full border rounded-lg p-2 text-sm focus:ring focus:ring-blue-200"
+                      rows={3}
+                      placeholder="Write your review..."
+                      value={reviewData[p._id]?.review || ""}
+                      onChange={(e) =>
+                        setReviewData((prev) => ({
+                          ...prev,
+                          [p._id]: { ...prev[p._id], review: e.target.value }
+                        }))
+                      }
+                    />
+                  </div>
+                ))}
+
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground py-5">No Order Selected</p>
+            )}
+
+            <DialogFooter>
+              <Button
+                onClick={() => {
+                  console.log("Sending Review: ", reviewData);
+                  // TODO: API call
+                  setShowReviewModal(false);
+                }}
+              >
+                Submit Review
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+                
       </div>
+
+      
     </ClientLayout>
   </ProtectedRoute>
 )

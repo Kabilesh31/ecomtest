@@ -110,10 +110,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // ✅ Save token
       localStorage.setItem("token", data.token);
-
+      console.log()
       // ✅ Decode and fetch user by ID
       const decoded = jwtDecode<JwtPayload>(data.token);
       if (decoded.id) {
+        localStorage.setItem("userId", decoded.id)
         await fetchUserById(decoded.id);
       } else {
         throw new Error("Invalid token: missing user ID");
