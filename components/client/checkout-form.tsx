@@ -25,7 +25,8 @@ export function CheckoutForm() {
   const { items } = useCart()
   const { user } = useAuth()
   const [localUser, setLocalUser] = useState(user)
-
+  const userId = localStorage.getItem("userId")
+  console.log(userId)
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shipping = 0
   const discount = 0
