@@ -29,7 +29,11 @@ export default function ProductsPage() {
   const [updating, setUpdating] = useState<string | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
+const [search, setSearch] = useState("");
+const [currentPage, setCurrentPage] = useState(1);
 
+
+const itemsPerPage = 8;
   // 🟢 Fetch products from API
   const fetchProducts = async () => {
     try {
@@ -78,6 +82,15 @@ export default function ProductsPage() {
       setUpdating(null);
     }
   };
+// 🔍 Filter by name
+const filteredProducts = products.filter((p) =>
+  p.name.toLowerCase().includes(search.toLowerCase())
+);
+
+// 📄 Pagination
+const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+const startIndex = (currentPage - 1) * itemsPerPage;
+const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
 
   return (
    <ProtectedRoute>
@@ -92,6 +105,17 @@ export default function ProductsPage() {
               </Button>
             </Link>
           </div>
+<div className="flex justify-between items-center mb-4">
+  <Input
+    value={search}
+    onChange={(e) => {
+      setSearch(e.target.value);
+      setCurrentPage(1); // reset to first page on search
+    }}
+    placeholder="Search by name..."
+    className="max-w-xs"
+  />
+</div>
 
           <Card className="overflow-hidden">
             {loading ? (
@@ -113,7 +137,7 @@ export default function ProductsPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
-  {products.map((product) => (
+  {paginatedProducts.map((product) => (
     <tr key={product._id} className="hover:bg-muted/50 transition-colors">
       <td className="px-6 py-3">
         <div className="flex items-center gap-2">
@@ -159,6 +183,28 @@ export default function ProductsPage() {
 </tbody>
 
                 </table>
+                <div className="flex justify-center items-center gap-3 py-4">
+  <Button
+    variant="outline"
+    disabled={currentPage === 1}
+    onClick={() => setCurrentPage((prev) => prev - 1)}
+  >
+    Previous
+  </Button>
+
+  <span className="text-sm font-medium">
+    Page {currentPage} of {totalPages}
+  </span>
+
+  <Button
+    variant="outline"
+    disabled={currentPage === totalPages}
+    onClick={() => setCurrentPage((prev) => prev + 1)}
+  >
+    Next
+  </Button>
+</div>
+
               </div>
             )}
           </Card>
