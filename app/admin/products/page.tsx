@@ -21,6 +21,10 @@ interface Product {
   image: string;
    mainImages: string[]; 
   createdAt:string // ✅ add this field
+  outofstock: boolean;
+  hidereviews: boolean
+  manualRatings?: boolean;
+  manualRatingValue?: number;
 }
 
 export default function ProductsPage() {
@@ -91,6 +95,47 @@ const filteredProducts = products.filter((p) =>
 const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
 const startIndex = (currentPage - 1) * itemsPerPage;
 const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsPerPage);
+const toggleStockStatus = async (id: string, current: boolean) => {
+  setUpdating(id);
+  try {
+    await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
+      outofstock: !current,
+    });
+
+    setProducts((prev) =>
+      prev.map((p) =>
+        p._id === id ? { ...p, outofstock: !current } : p
+      )
+    );
+
+    toast.success(`Product marked as ${!current ? "OUT OF STOCK" : "IN STOCK"}`);
+  } catch (err) {
+    toast.error("Failed to update stock status");
+  } finally {
+    setUpdating(null);
+  }
+};
+const toggleHideReviews = async (id: string, current: boolean) => {
+  setUpdating(id);
+  try {
+    await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
+      hidereviews: !current,
+    });
+
+    setProducts((prev) =>
+      prev.map((p) =>
+        p._id === id ? { ...p, hidereviews: !current } : p
+      )
+    );
+
+    toast.success(`Ratings are now ${!current ? "hidden" : "visible"}`);
+  } catch (err) {
+    toast.error("Failed to update ratings status");
+  } finally {
+    setUpdating(null);
+  }
+};
+
 
   return (
    <ProtectedRoute>
@@ -132,8 +177,11 @@ const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsP
                       <th className="px-6 py-3 text-left text-sm font-semibold">Category</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Price</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Quantity</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Stock</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Created At</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Ratings</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Manual Ratings</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -141,16 +189,17 @@ const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsP
     <tr key={product._id} className="hover:bg-muted/50 transition-colors">
       <td className="px-6 py-3">
         <div className="flex items-center gap-2">
-      <img
-  src={
-    Array.isArray(product.mainImages) && product.mainImages.length > 0
-      ? product.mainImages[0] // show first image
-      : "/placeholder.svg"
-  }
-  alt={product.name}
-  className="w-20 h-20 object-cover rounded-md border"
-  onError={(e) => (e.currentTarget.src = "/placeholder.svg")}
-/>
+     {product.mainImages?.length ? (
+  <img
+    src={product.mainImages[0]}
+    alt={product.name}
+    className="w-20 h-20 object-cover rounded-md border"
+  />
+) : (
+  <div className="w-20 h-20 flex items-center justify-center rounded-md border bg-muted text-xs text-muted-foreground">
+    No Image
+  </div>
+)}
 
 
           
@@ -160,7 +209,46 @@ const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsP
       <td className="px-6 py-2 text-sm text-muted-foreground">{product.category}</td>
       <td className="px-6 py-2 text-sm font-semibold">₹{product.price}</td>
       <td className="px-6 py-2 text-sm font-semibold">{product.quantity}</td>
+     <td className="px-6 py-2">
+  <Button
+    onClick={() => toggleStockStatus(product._id, product.outofstock)}
+    disabled={updating === product._id}
+    className={`
+      relative inline-flex w-14 h-7 items-center rounded-full transition-all duration-300
+      ${product.outofstock ? "bg-red-500" : "bg-green-600"}
+      ${updating === product._id && "opacity-50 cursor-not-allowed"}
+    `}
+  >
+    <span
+      className={`
+        inline-block w-4 h-4 transform rounded-full bg-white shadow-md transition-all duration-300
+        ${product.outofstock ? "translate-x-0" : "translate-x-4"}
+      `}
+    />
+  </Button>
+</td>
+
+
       <td className="px-6 py-2 text-sm font-semibold">{product?.createdAt.slice(0, 10).split("-").reverse().join("-")}</td>
+      <td className="px-6 py-2">
+  <Button
+    onClick={() => toggleHideReviews(product._id, product.hidereviews)}
+    disabled={updating === product._id}
+    className={`
+      relative inline-flex w-14 h-7 items-center rounded-full transition-all duration-300
+      ${product.hidereviews ? "bg-gray-400" : "bg-yellow-500"}
+      ${updating === product._id && "opacity-50 cursor-not-allowed"}
+    `}
+  >
+    <span
+      className={`
+        inline-block w-4 h-4 transform rounded-full bg-white shadow-md transition-all duration-300
+        ${product.hidereviews ? "translate-x-0" : "translate-x-4"}
+      `}
+    />
+  </Button>
+</td>
+
       <td className="px-6 py-2">
         <div className="flex items-center gap-2">
           <Link href={`/admin/products/${product._id}/edit`}>
@@ -178,6 +266,55 @@ const paginatedProducts = filteredProducts.slice(startIndex, startIndex + itemsP
           </Button>
         </div>
       </td>
+      <td className="px-6 py-2">
+  <Button
+    onClick={async () => {
+      setUpdating(product._id);
+      try {
+        // Toggle manualRatings
+        const newManual = !product.manualRatings;
+        await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/products/${product._id}`, {
+          manualRatings: newManual,
+          hidereviews: newManual ? true : product.hidereviews, // auto-hide if manual is on
+        });
+
+        setProducts((prev) =>
+          prev.map((p) =>
+            p._id === product._id
+              ? { ...p, manualRatings: newManual, hidereviews: newManual ? true : p.hidereviews }
+              : p
+          )
+        );
+
+        toast.success(`Manual Ratings ${newManual ? "enabled" : "disabled"}`);
+      } catch (err) {
+        toast.error("Failed to update manual ratings");
+      } finally {
+        setUpdating(null);
+      }
+    }}
+    disabled={updating === product._id}
+    className={`
+      relative inline-flex w-14 h-7 items-center rounded-full transition-all duration-300
+      ${product.manualRatings ? "bg-yellow-500" : "bg-gray-400"}
+      ${updating === product._id && "opacity-50 cursor-not-allowed"}
+    `}
+  >
+    <span
+      className={`
+        inline-block w-4 h-4 transform rounded-full bg-white shadow-md transition-all duration-300
+        ${product.manualRatings ? "translate-x-4" : "translate-x-0"}
+      `}
+    />
+    {product.manualRatings && (
+      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-semibold text-white">
+        {product.manualRatingValue}
+      </span>
+    )}
+  </Button>
+</td>
+
+
     </tr>
   ))}
 </tbody>

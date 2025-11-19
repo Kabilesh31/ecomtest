@@ -2,7 +2,7 @@
 
 import { motion, useScroll, useTransform } from "framer-motion"
 import { Product } from "@/types/product"
-import { useRef, useState } from "react"
+import { useRef, useState,useEffect } from "react"
 import { ClientHeader } from "@/components/client/client-header"
 import { Lora } from "next/font/google"
 import { useCart } from "@/context/cart-context"
@@ -13,7 +13,7 @@ import { toast } from "react-hot-toast";
 import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-
+import axios from "axios";
 interface Props {
   product: Product
 }
@@ -32,10 +32,14 @@ export default function ProductDetails({ product }: Props) {
     const [showQuantity, setShowQuantity] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentImage, setCurrentImage] = useState(0);
+    const effectRan = useRef(false);
+    
     
     
 
   const maxStock = product.quantity || 10; // fallback to 10 if undefined
+
+  const isOut = product.outofstock === true || Number(product.quantity) === 0;
 
   // Find if product already in cart
   const existingItem = items.find((i) => i.id === (product._id || product.id));
@@ -60,6 +64,24 @@ export default function ProductDetails({ product }: Props) {
   const descriptionImages = ["/coin1.png", "/coin2.png", "/creame.png", "/coin4.png"]
 
    const mainImage = product.mainImages?.[0] || "/placeholder.jpg"
+
+
+  useEffect(() => {
+  if (effectRan.current) return;
+
+  const updateClick = async () => {
+    try {
+      await axios.put(`http://localhost:5000/api/products/click/${product._id}`);
+      console.log("Click count updated for product:", product._id);
+    } catch (error) {
+      console.error("Failed to update product click:", error);
+    }
+  };
+
+  updateClick();
+
+  effectRan.current = true;
+}, [product._id]);
   // --- Cart functions ---
   const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
   e.preventDefault();
@@ -95,6 +117,7 @@ const handleDecrease = (e: React.MouseEvent<HTMLButtonElement>) => {
     toast("Quantity decreased");
   } else {
     removeFromCart(existingItem.id);
+    setShowQuantity(false); 
     toast("Item removed from cart");
   }
 };
@@ -347,14 +370,35 @@ const prevImage = () => {
 
         <div className="absolute top-1/2 right-50 -translate-y-1/2 flex flex-col items-end gap-5 z-50 text-white">
           {!showQuantity && (
-  <Button
-    size="lg"
-    className="px-10 py-5 bg-blue-600 hover:bg-blue-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
-    onClick={handleAddToCartClick}
-  >
-    <ShoppingCart className="w-5 h-5 mr-2" />
-    Add cart
-  </Button>
+ <Button
+  size="sm"
+  disabled={isOut}
+  className={`gap-3 px-10 py-6 text-lg ${
+    isOut
+      ? "px-8 py-6 bg-gray-600 hover:bg-grayn-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
+      : "bg-primary hover:bg-primary/90 text-primary-foreground"
+  }`}
+  onClick={(e) => {
+  e.preventDefault();
+  if (isOut) return;
+
+  addToCart({
+    id: product._id ?? "",
+    name: product.name,
+    price: product.price,
+    mainImages: product.mainImages,
+    stock: product.quantity,
+  });
+
+  setShowQuantity(true);      // ✅ SHOW QUANTITY UI
+}}
+>
+  <ShoppingCart className="w-5 h-5" />
+  <span className="hidden sm:inline">
+    {isOut ? " not available" : "Add to Cart"}
+  </span>
+</Button>
+
 )}
 
 {showQuantity && (
@@ -384,6 +428,8 @@ const prevImage = () => {
 
           <Button
     size="lg"
+    disabled={isOut} 
+    
     className="px-6 py-4 bg-green-600 hover:bg-green-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
     onClick={handleBuyNowClick}
   >
@@ -452,46 +498,70 @@ const prevImage = () => {
     </p>
 
     {/* CART BUTTONS */}
-    <div className="flex flex-col items-center gap-3 px-5 mt-6">
+   {/* CART BUTTONS */}
+<div className="flex flex-col items-center gap-3 px-5 mt-6">
+  {!showQuantity ? (
+    <Button
+      className={`w-full text-lg rounded-xl py-4 ${
+        isOut ? "bg-gray-600 text-white cursor-not-allowed" : "bg-blue-600 text-white"
+      }`}
+      disabled={isOut}
+      onClick={(e) => {
+        e.preventDefault();
+        if (isOut) return;
 
-      {/* Add to Cart / Quantity */}
-      {!showQuantity ? (
-        <Button
-          className="w-full bg-blue-600 text-white text-lg rounded-xl py-4"
-          onClick={handleAddToCartClick}
-        >
-          Add to Cart
-        </Button>
-      ) : (
-        <div className="flex items-center justify-between bg-black/50 w-full px-6 py-3 rounded-xl">
-          <button
-            className="text-2xl font-bold"
-            onClick={handleDecrease}
-            disabled={currentQty <= 0}
-          >
-            −
-          </button>
+        addToCart({
+          id: product._id || product.id || "",
+          name: product.name,
+          price: product.price,
+          mainImages: [mainImage],
+          stock: product.quantity,
+        });
 
-          <span className="text-lg font-semibold">{currentQty}</span>
-
-          <button
-            className="text-2xl font-bold"
-            onClick={handleAddToCartClick}
-            disabled={currentQty >= maxStock}
-          >
-            +
-          </button>
-        </div>
-      )}
-
-      {/* BUY NOW */}
-      <Button
-        className="w-full bg-green-600 text-white text-lg rounded-xl py-4"
-        onClick={handleBuyNowClick}
+        setShowQuantity(true);
+        toast.success("Added to cart!");
+      }}
+    >
+      {isOut ? "Not Available" : "Add to Cart"}
+    </Button>
+  ) : (
+    <div className="flex items-center justify-between bg-black/50 w-full px-6 py-3 rounded-xl">
+      <button
+        className="text-2xl font-bold"
+        onClick={handleDecrease}
+        disabled={currentQty <= 0}
       >
-        Buy Now
-      </Button>
+        −
+      </button>
+
+      <span className="text-lg font-semibold">{currentQty}</span>
+
+      <button
+        className="text-2xl font-bold"
+        onClick={handleAddToCartClick}
+        disabled={currentQty >= maxStock}
+      >
+        +
+      </button>
+
+      <p className="text-lg font-semibold">
+        ₹{(product.price * currentQty).toFixed(2)}
+      </p>
     </div>
+  )}
+
+  {/* BUY NOW */}
+  <Button
+    className={`w-full text-lg rounded-xl py-4 ${
+      isOut ? "bg-gray-600 text-white cursor-not-allowed" : "bg-green-600 text-white"
+    }`}
+    disabled={isOut}
+    onClick={handleBuyNowClick}
+  >
+    Buy Now
+  </Button>
+</div>
+
 
     {/* DESCRIPTION SECTION */}
     <div className="px-5 mt-10">
