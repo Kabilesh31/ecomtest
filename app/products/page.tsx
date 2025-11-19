@@ -17,7 +17,7 @@ export default function ProductsPage() {
   const [products, setProducts] = useState<any[]>([])
   const { items, addToCart, updateQuantity , removeFromCart} = useCart()
   const [priceRange, setPriceRange] = useState([0, 2000])
-  const [showPriceFilter, setShowPriceFilter] = useState(false)
+  const [showPriceFilter, setShowPriceFilter] = useState(true)
 
   // ✅ Fetch products from backend
   useEffect(() => {
@@ -112,12 +112,12 @@ export default function ProductsPage() {
   
 
   {/* Toggle Button */}
-  <button
+  {/* <button
     onClick={() => setShowPriceFilter(!showPriceFilter)}
     className="w-35 px-3 py-2 bg-primary text-white rounded-lg text-sm"
   >
     {showPriceFilter ? "Hide Filter" : "Show Price Filter"}
-  </button>
+  </button> */}
 
   {/* Collapsible Content */}
   {showPriceFilter && (
@@ -145,7 +145,7 @@ export default function ProductsPage() {
 
       {/* Live selection  */}
       <div className="flex justify-between text-sm mt-2 text-muted-foreground">
-        <span>Selected:</span>
+        <span>Max:</span>
         <span className="font-semibold">₹{priceRange[1]}</span>
       </div>
     </div>

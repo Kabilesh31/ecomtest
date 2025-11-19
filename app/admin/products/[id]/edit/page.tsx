@@ -164,7 +164,7 @@ export default function EditProductPage() {
                 <Input name="price" type="number" placeholder="Price" value={product.price} onChange={handleInputChange} required />
                 <Input name="quantity" type="number" placeholder="Quantity" value={product.quantity} onChange={handleInputChange} required />
                 <div>
-                  <label className="block text-sm font-medium mb-1">Category</label>
+                  {/* <label className="block text-sm font-medium mb-1">Category</label> */}
                   <select
                     name="category"
                     value={product.category}
