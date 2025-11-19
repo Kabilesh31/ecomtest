@@ -19,6 +19,10 @@ export default function AddProductPage() {
     category: "",
     offerProduct: "false", 
     offerPercentage: "",
+    manualRatings: "false", 
+    manualRatingValue: "", 
+    outofstock: "false", 
+    hidereviews: "false", 
   });
 
   const [mainImages, setMainImages] = useState<File[]>([]);
@@ -60,6 +64,15 @@ export default function AddProductPage() {
     if (product.offerProduct === "true") {
       formData.append("offerPercentage", product.offerPercentage);
     }
+
+    formData.append("manualRatings", product.manualRatings);
+    if (product.manualRatings === "true") {
+      formData.append("manualRatingValue", product.manualRatingValue);
+    }
+
+    formData.append("outofstock", product.outofstock);
+    formData.append("hidereviews", product.hidereviews);
+
     // append all selected images
     mainImages.forEach((img) => formData.append("mainImages", img));
 
@@ -82,6 +95,10 @@ export default function AddProductPage() {
           category: "",
           offerProduct: "false",
           offerPercentage: "",
+          manualRatings: "false",
+          manualRatingValue: "",
+          outofstock: "false",
+          hidereviews: "false",
         });
         setMainImages([]);
         setPreviewUrls([]);
@@ -145,9 +162,9 @@ export default function AddProductPage() {
                   required
                 />
                 <div>
-                  <label className="block text-sm font-medium mb-1">
+                  {/* <label className="block text-sm font-medium mb-1">
                     Category
-                  </label>
+                  </label> */}
                   <select
                     name="category"
                     value={product.category}
@@ -165,17 +182,65 @@ export default function AddProductPage() {
                 </div>
               </div>
 
+         <div className="grid md:grid-cols-2 gap-4 items-center">
+            <div>
+              <label className="block text-sm font-medium mb-2">Have Offer?</label>
+              <div className="flex items-center gap-6">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="offerProduct"
+                    value="true"
+                    checked={product.offerProduct === "true"}
+                    onChange={handleInputChange}
+                    className="accent-primary w-4 h-4"
+                  />
+                  <span className="text-sm font-medium text-gray-800">Yes</span>
+                </label>
+
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="offerProduct"
+                    value="false"
+                    checked={product.offerProduct === "false"}
+                    onChange={handleInputChange}
+                    className="accent-primary w-4 h-4"
+                  />
+                  <span className="text-sm font-medium text-gray-800">No</span>
+                </label>
+              </div>
+            </div>
+
+            {product.offerProduct === "true" && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Offer Percentage (%)</label>
+                <Input
+                  name="offerPercentage"
+                  type="number"
+                  value={product.offerPercentage}
+                  onChange={handleInputChange}
+                  placeholder="e.g. 10"
+                  min={1}
+                  max={100}
+                  required
+                />
+                <p className="text-xs text-gray-400 mt-1">Enter a number between 1 and 100.</p>
+              </div>
+            )}
+          </div>
+
+
           <div className="grid md:grid-cols-2 gap-4 items-center">
-           {/* Left column — Have Offer radios */}
           <div>
-            <label className="block text-sm font-medium mb-2">Have Offer?</label>
+            <label className="block text-sm font-medium mb-2">Manual Ratings</label>
             <div className="flex items-center gap-6">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  name="offerProduct"
+                  name="manualRatings"
                   value="true"
-                  checked={product.offerProduct === "true"}
+                  checked={product.manualRatings === "true"}
                   onChange={handleInputChange}
                   className="accent-primary w-4 h-4"
                 />
@@ -185,9 +250,9 @@ export default function AddProductPage() {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="radio"
-                  name="offerProduct"
+                  name="manualRatings"
                   value="false"
-                  checked={product.offerProduct === "false"}
+                  checked={product.manualRatings === "false"}
                   onChange={handleInputChange}
                   className="accent-primary w-4 h-4"
                 />
@@ -196,25 +261,85 @@ export default function AddProductPage() {
             </div>
           </div>
 
-          {/* Right column — Offer Percentage */}
-          {product.offerProduct === "true" && (
+          {product.manualRatings === "true" && (
             <div>
-              <label className="block text-sm font-medium mb-2">Offer Percentage (%)</label>
+              <label className="block text-sm font-medium mb-2">Enter Your Rate</label>
               <Input
-                name="offerPercentage"
+                name="manualRatingValue"
                 type="number"
-                value={product.offerPercentage}
+                value={product.manualRatingValue}
                 onChange={handleInputChange}
-                placeholder="e.g. 10"
-                min={1}
-                max={100}
+                placeholder="e.g. 4.5"
+                min={0}
+                max={5}
+                step={0.1}
                 required
               />
-              <p className="text-xs text-gray-400 mt-1">Enter a number between 1 and 100.</p>
+              <p className="text-xs text-gray-400 mt-1">Rating between 0 and 5.</p>
             </div>
           )}
         </div>
 
+
+            <div className="grid md:grid-cols-2 gap-4 items-center">
+              <div>
+                <label className="block text-sm font-medium mb-2">Mark As Outofstock</label>
+                <div className="flex items-center gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="outofstock"
+                      value="true"
+                      checked={product.outofstock === "true"}
+                      onChange={handleInputChange}
+                      className="accent-primary w-4 h-4"
+                    />
+                    <span className="text-sm font-medium text-gray-800">Yes</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="outofstock"
+                      value="false"
+                      checked={product.outofstock === "false"}
+                      onChange={handleInputChange}
+                      className="accent-primary w-4 h-4"
+                    />
+                    <span className="text-sm font-medium text-gray-800">No</span>
+                  </label>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">Hide Ratings & Reviews</label>
+                <div className="flex items-center gap-6">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="hidereviews"
+                      value="true"
+                      checked={product.hidereviews === "true"}
+                      onChange={handleInputChange}
+                      className="accent-primary w-4 h-4"
+                    />
+                    <span className="text-sm font-medium text-gray-800">Yes</span>
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="hidereviews"
+                      value="false"
+                      checked={product.hidereviews === "false"}
+                      onChange={handleInputChange}
+                      className="accent-primary w-4 h-4"
+                    />
+                    <span className="text-sm font-medium text-gray-800">No</span>
+                  </label>
+                </div>
+              </div>
+            </div>
 
               {/* ✅ Multiple Image Upload */}
               <div>
