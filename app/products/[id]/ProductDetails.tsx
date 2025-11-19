@@ -10,6 +10,9 @@ import { Button } from "@/components/ui/button"
 import { ShoppingCart } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast";
+import { ChevronLeft } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 interface Props {
   product: Product
@@ -27,6 +30,8 @@ export default function ProductDetails({ product }: Props) {
   const [quantity, setQuantity] = useState<number>(1)
     const { items, addToCart, removeFromCart,updateQuantity  } = useCart();
     const [showQuantity, setShowQuantity] = useState(false);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const [currentImage, setCurrentImage] = useState(0);
     
     
 
@@ -36,6 +41,7 @@ export default function ProductDetails({ product }: Props) {
   const existingItem = items.find((i) => i.id === (product._id || product.id));
   const currentQty = existingItem ? existingItem.quantity : 0;
 
+  
   // --- Scroll Animations ---
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -72,8 +78,7 @@ export default function ProductDetails({ product }: Props) {
       name: product.name,
       price: product.price,
       mainImages: [mainImage] // ✅ correct property
-    },
-    1 // quantity to add
+    } // quantity to add
   );
 
   setShowQuantity(true);
@@ -109,8 +114,24 @@ const handleBuyNowClick = (e: React.MouseEvent<HTMLButtonElement>) => {
 
   router.push("/cart"); // Navigate immediately
 };
+const images = product.mainImages ?? [];
 
+const nextImage = () => {
+  if (images.length === 0) return;
+  setCurrentImage((prev) =>
+    prev === images.length - 1 ? 0 : prev + 1
+  );
+};
+
+const prevImage = () => {
+  if (images.length === 0) return;
+  setCurrentImage((prev) =>
+    prev === 0 ? images.length - 1 : prev - 1
+  );
+};
   return (
+    <>
+    <div className="hidden md:block">
     <div ref={containerRef} className="relative bg-black min-h-[400vh]">
       <ClientHeader />
 
@@ -372,5 +393,144 @@ const handleBuyNowClick = (e: React.MouseEvent<HTMLButtonElement>) => {
         </div>
       </div>
     </div>
+    </div>
+    {/* MOBILE VIEW */}
+<div className="block md:hidden min-h-screen w-full bg-black relative text-white">
+  {/* NAV */}
+  <ClientHeader />
+  <div className="absolute top-19 left-4 z-50 flex items-center gap-3">
+<Link href="/products" className="p-2 rounded-full bg-white/10 backdrop-blur-md">
+<ChevronLeft size={24} />
+</Link>
+<p className="text-sm font-medium opacity-90">Back</p>
+</div>
+
+  {/* BG IMAGE FULL SCREEN */}
+  <div
+    className="absolute inset-0 bg-cover bg-center"
+    style={{ backgroundImage: "url(/bg3.jpeg)" }}
+  >
+    <div className="absolute inset-0 bg-black/60" />
+  </div>
+
+  <div className="relative z-10 pb-20">
+
+    {/* PRODUCT IMAGE */}
+{product.mainImages && product.mainImages.length > 0 && (
+  <div className="relative w-full flex justify-center pt-10">
+
+    <button
+      onClick={prevImage}
+      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20"
+    >
+      ‹
+    </button>
+
+    <img
+      src={product.mainImages[currentImage]}
+      alt={product.name}
+      className="w-56 h-56 object-contain drop-shadow-xl transition-all duration-300"
+    />
+
+    <button
+      onClick={nextImage}
+      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20"
+    >
+      ›
+    </button>
+
+  </div>
+)}
+
+
+
+    {/* PRODUCT NAME + PRICE */}
+    <h1 className="text-center text-2xl font-bold mt-4">{product.name}</h1>
+
+    <p className="text-center text-xl font-semibold mt-1">
+      ₹{product.price}
+    </p>
+
+    {/* CART BUTTONS */}
+    <div className="flex flex-col items-center gap-3 px-5 mt-6">
+
+      {/* Add to Cart / Quantity */}
+      {!showQuantity ? (
+        <Button
+          className="w-full bg-blue-600 text-white text-lg rounded-xl py-4"
+          onClick={handleAddToCartClick}
+        >
+          Add to Cart
+        </Button>
+      ) : (
+        <div className="flex items-center justify-between bg-black/50 w-full px-6 py-3 rounded-xl">
+          <button
+            className="text-2xl font-bold"
+            onClick={handleDecrease}
+            disabled={currentQty <= 0}
+          >
+            −
+          </button>
+
+          <span className="text-lg font-semibold">{currentQty}</span>
+
+          <button
+            className="text-2xl font-bold"
+            onClick={handleAddToCartClick}
+            disabled={currentQty >= maxStock}
+          >
+            +
+          </button>
+        </div>
+      )}
+
+      {/* BUY NOW */}
+      <Button
+        className="w-full bg-green-600 text-white text-lg rounded-xl py-4"
+        onClick={handleBuyNowClick}
+      >
+        Buy Now
+      </Button>
+    </div>
+
+    {/* DESCRIPTION SECTION */}
+    <div className="px-5 mt-10">
+      <h2 className="text-xl font-bold mb-4">Description</h2>
+
+      {product.descriptions?.map((desc, i) => (
+        <motion.p
+          key={i}
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5, delay: i * 0.1 }}
+          className="bg-black/50 p-4 rounded-xl mb-3 leading-relaxed text-sm"
+        >
+          {desc}
+        </motion.p>
+      ))}
+    </div>
+
+    {/* FEATURES SECTION */}
+    <div className="px-5 mt-10 mb-10">
+      <h2 className="text-xl font-bold mb-4">Features</h2>
+
+      {product.features?.map((feature, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, x: i % 2 === 0 ? -40 : 40 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true, margin: "-50px" }}
+          transition={{ duration: 0.5, delay: i * 0.15 }}
+          className="bg-black/50 p-4 rounded-xl mb-3 leading-relaxed text-sm"
+        >
+          {typeof feature === "string" ? feature : feature.title}
+        </motion.div>
+      ))}
+    </div>
+  </div>
+</div>
+
+    </>
   )
 }
