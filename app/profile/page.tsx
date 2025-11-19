@@ -86,8 +86,7 @@ if (isLoading || !localUser) {
         <div className="space-y-3">
           <p><span className="font-medium">Name:</span> {localUser.name}</p>
           <p><span className="font-medium">Email:</span> {localUser.email}</p>
-          <p><span className="font-medium">Role:</span> {localUser.role}</p>
-          <p><span className="font-medium">User ID:</span> {localUser._id}</p>
+    
 
           {isEditing ? (
             <>
