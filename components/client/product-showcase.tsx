@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { useCart, CartItem } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight, ShoppingCart, Minus, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, ShoppingCart, Minus, Plus ,Star} from "lucide-react";
 import axios from "axios";
 import { toast } from "react-hot-toast";
 import { ImageCarousel } from "./ImageCarousel";
@@ -193,6 +193,9 @@ export function ProductShowcase() {
                   product.offerProduct === true || product.offerProduct === "true"
                     ? Number((product.price - (product.price * product.offerPercentage) / 100).toFixed(0))
                     : product.price;
+                    const isOut =
+  product.outofstock === true ||
+  Number(product.quantity) === 0;
 
                 return (
                   <Card
@@ -200,7 +203,11 @@ export function ProductShowcase() {
                     className="flex-shrink-0 w-72 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer snap-start"
                   >
                     <Link href={`/products/${product._id}`}>
-                      <div className="relative h-48 bg-muted overflow-hidden group">
+                      <div
+  className={`relative h-48 bg-muted overflow-hidden group ${
+    isOut ? "opacity-50 grayscale" : ""
+  }`}
+>
                         {product.mainImages && product.mainImages.length > 0 ? (
                           <ImageCarousel images={product.mainImages} />
                         ) : (
@@ -216,6 +223,11 @@ export function ProductShowcase() {
                             {stockAvailable} left
                           </div>
                         )}
+                        {isOut && (
+  <div className="absolute bottom-2 right-2 bg-black/80 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-md">
+    OUT OF STOCK
+  </div>
+)}
                       </div>
                     </Link>
 
@@ -227,12 +239,52 @@ export function ProductShowcase() {
                         <h3 className="font-semibold text-foreground line-clamp-2 mt-1">
                           {product.name}
                         </h3>
+                        <div className="flex items-center gap-1">
+  {product.manualRatings ? (
+    // Rule 1: Manual rating ON
+    <Button className="flex items-center gap-1">
+      {product.manualRatingValue}
+      <Star size={14} className="fill-yellow-500 text-yellow-500" />
+    </Button>
+  ) : product.hidereviews ? (
+    // Rule 2: Manual OFF, hide reviews
+    <span className="text-black text-sm">No Ratings</span>
+  ) : product.rating ? (
+    // Rule 3: Manual OFF, reviews visible, show rating
+    <Button className="flex items-center gap-1">
+      {product.rating}
+      <Star size={14} className="fill-yellow-500 text-yellow-500" />
+    </Button>
+  ) : (
+    // Fallback: no ratings
+    <span className="text-black text-sm">No Ratings</span>
+  )}
+</div>
+
                       </div>
 
                       <div className="flex items-center justify-between pt-2 border-t border-border">
-                        <span className="text-lg font-bold text-foreground">
-                          ₹{finalPrice.toLocaleString("en-IN")}
-                        </span>
+                        <div className="flex flex-col">
+                              {product.offerProduct ? (
+                                <div className="flex items-center gap-2">
+                                  <span className="text-green-600 font-semibold text-lg">
+                                    ₹{finalPrice}
+                                  </span>
+
+                                  <span className="text-gray-400 line-through text-sm">
+                                    ₹{product.price}
+                                  </span>
+
+                                  <span className="text-red-500 text-xs font-medium bg-red-100 px-2 py-0.5 rounded-full">
+                                    {product.offerPercentage}% OFF
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-lg font-bold">
+                                  ₹{product.price}
+                                </span>
+                              )}
+                            </div>
 
                         {quantityInCart > 0 ? (
                           <div className="flex items-center gap-2">
@@ -268,26 +320,33 @@ export function ProductShowcase() {
                           </div>
                         ) : (
                           <Button
-                            size="sm"
-                            className="bg-primary hover:bg-primary/90 text-primary-foreground gap-3 px-4 py-2 text-sm"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              if (stockAvailable > 0) {
-                                addToCart({
-                                  id: product._id,
-                                  name: product.name,
-                                  price: finalPrice,
-                                  mainImages: product.mainImages,
-                                  stock: stockAvailable,
-                                });
-                              } else {
-                                toast.error("Out of stock!");
-                              }
-                            }}
-                          >
-                            <ShoppingCart className="w-5 h-5" />
-                            <span className="hidden sm:inline">Add</span>
-                          </Button>
+  size="sm"
+  disabled={isOut}
+  className={`gap-3 px-4 py-2 text-sm ${
+    isOut
+      ? "bg-gray-400 cursor-not-allowed text-white"
+      : "bg-primary hover:bg-primary/90 text-primary-foreground"
+  }`}
+  onClick={(e) => {
+    e.preventDefault();
+    if (isOut) {
+      return toast.error("Product is out of stock!");
+    }
+    addToCart({
+      id: product._id,
+      name: product.name,
+      price: finalPrice,
+      mainImages: product.mainImages,
+      stock: stockAvailable,
+    });
+  }}
+>
+  <ShoppingCart className="w-5 h-5" />
+  <span className="hidden sm:inline">
+    {isOut ? "Add" : "Add"}
+  </span>
+</Button>
+
                         )}
                       </div>
                     </div>

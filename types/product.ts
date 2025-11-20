@@ -15,4 +15,5 @@ export interface Product {
    descriptions: string[] ;
   descriptionItems?: Feature[];
   features?: Feature[];
+  outofstock: boolean;
 }
