@@ -4,6 +4,7 @@ export interface PurchasedProduct {
   name: string;
   price: number;
   quantity: number;
+  
 }
 
 export interface CustomerDetails {

@@ -492,6 +492,7 @@ const prevImage = () => {
 
     {/* PRODUCT NAME + PRICE */}
     <h1 className="text-center text-2xl font-bold mt-4">{product.name}</h1>
+    
 
     <p className="text-center text-xl font-semibold mt-1">
       ₹{product.price}
@@ -560,6 +561,7 @@ const prevImage = () => {
   >
     Buy Now
   </Button>
+  
 </div>
 
 

@@ -260,6 +260,9 @@ export function ProductShowcase() {
     <span className="text-black text-sm">No Ratings</span>
   )}
 </div>
+<p className="text-sm text-green-600 font-medium">
+  {product.unitsSold} Sold
+</p>
 
                       </div>
 

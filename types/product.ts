@@ -6,7 +6,8 @@ export interface Feature {
 
 export interface Product {
   _id?: string;
-  id?: string | number; // support both
+  id?: string | number; 
+  // support both
   name: string;
   price: number;
   mainImages?: string[];
@@ -16,4 +17,5 @@ export interface Product {
   descriptionItems?: Feature[];
   features?: Feature[];
   outofstock: boolean;
+  unitsSold?: number;
 }

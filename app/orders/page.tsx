@@ -20,6 +20,7 @@ export default function OrdersPage() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewOrder, setReviewOrder] = useState<Order | null>(null);
+  const [productImages, setProductImages] = useState<Record<string, string | null>>({});
   const [reviewData, setReviewData] = useState(
     {} as { [productId: string]: { rating: number; review: string } }
   );
@@ -38,7 +39,14 @@ export default function OrdersPage() {
       console.error("Failed to fetch orders:", err);
     }
   };
-
+const getProductImage = async (productId: string): Promise<string | null> => {
+  try {
+    const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/products/${productId}`);
+    return res.data?.mainImages?.[0] || null;
+  } catch (err) {
+    return null;
+  }
+};
   useEffect(() => {
     if (user && orderDatas.length === 0) {
       getOrdersByAdmin();
@@ -49,6 +57,21 @@ export default function OrdersPage() {
     setSelectedOrder(order);
     setShowOrderDetails(true);
   };
+useEffect(() => {
+  const loadImages = async () => {
+    if (!selectedOrder) return;
+
+    const results: Record<string, string | null> = {};
+
+    for (const item of selectedOrder.purchasedProducts) {
+      results[item.productId] = await getProductImage(item.productId);
+    }
+
+    setProductImages(results);
+  };
+
+  loadImages();
+}, [selectedOrder]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -415,7 +438,15 @@ export default function OrdersPage() {
                       <tbody>
                         {selectedOrder.purchasedProducts.map((p, index) => (
                           <tr key={index} className="border-b">
-                            <td className="px-3 py-2">{p.name}</td>
+                            <td className="px-3 py-2 flex items-center gap-3">
+  <img
+  src={productImages[p.productId] || "/placeholder.png"}
+  alt={p.name}
+  className="w-12 h-12 object-cover rounded-md border"
+/>
+  {p.name}
+</td>
+
                             <td className="px-3 py-2">{p.quantity}</td>
                             <td className="px-3 py-2">₹{p.price}</td>
                             <td className="px-3 py-2 font-semibold">

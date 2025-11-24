@@ -38,6 +38,7 @@ export default function OrdersPage() {
   const [orderDatas, setOrderDatas] = useState<Order[]>([]);
   const [statusFilter, setStatusFilter] = useState<"All" | "Pending" | "Delivered">("All");
   const [searchTerm, setSearchTerm] = useState("");
+  const [allProducts, setAllProducts] = useState<any[]>([]);
 const [currentPage, setCurrentPage] = useState(1);
 const itemsPerPage = 10
 
@@ -56,6 +57,16 @@ const itemsPerPage = 10
       console.error("Failed to fetch orders:", err);
     }
   };
+useEffect(() => {
+  axios.get("http://localhost:5000/api/products")
+    .then(res => {
+      const products = Array.isArray(res.data) ? res.data : res.data.data;
+      setAllProducts(products || []);
+      console.log("Loaded products:", products);
+    })
+    .catch(err => console.error("Error loading products:", err));
+}, []);
+
 
   useEffect(() => {
     if (user) getOrdersByAdmin();
@@ -353,23 +364,47 @@ const handleDeleteOrder = async (orderId: string) => {
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm">
                       <thead className="bg-muted/70 border-b border-border">
-                        <tr>
-                          <th className="px-4 py-2 text-left font-medium">Product Name</th>
-                          <th className="px-4 py-2 text-left font-medium">Qty</th>
-                          <th className="px-4 py-2 text-left font-medium">Price</th>
-                          <th className="px-4 py-2 text-left font-medium">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedOrder.purchasedProducts.map((product, index) => (
-                          <tr key={index} className="border-b hover:bg-muted/40">
-                            <td className="px-4 py-2 font-medium">{product.name}</td>
-                            <td className="px-4 py-2">{product.quantity}</td>
-                            <td className="px-4 py-2">₹{product.price}</td>
-                            <td className="px-4 py-2 font-semibold">₹{product.price * product.quantity}</td>
-                          </tr>
-                        ))}
-                      </tbody>
+  <tr>
+    <th className="px-4 py-2 text-left font-medium">Image</th>
+    <th className="px-4 py-2 text-left font-medium">Product Name</th>
+    <th className="px-4 py-2 text-left font-medium">Qty</th>
+    <th className="px-4 py-2 text-left font-medium">Price</th>
+    <th className="px-4 py-2 text-left font-medium">Total</th>
+  </tr>
+</thead>
+
+<tbody>
+  {selectedOrder?.purchasedProducts?.map((product, index) => {
+    console.log("All Products:", allProducts)
+console.log("Order productId:", product.productId)
+    const fullProduct = allProducts?.find(
+  (p) => String(p._id) === String(product.productId)
+  
+);
+
+    return (
+      <tr key={index} className="border-b hover:bg-muted/40">
+        <td className="px-4 py-2">
+          <img
+            src={fullProduct?.mainImages?.[0] || "/placeholder.png"}
+            alt={product.name}
+            className="w-12 h-12 object-cover rounded border"
+          />
+        </td>
+
+        <td className="px-4 py-2 font-medium">{product.name}</td>
+        <td className="px-4 py-2">{product.quantity}</td>
+        <td className="px-4 py-2">₹{product.price}</td>
+
+        <td className="px-4 py-2 font-semibold">
+          ₹{product.price * product.quantity}
+        </td>
+      </tr>
+    );
+  })}
+</tbody>
+
+
                       <tfoot>
                         <tr className="bg-muted/50 font-semibold">
                           <td colSpan={3} className="px-4 py-3 text-right">Grand Total</td>

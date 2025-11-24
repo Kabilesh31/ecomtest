@@ -28,6 +28,12 @@ export default function EditProductPage() {
   const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [descriptions, setDescriptions] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>([]);
+  const [hideReviews, setHideReviews] = useState(false);
+const [manualRatings, setManualRatings] = useState(false);
+const [manualRatingValue, setManualRatingValue] = useState(0);
+const [offerProduct, setOfferProduct] = useState(false);
+const [offerPercentage, setOfferPercentage] = useState(0);
+
 
   const categories = ["Devine", "Cosmetics", "Accessories"];
 
@@ -51,6 +57,11 @@ export default function EditProductPage() {
         setExistingImages(data.mainImages || []);
         setDescriptions(data.descriptions || []);
         setFeatures(data.features || []);
+        setHideReviews(data.hidereviews ?? false);
+setManualRatings(data.manualRatings ?? false);
+setManualRatingValue(data.manualRatingValue ?? 0);
+setOfferProduct(data.offerProduct ?? false);
+setOfferPercentage(data.offerPercentage ?? 0);
       } catch (error) {
         console.error("Failed to load product", error);
         toast.error("Failed to load product details.");
@@ -101,7 +112,35 @@ export default function EditProductPage() {
   const removeExistingImage = (url: string) => {
     setExistingImages((prev) => prev.filter((img) => img !== url));
   };
+// ✔ Manual Rating Toggle Logic
+const handleManualRatingToggle = () => {
+  const newState = !manualRatings;
+  setManualRatings(newState);
 
+  if (newState === true) {
+    // If manual rating ON → hide reviews must be ON
+    setHideReviews(true);
+  }
+};
+
+// ✔ Hide Reviews Toggle Logic
+const handleHideReviewToggle = () => {
+  const newState = !hideReviews;
+  setHideReviews(newState);
+
+  if (newState === false) {
+    // If hide reviews OFF → manual rating must be OFF
+    setManualRatings(false);
+  }
+};
+const handleOfferToggle = () => {
+  const newState = !offerProduct;
+  setOfferProduct(newState);
+
+  if (!newState) {
+    setOfferPercentage(0);
+  }
+};
   // 🧩 Submit form
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +153,11 @@ export default function EditProductPage() {
     formData.append("descriptions", JSON.stringify(descriptions));
     formData.append("features", JSON.stringify(features));
     formData.append("existingImages", JSON.stringify(existingImages));
+    formData.append("hidereviews", String(hideReviews));
+formData.append("manualRatings", String(manualRatings));
+formData.append("manualRatingValue", String(manualRatingValue));
+formData.append("offerProduct", String(offerProduct));
+formData.append("offerPercentage", String(offerPercentage));
 
     // append new images
     mainImages.forEach((file) => {
@@ -141,6 +185,53 @@ export default function EditProductPage() {
 
   if (loading)
     return <p className="text-center py-10 text-gray-500">Loading product...</p>;
+type ToggleRowProps = {
+  label: string;
+  checked: boolean;
+  onToggle: () => void;
+};
+  const ToggleRow: React.FC<ToggleRowProps> = ({ label, checked, onToggle }) => {
+  return (
+    <div className="flex items-center justify-between bg-white border rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-all">
+      <p className="text-sm font-medium text-gray-800">{label}</p>
+
+      <label className="relative inline-flex items-center cursor-pointer select-none">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onToggle}
+          className="sr-only peer"
+        />
+
+        <div
+          className="
+            w-14 h-7 
+            rounded-full 
+            shadow-inner 
+            transition-all 
+            peer-checked:bg-green-500 
+            bg-gray-300 
+            relative
+          "
+        >
+          <div
+            className="
+              absolute top-0.5 left-0.5 
+              w-6 h-6 
+              bg-white 
+              rounded-full 
+              shadow 
+              transition-all duration-300 
+              peer-checked:translate-x-7
+            "
+          ></div>
+        </div>
+      </label>
+    </div>
+  );
+};
+
+
 
   return (
     <AdminLayout>
@@ -181,6 +272,66 @@ export default function EditProductPage() {
                   </select>
                 </div>
               </div>
+              {/* ⚡ Review / Rating Toggles */}
+{/* ⚡ Review / Rating Toggles */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-4 rounded-lg bg-gray-50">
+
+  <ToggleRow
+    label="Hide Reviews"
+    checked={hideReviews}
+    onToggle={handleHideReviewToggle}
+  />
+
+  <ToggleRow
+    label="Manual Rating"
+    checked={manualRatings}
+    onToggle={handleManualRatingToggle}
+  />
+
+  {manualRatings && (
+    <div className="col-span-2">
+      <label className="block text-sm font-medium mb-1">Rating Value (0–5)</label>
+      <Input
+        type="number"
+        min={0}
+        max={5}
+        value={manualRatingValue}
+        onChange={(e) => setManualRatingValue(Number(e.target.value))}
+        className="w-32"
+      />
+    </div>
+  )}
+
+</div>
+
+{/* ⚡ Offer Section */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-4 rounded-lg bg-gray-50">
+
+  <ToggleRow
+    label="Offer Product"
+    checked={offerProduct}
+    onToggle={handleOfferToggle}
+  />
+
+  {offerProduct && (
+    <div className="col-span-2">
+      <label className="block text-sm font-medium mb-1">
+        Offer Percentage (1–99)
+      </label>
+
+      <Input
+        type="number"
+        min={1}
+        max={99}
+        value={offerPercentage}
+        onChange={(e) => setOfferPercentage(Number(e.target.value))}
+        className="w-32"
+        required={offerProduct}
+      />
+    </div>
+  )}
+</div>
+
 
               {/* 🧩 Main Images */}
               <div>
