@@ -10,7 +10,9 @@ import { Button } from "@/components/ui/button"
 import { ShoppingCart } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast";
+import { useParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { useAuth } from "@/context/auth-context";
 import Image from "next/image";
 import Link from "next/link";
 import axios from "axios";
@@ -32,7 +34,10 @@ export default function ProductDetails({ product }: Props) {
     const [showQuantity, setShowQuantity] = useState(false);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [currentImage, setCurrentImage] = useState(0);
+    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
     const effectRan = useRef(false);
+    const { user } = useAuth();
+    const hasUpdatedClick = useRef(false);
     
     
     
@@ -44,6 +49,8 @@ export default function ProductDetails({ product }: Props) {
   // Find if product already in cart
   const existingItem = items.find((i) => i.id === (product._id || product.id));
   const currentQty = existingItem ? existingItem.quantity : 0;
+
+  const { id } = useParams();
 
   
   // --- Scroll Animations ---
@@ -66,22 +73,49 @@ export default function ProductDetails({ product }: Props) {
    const mainImage = product.mainImages?.[0] || "/placeholder.jpg"
 
 
-  useEffect(() => {
-  if (effectRan.current) return;
+useEffect(() => {
+  // ❌ Do NOT count for admin
+  if (user?.role === "admin") {
+    console.log("Admin detected → no click update");
+    return;
+  }
+
+  // ❌ Prevent double execution
+  if (hasUpdatedClick.current) return;
+
+  if (!product?._id) return;
 
   const updateClick = async () => {
     try {
       await axios.put(`http://localhost:5000/api/products/click/${product._id}`);
-      console.log("Click count updated for product:", product._id);
+      console.log("Click count updated:", product._id);
     } catch (error) {
-      console.error("Failed to update product click:", error);
+      console.error("Click update failed:", error);
     }
   };
 
   updateClick();
+  hasUpdatedClick.current = true;
+}, [product?._id, user?.role]);
 
-  effectRan.current = true;
-}, [product._id]);
+useEffect(() => {
+  if (product?.category) {
+    axios
+      .get(`http://localhost:5000/api/products`)
+      .then((res) => {
+        const allProducts = res.data;
+
+        const related = allProducts.filter((item: Product) =>
+          item.category === product.category && item._id !== product._id
+        );
+
+        setRelatedProducts(related);
+      })
+      .catch((err) => console.log(err));
+  }
+}, [product]);
+
+
   // --- Cart functions ---
   const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
   e.preventDefault();
@@ -351,95 +385,134 @@ const prevImage = () => {
 
 
       {/* --- SECTION 3: BUY SECTION --- */}
-      <div
-        className="relative h-screen w-full"
-        style={{
-          backgroundImage: "url(/bg3.jpeg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
+     <div
+  className="relative h-screen w-full"
+  style={{
+    backgroundImage: "url(/bg3.jpeg)",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundAttachment: "fixed",
+  }}
+>
+  <div className="absolute inset-0 bg-black/35" />
+
+  {/* Product Name */}
+  <div
+    className={`absolute top-35 left-1/2 -translate-x-1/2 z-40 text-gray-200 text-3xl md:text-6xl font-bold text-center select-none ${lora.className}`}
+  >
+    {product.name}
+  </div>
+
+  {/* Right Side Buttons */}
+  <div className="absolute top-1/2 right-40 -translate-y-1/3 flex flex-col items-end gap-5 z-50 text-white">
+
+    {/* Add to Cart */}
+    {!showQuantity && (
+      <Button
+        size="sm"
+        disabled={isOut}
+        className={`gap-3 px-10 py-6 text-lg ${
+          isOut
+            ? "px-8 py-6 bg-gray-600 hover:bg-gray-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
+            : "bg-primary hover:bg-primary/90 text-primary-foreground"
+        }`}
+        onClick={(e) => {
+          e.preventDefault();
+          if (isOut) return;
+
+          addToCart({
+            id: product._id ?? "",
+            name: product.name,
+            price: product.price,
+            mainImages: product.mainImages,
+            stock: product.quantity,
+          });
+
+          setShowQuantity(true);
         }}
       >
-        <div className="absolute inset-0 bg-black/35" />
+        <ShoppingCart className="w-5 h-5" />
+        <span className="hidden sm:inline">
+          {isOut ? "Not available" : "Add to Cart"}
+        </span>
+      </Button>
+    )}
 
-        <div
-          className={`absolute top-35 left-1/2 -translate-x-1/2 z-40 text-gray-200 text-3xl md:text-6xl font-bold text-center select-none ${lora.className}`}
+    {/* Quantity UI */}
+    {showQuantity && (
+      <div className="flex items-center gap-8 bg-black/60 px-6 py-4 rounded-2xl shadow-lg">
+        <button
+          onClick={handleDecrease}
+          className="px-3 text-xl font-bold"
+          disabled={currentQty <= 0}
         >
-          {product.name}
-        </div>
+          −
+        </button>
+        <span className="px-4 text-lg font-medium">{currentQty}</span>
+        <button
+          onClick={handleAddToCartClick}
+          className="px-3 text-xl font-bold"
+          disabled={currentQty >= maxStock}
+        >
+          +
+        </button>
 
-        <div className="absolute top-1/2 right-50 -translate-y-1/2 flex flex-col items-end gap-5 z-50 text-white">
-          {!showQuantity && (
- <Button
-  size="sm"
-  disabled={isOut}
-  className={`gap-3 px-10 py-6 text-lg ${
-    isOut
-      ? "px-8 py-6 bg-gray-600 hover:bg-grayn-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
-      : "bg-primary hover:bg-primary/90 text-primary-foreground"
-  }`}
-  onClick={(e) => {
-  e.preventDefault();
-  if (isOut) return;
+        <p className="text-xl font-semibold">
+          ₹{(product.price * currentQty).toFixed(2)}
+        </p>
+      </div>
+    )}
 
-  addToCart({
-    id: product._id ?? "",
-    name: product.name,
-    price: product.price,
-    mainImages: product.mainImages,
-    stock: product.quantity,
-  });
-
-  setShowQuantity(true);      // ✅ SHOW QUANTITY UI
-}}
->
-  <ShoppingCart className="w-5 h-5" />
-  <span className="hidden sm:inline">
-    {isOut ? " not available" : "Add to Cart"}
-  </span>
-</Button>
-
-)}
-
-{showQuantity && (
-  <div className="flex items-center gap-8 bg-black/60 px-6 py-4 rounded-2xl shadow-lg">
-    <button
-      onClick={handleDecrease}
-      className="px-3 text-xl font-bold"
-      disabled={currentQty <= 0}
+    {/* Buy Now */}
+    <Button
+      size="lg"
+      disabled={isOut}
+      className="px-6 py-4 bg-green-600 hover:bg-green-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
+      onClick={handleBuyNowClick}
     >
-      −
-    </button>
-    <span className="px-4 text-lg font-medium">{currentQty}</span>
-    <button
-      onClick={handleAddToCartClick}
-      className="px-3 text-xl font-bold"
-      disabled={currentQty >= maxStock}
-    >
-      +
-    </button>
+      <ShoppingCart className="w-5 h-5 mr-2" />
+      Buy Now
+    </Button>
 
-    <p className="text-xl font-semibold">
-      ₹{(product.price * currentQty).toFixed(2)}
-    </p>
   </div>
-)}
 
+  {/* RELATED PRODUCTS — BOTTOM RIGHT */}
+  {relatedProducts.length > 0 && (
+    <div className="absolute bottom-6 left-6 z-50 w-[300px] md:w-[480px] bg-black/40 backdrop-blur-lg 
+                    border border-white/20 rounded-2xl p-5 shadow-xl">
+      <h2 className="text-xl font-bold text-white mb-4">Related Products</h2>
 
-          <Button
-    size="lg"
-    disabled={isOut} 
-    
-    className="px-6 py-4 bg-green-600 hover:bg-green-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
-    onClick={handleBuyNowClick}
-  >
-    <ShoppingCart className="w-5 h-5 mr-2" />
-    Buy Now
-  </Button>
-        </div>
+      <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+        {relatedProducts.map((item) => (
+          <div
+            key={item._id}
+            onClick={() => router.push(`/products/${item._id}`)}
+            className="min-w-[130px] cursor-pointer p-3 bg-white/10 backdrop-blur-md 
+                       border border-white/10 rounded-xl hover:shadow-lg hover:scale-105 
+                       transition duration-300"
+          >
+            <img
+              src={item.mainImages?.[0]}
+              alt={item.name}
+              className="w-full h-24 object-cover rounded-xl"
+            />
+            <h3 className="mt-2 font-semibold text-white text-sm">
+              {item.name}
+            </h3>
+            <p className="text-red-400 font-semibold text-sm">
+              ₹{item.price}
+            </p>
+          </div>
+        ))}
       </div>
     </div>
+  )}
+
+</div>
+
     </div>
+    </div>
+    
     {/* MOBILE VIEW */}
 <div className="block md:hidden min-h-screen w-full bg-black relative text-white">
   {/* NAV */}
