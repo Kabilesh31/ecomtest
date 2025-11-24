@@ -25,6 +25,7 @@ interface Product {
   hidereviews: boolean
   manualRatings?: boolean;
   manualRatingValue?: number;
+  noOfClicks?: number;
 }
 
 export default function ProductsPage() {
@@ -177,11 +178,12 @@ const toggleHideReviews = async (id: string, current: boolean) => {
                       <th className="px-6 py-3 text-left text-sm font-semibold">Category</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Price</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Quantity</th>
+                      <th className="px-6 py-3 text-left text-sm font-semibold">Total Clicks</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Stock</th>
                       <th className="px-6 py-3 text-left text-sm font-semibold">Created At</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">Ratings</th>
+                      {/* <th className="px-6 py-3 text-left text-sm font-semibold">Ratings</th> */}
                       <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">Manual Ratings</th>
+                      {/* <th className="px-6 py-3 text-left text-sm font-semibold">Manual Ratings</th> */}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
@@ -208,7 +210,10 @@ const toggleHideReviews = async (id: string, current: boolean) => {
       <td className="text-lg px-6 py-2 font-medium">{product.name}</td>
       <td className="px-6 py-2 text-sm text-muted-foreground">{product.category}</td>
       <td className="px-6 py-2 text-sm font-semibold">₹{product.price}</td>
-      <td className="px-6 py-2 text-sm font-semibold">{product.quantity}</td>
+      <td className="px-6 py-2 text-sm font-semibold text-center">{product.quantity}</td>
+      <td className="px-6 py-2 text-sm font-semibold text-center">
+  {product?.noOfClicks ?? 0}
+</td>
      <td className="px-6 py-2">
   <Button
     onClick={() => toggleStockStatus(product._id, product.outofstock)}
@@ -230,7 +235,7 @@ const toggleHideReviews = async (id: string, current: boolean) => {
 
 
       <td className="px-6 py-2 text-sm font-semibold">{product?.createdAt.slice(0, 10).split("-").reverse().join("-")}</td>
-      <td className="px-6 py-2">
+      {/* <td className="px-6 py-2">
   <Button
     onClick={() => toggleHideReviews(product._id, product.hidereviews)}
     disabled={updating === product._id}
@@ -247,7 +252,7 @@ const toggleHideReviews = async (id: string, current: boolean) => {
       `}
     />
   </Button>
-</td>
+</td> */}
 
       <td className="px-6 py-2">
         <div className="flex items-center gap-2">
@@ -266,7 +271,7 @@ const toggleHideReviews = async (id: string, current: boolean) => {
           </Button>
         </div>
       </td>
-      <td className="px-6 py-2">
+      {/* <td className="px-6 py-2">
   <Button
     onClick={async () => {
       setUpdating(product._id);
@@ -312,7 +317,7 @@ const toggleHideReviews = async (id: string, current: boolean) => {
       </span>
     )}
   </Button>
-</td>
+</td> */}
 
 
     </tr>
