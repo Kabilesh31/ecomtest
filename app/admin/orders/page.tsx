@@ -407,8 +407,8 @@ console.log("Order productId:", product.productId)
 
                       <tfoot>
                         <tr className="bg-muted/50 font-semibold">
-                          <td colSpan={3} className="px-4 py-3 text-right">Grand Total</td>
-                          <td className="px-4 py-3">₹{selectedOrder.totalAmount}</td>
+                          <td colSpan={4} className="px-4 py-3 text-right">Grand Total</td>
+                          <td className="px-4 py-3 ml-50">₹{selectedOrder.totalAmount}</td>
                         </tr>
                       </tfoot>
                     </table>

@@ -331,53 +331,60 @@ useEffect(() => {
 
           {/* ================== DESKTOP TABLE VIEW ================== */}
           <Card className="p-0 overflow-hidden hidden md:block">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm min-w-[650px]">
-                <thead className="bg-gray-100">
-                  <tr>
-                    <th className="px-4 py-3">Payment ID</th>
-                    <th className="px-4 py-3">Date</th>
-                    <th className="px-4 py-3">Status</th>
-                    <th className="px-4 py-3 text-right">Total</th>
-                    <th className="px-4 py-3 text-center">View</th>
-                    <th className="px-4 py-3 text-center">Review</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {orderDatas.map((order) => (
-                    <tr key={order._id} className="border-b hover:bg-gray-50">
-                      <td className="px-4 py-4">{order.razorpayPaymentId}</td>
-                      <td className="px-4 py-4">
-                        {formatDate(order.createdAt)}
-                      </td>
-                      <td className="px-4 py-4">
-                        <Badge className={getStatusColor(order.status)}>
-                          {order.status}
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-4 text-right font-semibold">
-                        ₹{order.totalAmount}
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <Button variant="outline" size="sm" onClick={() => handleViewDetails(order)}>
-                          <Eye size={14} />
-                        </Button>
-                      </td>
-                      <td className="px-4 py-4 text-center">
-                        <Button variant="outline" size="sm" onClick={() => {
-                          setReviewOrder(order);
-                          setShowReviewModal(true);
-                        }}>
-                          <Star size={14} />
-                          Review
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+  <div className="overflow-x-auto">
+    <table className="w-full text-sm min-w-[650px] table-fixed text-center">
+      <thead className="bg-gray-100">
+        <tr>
+          <th className="px-4 py-3">Payment ID</th>
+          <th className="px-4 py-3">Date</th>
+          <th className="px-4 py-3">Status</th>
+          <th className="px-4 py-3">Total</th>
+          <th className="px-4 py-3">View</th>
+          <th className="px-4 py-3">Review</th>
+        </tr>
+      </thead>
+      <tbody>
+        {orderDatas.map((order) => (
+          <tr key={order._id} className="border-b hover:bg-gray-50">
+            <td className="px-4 py-4">{order.razorpayPaymentId}</td>
+            <td className="px-4 py-4">{formatDate(order.createdAt)}</td>
+            <td className="px-4 py-4">
+              <Badge className={getStatusColor(order.status)}>
+                {order.status}
+              </Badge>
+            </td>
+            <td className="px-4 py-4 font-semibold">₹{order.totalAmount}</td>
+            <td className="px-4 py-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-2 py-1"
+                onClick={() => handleViewDetails(order)}
+              >
+                <Eye size={14} />
+              </Button>
+            </td>
+            <td className="px-4 py-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="px-2 py-1"
+                onClick={() => {
+                  setReviewOrder(order);
+                  setShowReviewModal(true);
+                }}
+              >
+                <Star size={14} />
+                Review
+              </Button>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+</Card>
+
 
           {/* If no orders */}
           {orderDatas.length === 0 && (
@@ -426,46 +433,52 @@ useEffect(() => {
                     <h3 className="font-semibold bg-muted p-3">
                       Purchased Products
                     </h3>
-                    <table className="w-full text-sm">
-                      <thead className="bg-muted border-b">
-                        <tr>
-                          <th className="px-3 py-2">Product</th>
-                          <th className="px-3 py-2">Qty</th>
-                          <th className="px-3 py-2">Price</th>
-                          <th className="px-3 py-2">Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {selectedOrder.purchasedProducts.map((p, index) => (
-                          <tr key={index} className="border-b">
-                            <td className="px-3 py-2 flex items-center gap-3">
-  <img
-  src={productImages[p.productId] || "/placeholder.png"}
-  alt={p.name}
-  className="w-12 h-12 object-cover rounded-md border"
-/>
-  {p.name}
-</td>
+                  <table className="w-full text-sm table-auto">
+  <thead className="bg-muted border-b">
+    <tr>
+      <th className="px-3 py-3 text-left">Product</th>
+      <th className="px-3 py-2 text-left">Qty</th>
+      <th className="px-3 py-2 text-left">Price</th>
+      <th className="px-3 py-2 text-left">Total</th>
+    </tr>
+  </thead>
 
-                            <td className="px-3 py-2">{p.quantity}</td>
-                            <td className="px-3 py-2">₹{p.price}</td>
-                            <td className="px-3 py-2 font-semibold">
-                              ₹{p.price * p.quantity}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                      <tfoot>
-                        <tr className="bg-muted font-semibold">
-                          <td colSpan={3} className="text-right px-3 py-3">
-                            Grand Total
-                          </td>
-                          <td className="px-3 py-3">
-                            ₹{selectedOrder.totalAmount}
-                          </td>
-                        </tr>
-                      </tfoot>
-                    </table>
+  <tbody>
+    {selectedOrder.purchasedProducts.map((p, index) => (
+      <tr key={index} className="border-b">
+        <td className="px-3 py-2">
+          {/* Wrapping in div fixes alignment */}
+          <div className="flex items-center gap-3">
+            <img
+              src={productImages[p.productId] || "/placeholder.png"}
+              alt={p.name}
+              className="w-12 h-12 object-cover rounded-md border"
+            />
+            <span>{p.name}</span>
+          </div>
+        </td>
+
+        <td className="px-3 py-2">{p.quantity}</td>
+        <td className="px-3 py-2">₹{p.price}</td>
+        <td className="px-3 py-2 font-semibold">
+          ₹{p.price * p.quantity}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+
+  <tfoot>
+    <tr className="bg-muted font-semibold">
+      <td colSpan={3} className="text-right px-3 py-3">
+        Grand Total
+      </td>
+      <td className="px-3 py-3">
+        ₹{selectedOrder.totalAmount}
+      </td>
+    </tr>
+  </tfoot>
+</table>
+
                   </div>
                 </div>
               ) : (
