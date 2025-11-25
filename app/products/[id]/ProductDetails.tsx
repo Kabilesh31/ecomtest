@@ -477,6 +477,40 @@ const prevImage = () => {
   </div>
 
   {/* RELATED PRODUCTS — BOTTOM RIGHT */}
+
+    {product.reviews?.length > 0 && (
+      <div className="absolute bottom-[50%] left-6 z-50 w-[300px] md:w-[480px] bg-black/40 backdrop-blur-lg 
+                      border border-white/20 rounded-2xl p-5 shadow-xl">
+        <h2 className="text-xl font-bold text-white mb-4">Customer Reviews</h2>
+
+        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+          {product.reviews.map((review, index) => (
+            <div
+              key={index}
+              className="min-w-[180px] bg-white/10 backdrop-blur-md border border-white/10 
+                        rounded-xl p-4 shadow-lg"
+            >
+              <h3 className="text-white font-semibold text-sm">
+                {review.customerName || "Customer"}
+              </h3>
+
+              <p className="text-yellow-400 font-bold text-sm mt-1">
+                ⭐ {review.rating}/5
+              </p>
+
+              <p className="text-gray-200 text-xs mt-2 line-clamp-3">
+                {review.message}
+              </p>
+
+              <p className="text-gray-400 text-[10px] mt-2">
+                {new Date(review.date).toLocaleDateString()}
+              </p>
+            </div>
+          ))}
+        </div>
+      </div>
+    )}
+
   {relatedProducts.length > 0 && (
     <div className="absolute bottom-6 left-6 z-50 w-[300px] md:w-[480px] bg-black/40 backdrop-blur-lg 
                     border border-white/20 rounded-2xl p-5 shadow-xl">
@@ -518,52 +552,50 @@ const prevImage = () => {
   {/* NAV */}
   <ClientHeader />
   <div className="absolute top-19 left-4 z-50 flex items-center gap-3">
-<Link href="/products" className="p-2 rounded-full bg-white/10 backdrop-blur-md">
-<ChevronLeft size={24} />
-</Link>
-<p className="text-sm font-medium opacity-90">Back</p>
-</div>
+    <Link href="/products" className="p-2 rounded-full bg-white/10 backdrop-blur-md">
+    <ChevronLeft size={24} />
+    </Link>
+    <p className="text-sm font-medium opacity-90">Back</p>
+    </div>
 
-  {/* BG IMAGE FULL SCREEN */}
-  <div
-    className="absolute inset-0 bg-cover bg-center"
-    style={{ backgroundImage: "url(/bg3.jpeg)" }}
-  >
-    <div className="absolute inset-0 bg-black/60" />
-  </div>
+      {/* BG IMAGE FULL SCREEN */}
+      <div
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: "url(/bg3.jpeg)" }}
+      >
+        <div className="absolute inset-0 bg-black/60" />
+      </div>
 
-  <div className="relative z-10 pb-20">
+      <div className="relative z-10 pb-20">
 
-    {/* PRODUCT IMAGE */}
-{product.mainImages && product.mainImages.length > 0 && (
-  <div className="relative w-full flex justify-center pt-10">
+        {/* PRODUCT IMAGE */}
+    {product.mainImages && product.mainImages.length > 0 && (
+      <div className="relative w-full flex justify-center pt-10">
 
-    <button
-      onClick={prevImage}
-      className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20"
-    >
-      ‹
-    </button>
+        <button
+          onClick={prevImage}
+          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20"
+        >
+          ‹
+        </button>
 
-    <img
-      src={product.mainImages[currentImage]}
-      alt={product.name}
-      className="w-56 h-56 object-contain drop-shadow-xl transition-all duration-300"
-    />
+        <img
+          src={product.mainImages[currentImage]}
+          alt={product.name}
+          className="w-56 h-56 object-contain drop-shadow-xl transition-all duration-300"
+        />
 
-    <button
-      onClick={nextImage}
-      className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20"
-    >
-      ›
-    </button>
+        <button
+          onClick={nextImage}
+          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20"
+        >
+          ›
+        </button>
 
-  </div>
-)}
+      </div>
+    )}
 
 
-
-    {/* PRODUCT NAME + PRICE */}
     <h1 className="text-center text-2xl font-bold mt-4">{product.name}</h1>
     
 
@@ -571,71 +603,70 @@ const prevImage = () => {
       ₹{product.price}
     </p>
 
-    {/* CART BUTTONS */}
-   {/* CART BUTTONS */}
-<div className="flex flex-col items-center gap-3 px-5 mt-6">
-  {!showQuantity ? (
-    <Button
-      className={`w-full text-lg rounded-xl py-4 ${
-        isOut ? "bg-gray-600 text-white cursor-not-allowed" : "bg-blue-600 text-white"
-      }`}
-      disabled={isOut}
-      onClick={(e) => {
-        e.preventDefault();
-        if (isOut) return;
 
-        addToCart({
-          id: product._id || product.id || "",
-          name: product.name,
-          price: product.price,
-          mainImages: [mainImage],
-          stock: product.quantity,
-        });
+      <div className="flex flex-col items-center gap-3 px-5 mt-6">
+        {!showQuantity ? (
+          <Button
+            className={`w-full text-lg rounded-xl py-4 ${
+              isOut ? "bg-gray-600 text-white cursor-not-allowed" : "bg-blue-600 text-white"
+            }`}
+            disabled={isOut}
+            onClick={(e) => {
+              e.preventDefault();
+              if (isOut) return;
 
-        setShowQuantity(true);
-        toast.success("Added to cart!");
-      }}
-    >
-      {isOut ? "Not Available" : "Add to Cart"}
-    </Button>
-  ) : (
-    <div className="flex items-center justify-between bg-black/50 w-full px-6 py-3 rounded-xl">
-      <button
-        className="text-2xl font-bold"
-        onClick={handleDecrease}
-        disabled={currentQty <= 0}
-      >
-        −
-      </button>
+              addToCart({
+                id: product._id || product.id || "",
+                name: product.name,
+                price: product.price,
+                mainImages: [mainImage],
+                stock: product.quantity,
+              });
 
-      <span className="text-lg font-semibold">{currentQty}</span>
+              setShowQuantity(true);
+              toast.success("Added to cart!");
+            }}
+          >
+            {isOut ? "Not Available" : "Add to Cart"}
+          </Button>
+        ) : (
+          <div className="flex items-center justify-between bg-black/50 w-full px-6 py-3 rounded-xl">
+            <button
+              className="text-2xl font-bold"
+              onClick={handleDecrease}
+              disabled={currentQty <= 0}
+            >
+              −
+            </button>
 
-      <button
-        className="text-2xl font-bold"
-        onClick={handleAddToCartClick}
-        disabled={currentQty >= maxStock}
-      >
-        +
-      </button>
+            <span className="text-lg font-semibold">{currentQty}</span>
 
-      <p className="text-lg font-semibold">
-        ₹{(product.price * currentQty).toFixed(2)}
-      </p>
-    </div>
-  )}
+            <button
+              className="text-2xl font-bold"
+              onClick={handleAddToCartClick}
+              disabled={currentQty >= maxStock}
+            >
+              +
+            </button>
 
-  {/* BUY NOW */}
-  <Button
-    className={`w-full text-lg rounded-xl py-4 ${
-      isOut ? "bg-gray-600 text-white cursor-not-allowed" : "bg-green-600 text-white"
-    }`}
-    disabled={isOut}
-    onClick={handleBuyNowClick}
-  >
-    Buy Now
-  </Button>
-  
-</div>
+            <p className="text-lg font-semibold">
+              ₹{(product.price * currentQty).toFixed(2)}
+            </p>
+          </div>
+        )}
+
+        {/* BUY NOW */}
+        <Button
+          className={`w-full text-lg rounded-xl py-4 ${
+            isOut ? "bg-gray-600 text-white cursor-not-allowed" : "bg-green-600 text-white"
+          }`}
+          disabled={isOut}
+          onClick={handleBuyNowClick}
+        >
+          Buy Now
+        </Button>
+        
+      </div>
 
 
     {/* DESCRIPTION SECTION */}
@@ -659,22 +690,21 @@ const prevImage = () => {
     {/* FEATURES SECTION */}
     <div className="px-5 mt-10 mb-10">
       <h2 className="text-xl font-bold mb-4">Features</h2>
-
-      {product.features?.map((feature, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, x: i % 2 === 0 ? -40 : 40 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.5, delay: i * 0.15 }}
-          className="bg-black/50 p-4 rounded-xl mb-3 leading-relaxed text-sm"
-        >
-          {typeof feature === "string" ? feature : feature.title}
-        </motion.div>
-      ))}
+          {product.features?.map((feature, i) => (
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: i % 2 === 0 ? -40 : 40 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true, margin: "-50px" }}
+              transition={{ duration: 0.5, delay: i * 0.15 }}
+              className="bg-black/50 p-4 rounded-xl mb-3 leading-relaxed text-sm"
+            >
+              {typeof feature === "string" ? feature : feature.title}
+            </motion.div>
+          ))}
+        </div>
+      </div>
     </div>
-  </div>
-</div>
 
     </>
   )

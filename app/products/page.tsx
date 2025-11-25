@@ -175,33 +175,33 @@ export default function ProductsPage() {
                       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
                         {/* IMAGE */}
                       <div
-  className={`relative h-48 bg-muted overflow-hidden group ${
-    product.outofstock || product.quantity === 0
-      ? "opacity-40 grayscale"
-      : ""
-  }`}
->
-  {product.mainImages?.length > 0 ? (
-    <ImageCarousel images={product.mainImages} />
-  ) : (
-    <img
-      src="/placeholder.svg"
-      alt="placeholder"
-      className="w-full h-full object-contain"
-    />
-  )}
+                        className={`relative h-48 bg-muted overflow-hidden group ${
+                          product.outofstock || product.quantity === 0
+                            ? "opacity-40 grayscale"
+                            : ""
+                        }`}
+                      >
+                        {product.mainImages?.length > 0 ? (
+                          <ImageCarousel images={product.mainImages} />
+                        ) : (
+                          <img
+                            src="/placeholder.svg"
+                            alt="placeholder"
+                            className="w-full h-full object-contain"
+                          />
+                        )}
 
-  {product.outofstock && (
-    <div className="absolute top-38 left-4 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded-md">
-      OUT OF STOCK
-    </div>
-  )}
-  {!product.outofstock && product.quantity > 0 && product.quantity <= 5 && (
-  <div className="absolute top-38 left-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md">
-    {product.quantity} left
-  </div>
-)}
-</div>
+                        {product.outofstock && (
+                          <div className="absolute top-38 left-4 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded-md">
+                            OUT OF STOCK
+                          </div>
+                        )}
+                        {!product.outofstock && product.quantity > 0 && product.quantity <= 5 && (
+                        <div className="absolute top-38 left-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md">
+                          {product.quantity} left
+                        </div>
+                      )}
+                      </div>
 
 
                         {/* INFO */}
@@ -215,26 +215,27 @@ export default function ProductsPage() {
                             </h3>
 
                             <div className="flex items-center gap-1">
-  {product.manualRatings ? (
-    // Rule 1: Manual rating ON
-    <Button className="flex items-center gap-1">
-      {product.manualRatingValue}
-      <Star size={14} className="fill-yellow-500 text-yellow-500" />
-    </Button>
-  ) : product.hidereviews ? (
-    // Rule 2: Manual OFF, hide reviews
-    <span className="text-black text-sm">No Ratings</span>
-  ) : product.rating ? (
-    // Rule 3: Manual OFF, reviews visible, show rating
-    <Button className="flex items-center gap-1">
-      {product.rating}
-      <Star size={14} className="fill-yellow-500 text-yellow-500" />
-    </Button>
-  ) : (
-    // Fallback: no ratings
-    <span className="text-black text-sm">No Ratings</span>
-  )}
-</div>
+                              {product.manualRatings ? (
+                                // Rule 1: Manual rating ON
+                                <Button className="flex items-center gap-1">
+                                  {product.manualRatingValue}
+                                  <Star size={14} className="fill-yellow-500 text-yellow-500" />
+                                </Button>
+                              ) : product.hidereviews ? (
+                                // Rule 2: Manual OFF, hide reviews
+                                <span className="text-black text-sm">No Ratings</span>
+                              ) : product.rating ? (
+                                // Rule 3: Manual OFF, reviews visible, show rating
+                                <Button className="flex items-center gap-1 text-xs">
+                                  {product.rating}
+                                  <Star size={10} className="fill-yellow-500 text-yellow-500" />
+                                  ({product.reviews?.length}) Reviews
+                                </Button>
+                              ) : (
+                                // Fallback: no ratings
+                                <span className="text-black text-sm">No Ratings</span>
+                              )}
+                            </div>
 
                           </div>
 
@@ -248,7 +249,7 @@ export default function ProductsPage() {
                                     ₹{finalPrice}
                                   </span>
 
-                                  <span className="text-gray-400 line-through text-sm">
+                                  <span className="text-gray-400 line-through text-xs">
                                     ₹{product.price}
                                   </span>
 
@@ -301,8 +302,9 @@ export default function ProductsPage() {
                               >
                                 <ShoppingCart className="w-4 h-4" />
                                 <span className="hidden sm:inline">
-                                  {product.outofstock
-                                    ? "Add"
+                                  {product.outofstock === true ||
+                                  product.quantity === 0
+                                    ? "Out of Stock"
                                     : "Add"}
                                 </span>
                               </Button>

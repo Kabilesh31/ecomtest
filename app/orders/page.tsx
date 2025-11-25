@@ -144,15 +144,15 @@ useEffect(() => {
     selectedOrder.purchasedProducts?.forEach((p) => {
       doc.text(p.name, 15, currentY);
       doc.text(String(p.quantity), 95, currentY);
-      doc.text(`₹${p.price}`, 120, currentY);
-      doc.text(`₹${p.price * p.quantity}`, 160, currentY);
+      doc.text(`${p.price}`, 120, currentY);
+      doc.text(`${p.price * p.quantity}`, 160, currentY);
       currentY += 7;
     });
     doc.line(15, currentY + 3, 195, currentY + 3);
     currentY += 12;
     doc.setFont("helvetica", "bold");
     doc.text(
-      `Grand Total: ₹${selectedOrder.totalAmount}`,
+      `Grand Total: ${selectedOrder.totalAmount}`,
       190,
       currentY,
       { align: "right" }
