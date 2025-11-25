@@ -12,6 +12,7 @@ import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast";
 import { useParams } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { Review } from "@/types/product";
 import { useAuth } from "@/context/auth-context";
 import Image from "next/image";
 import Link from "next/link";
@@ -478,38 +479,40 @@ const prevImage = () => {
 
   {/* RELATED PRODUCTS — BOTTOM RIGHT */}
 
-    {product.reviews?.length > 0 && (
-      <div className="absolute bottom-[50%] left-6 z-50 w-[300px] md:w-[480px] bg-black/40 backdrop-blur-lg 
+  {product.reviews && product.reviews.length > 0 && (
+  <div className="absolute bottom-[50%] left-6 z-50 w-[300px] md:w-[480px] bg-black/40 backdrop-blur-lg 
                       border border-white/20 rounded-2xl p-5 shadow-xl">
-        <h2 className="text-xl font-bold text-white mb-4">Customer Reviews</h2>
+    <h2 className="text-xl font-bold text-white mb-4">Customer Reviews</h2>
 
-        <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-          {product.reviews.map((review, index) => (
-            <div
-              key={index}
-              className="min-w-[180px] bg-white/10 backdrop-blur-md border border-white/10 
+    <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
+      {product.reviews.map((review: Review, index: number) => (
+        <div
+          key={index}
+          className="min-w-[180px] bg-white/10 backdrop-blur-md border border-white/10 
                         rounded-xl p-4 shadow-lg"
-            >
-              <h3 className="text-white font-semibold text-sm">
-                {review.customerName || "Customer"}
-              </h3>
+        >
+          <h3 className="text-white font-semibold text-sm">
+            {review.customerName || "Customer"}
+          </h3>
 
-              <p className="text-yellow-400 font-bold text-sm mt-1">
-                ⭐ {review.rating}/5
-              </p>
+          <p className="text-yellow-400 font-bold text-sm mt-1">
+            ⭐ {review.rating}/5
+          </p>
 
-              <p className="text-gray-200 text-xs mt-2 line-clamp-3">
-                {review.message}
-              </p>
+          <p className="text-gray-200 text-xs mt-2 line-clamp-3">
+            {review.message}
+          </p>
 
-              <p className="text-gray-400 text-[10px] mt-2">
-                {new Date(review.date).toLocaleDateString()}
-              </p>
-            </div>
-          ))}
+          {review.date && (
+  <p className="text-gray-400 text-[10px] mt-2">
+    {new Date(review.date).toLocaleDateString()}
+  </p>
+)}
         </div>
-      </div>
-    )}
+      ))}
+    </div>
+  </div>
+)}
 
   {relatedProducts.length > 0 && (
     <div className="absolute bottom-6 left-6 z-50 w-[300px] md:w-[480px] bg-black/40 backdrop-blur-lg 

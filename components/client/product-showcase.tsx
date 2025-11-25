@@ -128,37 +128,31 @@ export function ProductShowcase() {
                 ))}
               </select>
 
-              <button
-                onClick={() => setShowPriceFilter(!showPriceFilter)}
-                className="px-4 py-2 bg-primary text-white rounded-lg text-sm"
-              >
-                {showPriceFilter ? "Hide Filter" : "Filter by Price"}
-              </button>
+          <div className="w-full mt-4">
+  
 
-              {showPriceFilter && (
-                <div className="w-full mt-4">
-                  <input
-                    type="range"
-                    min={0}
-                    max={2000}
-                    step={500}
-                    value={priceRange[1]}
-                    onChange={(e) => setPriceRange([0, Number(e.target.value)])}
-                    className="w-full accent-primary h-[3px]"
-                  />
-                  <div className="flex justify-between text-xs mt-1 text-muted-foreground">
-                    <span>0</span>
-                    <span>500</span>
-                    <span>1000</span>
-                    <span>1500</span>
-                    <span>2000</span>
-                  </div>
-                  <div className="flex justify-between text-sm mt-2 text-muted-foreground">
-                    <span>Selected:</span>
-                    <span className="font-semibold">₹{priceRange[1]}</span>
-                  </div>
-                </div>
-              )}
+  <input
+    type="range"
+    min={0}
+    max={2000}
+    step={100}
+    value={priceRange[1]}
+    onChange={(e) => setPriceRange([0, Number(e.target.value)])}
+    className="w-full accent-primary h-[3px] mt-2"
+  />
+
+  <div className="flex justify-between text-xs mt-1 text-muted-foreground">
+    <span>₹0</span>
+    <span>₹1000</span>
+    <span>₹2000</span>
+  </div>
+
+  <div className="flex justify-between text-sm mt-2 text-muted-foreground">
+    <span>Selected:</span>
+    <span className="font-semibold">₹{priceRange[1]}</span>
+  </div>
+</div>
+
 
               <select
                 value={sortBy}
