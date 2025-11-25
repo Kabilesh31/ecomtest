@@ -21,7 +21,6 @@ import {
 import { Input } from "@/components/ui/input"
 
 
-// ✅ Add these imports for modal
 import {
   Dialog,
   DialogContent,
@@ -211,7 +210,7 @@ const handleDeleteOrder = async (orderId: string) => {
     );
   });
 
-  // 📄 Step 3: Pagination
+  
   const startIndex = (currentPage - 1) * itemsPerPage;
   const paginated = filtered.slice(startIndex, startIndex + itemsPerPage);
 
