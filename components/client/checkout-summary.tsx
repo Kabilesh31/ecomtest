@@ -87,7 +87,7 @@ export function CheckoutSummary() {
       {/* Guarantees */}
       <Card className="p-4 space-y-2">
         <p className="text-xs font-semibold text-foreground">✓ 30-Day Money Back Guarantee</p>
-        <p className="text-xs font-semibold text-foreground">✓ Free Shipping on Orders Over $50</p>
+        <p className="text-xs font-semibold text-foreground">✓ Free Shipping on Orders Over Rs.300</p>
         <p className="text-xs font-semibold text-foreground">✓ 24/7 Customer Support</p>
       </Card>
     </div>

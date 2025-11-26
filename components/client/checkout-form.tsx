@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation"
 import { useCart } from "@/context/cart-context"
 import { useAuth } from "@/context/auth-context"
 import axios from "axios"
-
+import { motion } from "framer-motion"
 declare global {
   interface Window {
     Razorpay: any
@@ -21,7 +21,7 @@ export function CheckoutForm() {
   const [addresses, setAddresses] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState<any | null>(null)
-
+  const [paymentMethod, setPaymentMethod] = useState("ONLINE");
   const { items } = useCart()
   const { user } = useAuth()
   const [localUser, setLocalUser] = useState(user)
@@ -157,14 +157,14 @@ export function CheckoutForm() {
 
     const customerAddress = selectedAddress
       ? {
-          firstName: selectedAddress.firstNamee,
+          firstName: selectedAddress.firstName,
           lastName: selectedAddress.lastName,
           email: selectedAddress.email,
           phone: selectedAddress.phone,
           address: selectedAddress.add,
           city: selectedAddress.city,
           state: selectedAddress.state,
-          zipCode: selectedAddress.pincode,
+          zipCode: selectedAddress.zipCode,
           country: selectedAddress.country,
         }
       : {
@@ -178,7 +178,25 @@ export function CheckoutForm() {
           zipCode: formData.zipCode,
           country: formData.country,
         };
+    
+    if (paymentMethod === "COD") {
+      const codOrder = await axios.post("http://localhost:5000/api/order/createCODOrder", {
+        customerId: localUser?._id,
+        totalAmount: total,
+        purchasedProducts,
+        customerDetails: customerAddress,
+        paymentMode: "COD",
+      });
 
+      if (codOrder.data.success) {
+        alert("Order placed successfully with Cash on Delivery!");
+        router.push("/order-success");
+      } else {
+        alert("Failed to place COD order.");
+      }
+
+      return; 
+    }
    
     const options = {
       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
@@ -297,6 +315,84 @@ export function CheckoutForm() {
         )}
       </Card>
 
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Payment Method</h3>
+
+          <div className="space-y-4">
+
+            {/* Online Payment */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setPaymentMethod("ONLINE")}
+              className={`
+                flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all
+                ${paymentMethod === "ONLINE" ? "border-primary bg-primary/10 shadow-md" : "border-gray-300 bg-white"}
+              `}
+            >
+              {/* Custom Radio */}
+              <div className="relative">
+                <div
+                  className={`
+                    h-5 w-5 rounded-full border-2 flex items-center justify-center
+                    ${paymentMethod === "ONLINE" ? "border-primary" : "border-gray-400"}
+                  `}
+                >
+                  {paymentMethod === "ONLINE" && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                      className="h-3 w-3 rounded-full bg-primary"
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <p className="font-semibold">Online Payment</p>
+                <p className="text-sm text-gray-500">Pay securely using Razorpay</p>
+              </div>
+            </motion.div>
+
+            {/* COD Payment */}
+            <motion.div
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setPaymentMethod("COD")}
+              className={`
+                flex items-center gap-4 p-4 rounded-xl border cursor-pointer transition-all
+                ${paymentMethod === "COD" ? "border-primary bg-primary/10 shadow-md" : "border-gray-300 bg-white"}
+              `}
+            >
+              {/* Custom Radio */}
+              <div className="relative">
+                <div
+                  className={`
+                    h-5 w-5 rounded-full border-2 flex items-center justify-center
+                    ${paymentMethod === "COD" ? "border-primary" : "border-gray-400"}
+                  `}
+                >
+                  {paymentMethod === "COD" && (
+                    <motion.div
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.2 }}
+                      className="h-3 w-3 rounded-full bg-primary"
+                    />
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <p className="font-semibold">Cash on Delivery (COD)</p>
+                <p className="text-sm text-gray-500">Pay after delivery</p>
+              </div>
+            </motion.div>
+
+          </div>
+        </Card>
+
       <Button
         type="submit"
         disabled={isLoading}
@@ -304,6 +400,8 @@ export function CheckoutForm() {
       >
         {isLoading ? "Processing..." : "Continue to Payment"}
       </Button>
+      
+
     </form>
   )
 }
