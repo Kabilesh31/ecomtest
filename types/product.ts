@@ -3,6 +3,13 @@ export interface Feature {
   mainmage?: string
   featureImages?: string
 }
+export interface Review {
+  customerName?: string;
+  rating: number;
+  message: string;
+  date?: string;
+}
+
 
 export interface Product {
   _id?: string;
@@ -18,4 +25,6 @@ export interface Product {
   features?: Feature[];
   outofstock: boolean;
   unitsSold?: number;
+
+    reviews?: Review[];
 }
