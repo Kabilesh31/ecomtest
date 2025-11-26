@@ -9,6 +9,8 @@ import {
   Package,
   ShoppingCart,
   LogOut,
+  Ticket,
+  Tag,
   ChevronLeft,
   FrameIcon,
 } from "lucide-react"
@@ -37,6 +39,7 @@ export function AdminSidebar({ open, onToggle }: AdminSidebarProps) {
     { href: "/admin/products", label: "Products", icon: Package },
     { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
     { href: "/admin/hero", label: "Home Page", icon: FrameIcon },
+    { href: "/admin/promocode", label: "PromoCode", icon: Tag},
   ]
 
   return (
