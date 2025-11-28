@@ -21,6 +21,7 @@ export function CheckoutForm() {
   const [addresses, setAddresses] = useState<any[]>([])
   const [showForm, setShowForm] = useState(false)
   const [selectedAddress, setSelectedAddress] = useState<any | null>(null)
+  const [appliedPromo, setAppliedPromo] = useState<{ code: string, discountAmount: number } | null>(null)
   const [paymentMethod, setPaymentMethod] = useState("ONLINE");
   const { items } = useCart()
   const { user } = useAuth()
@@ -29,9 +30,9 @@ export function CheckoutForm() {
   console.log(userId)
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
   const shipping = 0
-  const discount = 0
-  const tax = (subtotal - discount) * 0.1
-  const total = subtotal - discount + shipping + tax
+ const discount = appliedPromo ? appliedPromo.discountAmount : 0
+ const tax = (subtotal - discount) * 0.1
+const total = subtotal - discount + shipping + tax
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -44,6 +45,12 @@ export function CheckoutForm() {
     zipCode: "",
     country: "",
   })
+useEffect(() => {
+  const promo = localStorage.getItem("appliedPromo");
+  if (promo) {
+    setAppliedPromo(JSON.parse(promo));
+  }
+}, []);
 
   //Fetch addresses from backend
   const fetchAddresses = async () => {
@@ -140,6 +147,8 @@ export function CheckoutForm() {
  
     const response = await axios.post("http://localhost:5000/api/order/createOrder", {
       amount: total,
+      appliedCoupon: appliedPromo?.code || null,
+  discountAmount: discount
     });
 
     const data = response.data;
@@ -186,11 +195,14 @@ export function CheckoutForm() {
         purchasedProducts,
         customerDetails: customerAddress,
         paymentMode: "COD",
+        appliedCoupon: appliedPromo?.code || null,
+  discountAmount: discount
       });
 
       if (codOrder.data.success) {
         alert("Order placed successfully with Cash on Delivery!");
         router.push("/order-success");
+        localStorage.removeItem("appliedPromo");
       } else {
         alert("Failed to place COD order.");
       }
@@ -215,6 +227,8 @@ export function CheckoutForm() {
             customerId: localUser?._id,
             purchasedProducts,
             customerDetails: customerAddress,
+            appliedCoupon: appliedPromo?.code || null,
+  discountAmount: discount
           });
 
           const verifyData = verifyResponse.data;

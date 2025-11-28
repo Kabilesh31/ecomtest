@@ -13,10 +13,13 @@ export interface CartItem {
 
 interface CartContextType {
   items: CartItem[];
+  discount: number;
+  appliedCoupon: string | null;
   addToCart: (product: Omit<CartItem, "quantity">, quantity?: number) => void;
   removeFromCart: (id: string | number) => void;
   updateQuantity: (id: string | number, quantity: number) => void;
   clearCart: () => void;
+  applyCoupon: (code: string, discountValue: number) => void;
   totalItems: number;
   totalPrice: number;
 }
@@ -27,24 +30,38 @@ let ws: WebSocket | null = null;
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([]);
+  const [discount, setDiscount] = useState(0);
+  const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
   // Load cart from localStorage (client only)
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const saved = localStorage.getItem("cart");
-    if (saved) setItems(JSON.parse(saved));
+    const savedCart = localStorage.getItem("cart");
+    const savedDiscount = localStorage.getItem("discount");
+    const savedCoupon = localStorage.getItem("appliedCoupon");
+
+    if (savedCart) setItems(JSON.parse(savedCart));
+    if (savedDiscount) setDiscount(Number(savedDiscount));
+    if (savedCoupon) setAppliedCoupon(savedCoupon);
+
     setIsHydrated(true);
   }, []);
 
-  // Save cart to localStorage
+  // Save cart & promo info to localStorage
   useEffect(() => {
     if (isHydrated && typeof window !== "undefined") {
       localStorage.setItem("cart", JSON.stringify(items));
+      localStorage.setItem("discount", discount.toString());
+      if (appliedCoupon) {
+        localStorage.setItem("appliedCoupon", appliedCoupon);
+      } else {
+        localStorage.removeItem("appliedCoupon");
+      }
     }
-  }, [items, isHydrated]);
+  }, [items, discount, appliedCoupon, isHydrated]);
 
-  // Setup WebSocket (client only)
+  // WebSocket stock updates
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -126,7 +143,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = useCallback(() => {
     setItems([]);
-    if (typeof window !== "undefined") localStorage.removeItem("cart");
+    setDiscount(0);
+    setAppliedCoupon(null);
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("cart");
+      localStorage.removeItem("discount");
+      localStorage.removeItem("appliedCoupon");
+    }
+  }, []);
+
+  const applyCoupon = useCallback((code: string, discountValue: number) => {
+    setDiscount(discountValue);
+    setAppliedCoupon(code);
   }, []);
 
   const totalItems = items.reduce((sum, i) => sum + i.quantity, 0);
@@ -134,7 +162,18 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <CartContext.Provider
-      value={{ items, addToCart, removeFromCart, updateQuantity, clearCart, totalItems, totalPrice }}
+      value={{
+        items,
+        discount,
+        appliedCoupon,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        applyCoupon,
+        totalItems,
+        totalPrice
+      }}
     >
       {children}
     </CartContext.Provider>
