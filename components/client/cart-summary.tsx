@@ -5,59 +5,61 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
 import Link from "next/link"
+import axios from "axios"
 import { useCart } from "@/context/cart-context"
-
-interface CartItem {
-  id: number
-  name: string
-  price: number
-  quantity: number
-  image: string
-}
-
-interface CartSummaryProps {
-  items: CartItem[]
-}
 
 export function CartSummary() {
   const [couponCode, setCouponCode] = useState("")
-  const [discount, setDiscount] = useState(0)
-  const { items } = useCart() 
+  const [loading, setLoading] = useState(false)
+
+  const { items, discount, appliedCoupon, applyCoupon } = useCart(); // ✅ use discount from context
 
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
-  const shipping =  0 // Always free
+  const shipping = 0
   const tax = (subtotal - discount) * 0.1
   const total = subtotal - discount + shipping + tax
 
-  const applyCoupon = () => {
-    if (couponCode === "SAVE10") {
-      setDiscount(subtotal * 0.1)
-    } else if (couponCode === "SAVE20") {
-      setDiscount(subtotal * 0.2)
-    } else {
-      alert("Invalid coupon code")
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) return alert("Enter promocode")
+    setLoading(true)
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/promocode/apply", {
+        code: couponCode,
+        products: items.map(item => ({ productId: item.id, qty: item.quantity }))
+      })
+
+      if (response.data.success) {
+        applyCoupon(couponCode, response.data.discount) // ✅ save in context
+        alert("Promo applied successfully!")
+      } else {
+        alert(response.data.message)
+      }
+    } catch (err) {
+      alert("Invalid or expired promocode")
+    } finally {
+      setLoading(false)
     }
   }
 
   return (
     <div className="space-y-4 sticky top-24">
-      {/* Coupon Code */}
-      {/* <Card className="p-4">
-        <label className="block text-sm font-medium text-foreground mb-2">Coupon Code</label>
+      {/* Coupon Code UI */}
+      <Card className="p-4">
+        <label className="block text-sm font-medium text-foreground mb-2">Promo Code</label>
         <div className="flex gap-2">
           <Input
             type="text"
-            placeholder="Enter code"
+            placeholder="Enter promo code"
             value={couponCode}
             onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
             className="flex-1"
           />
-          <Button onClick={applyCoupon} variant="outline" className="bg-transparent">
-            Apply
+          <Button onClick={handleApplyCoupon} disabled={loading} variant="outline">
+            {loading ? "Applying..." : "Apply"}
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground mt-2">Try: SAVE10 or SAVE20</p>
-      </Card> */}
+      </Card>
 
       {/* Order Summary */}
       <Card className="p-6 space-y-4">
@@ -71,8 +73,10 @@ export function CartSummary() {
 
           {discount > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">Discount</span>
-              <span className="text-green-600 dark:text-green-400 font-medium">
+              <span className="text-muted-foreground">
+                Discount {appliedCoupon && `(${appliedCoupon})`}
+              </span>
+              <span className="text-green-600 font-medium">
                 -₹{discount.toLocaleString("en-IN")}
               </span>
             </div>
@@ -80,7 +84,7 @@ export function CartSummary() {
 
           <div className="flex justify-between text-sm">
             <span className="text-muted-foreground">Shipping</span>
-            <span className="text-green-600 dark:text-green-400 font-medium">Free</span>
+            <span className="text-green-600 font-medium">Free</span>
           </div>
 
           <div className="flex justify-between text-sm">
@@ -90,36 +94,23 @@ export function CartSummary() {
         </div>
 
         <div className="flex justify-between text-lg">
-  <span className="font-semibold text-foreground">Total</span>
-  <span className="font-bold text-primary text-xl">
-    ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-  </span>
-</div>
+          <span className="font-semibold text-foreground">Total</span>
+          <span className="font-bold text-primary text-xl">
+            ₹{total.toLocaleString("en-IN", { minimumFractionDigits: 2 })}
+          </span>
+        </div>
 
-        <Link href="/checkout"> 
-          <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-6 text-lg font-semibold">
+        <Link href="/checkout">
+          <Button className="w-full bg-primary text-primary-foreground py-6 text-lg font-semibold">
             Proceed to Checkout
           </Button>
-         </Link> 
+        </Link>
 
         <Link href="/products">
           <Button variant="outline" className="w-full bg-transparent">
             Continue Shopping
           </Button>
         </Link>
-      </Card>
-
-      {/* Info Cards */}
-      <Card className="p-4 bg-primary/5 border-primary/20">
-        <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">Free Shipping</span> on orders over ₹
-        </p>
-      </Card>
-
-      <Card className="p-4 bg-primary/5 border-primary/20">
-        <p className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">30-Day Returns</span> on all items
-        </p>
       </Card>
     </div>
   )

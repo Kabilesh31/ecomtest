@@ -33,6 +33,8 @@ const [manualRatings, setManualRatings] = useState(false);
 const [manualRatingValue, setManualRatingValue] = useState(0);
 const [offerProduct, setOfferProduct] = useState(false);
 const [offerPercentage, setOfferPercentage] = useState(0);
+const [promoCodes, setPromoCodes] = useState<{ _id: string; code: string; title: string }[]>([]);
+const [selectedPromo, setSelectedPromo] = useState<string>(""); // promo ID
 
 
   const categories = ["Devine", "Cosmetics", "Accessories"];
@@ -62,6 +64,7 @@ setManualRatings(data.manualRatings ?? false);
 setManualRatingValue(data.manualRatingValue ?? 0);
 setOfferProduct(data.offerProduct ?? false);
 setOfferPercentage(data.offerPercentage ?? 0);
+setSelectedPromo(data.promoApplied || "");
       } catch (error) {
         console.error("Failed to load product", error);
         toast.error("Failed to load product details.");
@@ -71,6 +74,28 @@ setOfferPercentage(data.offerPercentage ?? 0);
     };
     fetchProduct();
   }, [id]);
+
+useEffect(() => {
+  const fetchPromoCodes = async () => {
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/promocode/`);
+      const data = await res.json();
+
+      if (res.ok && Array.isArray(data.data)) {
+        const activePromos = data.data.filter((p: any) => p.isActive);
+        setPromoCodes(activePromos);
+      }
+    } catch (err) {
+      console.error("Failed to fetch promo codes", err);
+    }
+  };
+
+  fetchPromoCodes();
+}, []);
+
+
+
+
 
   // 🧩 Handle basic input
   const handleInputChange = (
@@ -141,47 +166,55 @@ const handleOfferToggle = () => {
     setOfferPercentage(0);
   }
 };
-  // 🧩 Submit form
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const formData = new FormData();
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  const formData = new FormData();
 
-    formData.append("name", product.name);
-    formData.append("price", product.price);
-    formData.append("quantity", product.quantity);
-    formData.append("category", product.category);
-    formData.append("descriptions", JSON.stringify(descriptions));
-    formData.append("features", JSON.stringify(features));
-    formData.append("existingImages", JSON.stringify(existingImages));
-    formData.append("hidereviews", String(hideReviews));
-formData.append("manualRatings", String(manualRatings));
-formData.append("manualRatingValue", String(manualRatingValue));
-formData.append("offerProduct", String(offerProduct));
-formData.append("offerPercentage", String(offerPercentage));
+  formData.append("name", product.name);
+  formData.append("price", product.price);
+  formData.append("quantity", product.quantity);
+  formData.append("category", product.category);
+  formData.append("descriptions", JSON.stringify(descriptions));
+  formData.append("features", JSON.stringify(features));
+  formData.append("existingImages", JSON.stringify(existingImages));
+  formData.append("hidereviews", String(hideReviews));
+  formData.append("manualRatings", String(manualRatings));
+  formData.append("manualRatingValue", String(manualRatingValue));
+  formData.append("offerProduct", String(offerProduct));
+  formData.append("offerPercentage", String(offerPercentage));
+  formData.append("promoApplied", selectedPromo || "");
 
-    // append new images
-    mainImages.forEach((file) => {
-      formData.append("mainImages", file);
+  // append new images
+  mainImages.forEach((file) => {
+    formData.append("mainImages", file);
+  });
+
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
+      method: "PUT",
+      body: formData,
     });
+    const data = await res.json();
 
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
+    if (!res.ok) throw new Error(data.message || "Failed to update product");
+
+    // 🔹 Update promo code association
+    if (selectedPromo) {
+      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/promocode/apply-to-product`, {
         method: "PUT",
-        body: formData,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ promoId: selectedPromo, productId: id }),
       });
-      const data = await res.json();
-
-      if (res.ok) {
-        toast.success(" Product updated successfully!");
-        router.push("/admin/products");
-      } else {
-        toast.error("❌ " + (data.message || "Failed to update product."));
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error(" Something went wrong while updating.");
     }
-  };
+
+    toast.success("Product updated successfully!");
+    router.push("/admin/products");
+  } catch (err: any) {
+    console.error(err);
+    toast.error("❌ " + (err.message || "Something went wrong while updating."));
+  }
+};
+
 
   if (loading)
     return <p className="text-center py-10 text-gray-500">Loading product...</p>;
@@ -272,6 +305,25 @@ type ToggleRowProps = {
                   </select>
                 </div>
               </div>
+              <div>
+  <label className="block text-sm font-medium mb-1">Apply Promo Code</label>
+  <select
+    value={selectedPromo}
+    onChange={(e) => setSelectedPromo(e.target.value)}
+    className="w-full border border-gray-300 rounded-md p-2 text-sm"
+  >
+    <option value="">No Promo</option>
+    {promoCodes.map((promo) => (
+      <option key={promo._id} value={promo._id}>
+        {promo.title} ({promo.code})
+      </option>
+    ))}
+  </select>
+  <p className="text-xs text-gray-500 mt-1">
+    Select a promo code to apply for this product.
+  </p>
+</div>
+
               {/* ⚡ Review / Rating Toggles */}
 {/* ⚡ Review / Rating Toggles */}
 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-4 rounded-lg bg-gray-50">
