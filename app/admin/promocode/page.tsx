@@ -20,6 +20,8 @@ interface PromoCode {
   expiryDate: string;
   isActive: boolean;
   minOrderAmount: number;
+  
+  
 }
 
 export default function AdminPromoCodePage() {
@@ -31,6 +33,23 @@ export default function AdminPromoCodePage() {
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+  (async () => {
+    // Ensure auto monthly promo exists in DB
+    await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/promocode/auto/monthly`);
+
+    // Then fetch all promos
+    fetchPromoCodes();
+  })();
+}, []);
+
+const toggleAutoPromo = async (promo: PromoCode) => {
+  await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/promocode/toggle/${promo._id}`);
+  toast.success("Status updated");
+  fetchPromoCodes();
+};
+
 
   // ---------------- Fetch Promo Codes ----------------
   const fetchPromoCodes = async () => {
@@ -50,6 +69,7 @@ export default function AdminPromoCodePage() {
     fetchPromoCodes();
   }, []);
 
+  
   // ---------------- Create Promo Code ----------------
   const handleSubmit = async () => {
     if (!title || !description || !code || !discount || !expiry) {
@@ -87,16 +107,21 @@ export default function AdminPromoCodePage() {
 
   // ---------------- Delete Promo Code ----------------
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this promo code?")) return;
+  if (!confirm("Are you sure you want to delete this promo code?")) return;
 
-    try {
-      await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/promocode/${id}`);
+  try {
+    const res = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/promocode/${id}`);
+    if (res.data.success) {
       toast.success("Promo code deleted successfully");
       fetchPromoCodes();
-    } catch {
-      toast.error("Failed to delete promo code");
+    } else {
+      toast.error(res.data.message || "Failed to delete promo code");
     }
-  };
+  } catch (err: any) {
+    toast.error(err?.response?.data?.message || err.message || "Failed to delete promo code");
+  }
+};
+
 
   return (
     <ProtectedRoute>
@@ -171,12 +196,36 @@ export default function AdminPromoCodePage() {
                       Delete
                     </Button>
                   </div>
+                  {/* Auto Monthly Promo */}
+
+
                 </div>
               ))
             ) : (
               <p>No promo codes yet.</p>
             )}
           </div>
+          {promoCodes
+  .filter(p => /^[a-z]{3}\d{4}$/i.test(p.code))  // auto codes only (jan2025 pattern)
+  .map(auto => (
+    <div key={auto._id} className="p-3 border rounded bg-blue-50 flex justify-between items-center mb-3">
+      <div>
+        <p className="font-medium">{auto.title}</p>
+        <p className="text-sm text-gray-600">Code: {auto.code}</p>
+        <p className="text-sm">Discount: {auto.discountValue}%</p>
+        <p className="text-sm text-gray-600">
+          Expires: {new Date(auto.expiryDate).toLocaleDateString()}
+        </p>
+      </div>
+      <Button
+        className={auto.isActive ? "bg-red-500" : "bg-green-500"}
+        onClick={() => toggleAutoPromo(auto)}
+      >
+        {auto.isActive ? "Deactivate" : "Activate"}
+      </Button>
+    </div>
+  ))
+}
         </div>
       </AdminLayout>
     </ProtectedRoute>
