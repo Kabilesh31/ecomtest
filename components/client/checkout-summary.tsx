@@ -2,24 +2,38 @@
 
 import { Card } from "@/components/ui/card";
 import { useCart, CartItem } from "@/context/cart-context";
+import { useEffect, useState } from "react";
 
 export function CheckoutSummary() {
- 
-  const { items, discount, appliedCoupon } = useCart();
+  const { items, discount, appliedCoupon } = useCart(); // get cart items, discount, and applied promo
+  const [promoDiscount, setPromoDiscount] = useState(0);
 
-  // Total before discount
+  // Load applied promo discount from localStorage
+  useEffect(() => {
+    const promo = localStorage.getItem("appliedPromo");
+    if (promo) {
+      const parsed = JSON.parse(promo);
+      setPromoDiscount(parsed.discountAmount || 0);
+    }
+  }, []);
+
+  // Total discount
+  const totalDiscount = discount + promoDiscount;
+
+  // Subtotal before discount
   const subtotal = items.reduce(
     (sum: number, item: CartItem) => sum + item.price * item.quantity,
     0
   );
 
-  const shipping = subtotal > 50 ? 0 : 10;
+  // Shipping is free
+  const shipping = 0;
 
   // Tax after discount
-  const tax = (subtotal - discount) * 0.1;
+  const tax = (subtotal - totalDiscount) * 0.1;
 
   // Total after discount
-  const total = subtotal - discount + shipping + tax;
+  const total = subtotal - totalDiscount + shipping + tax;
 
   return (
     <div className="sticky top-24 space-y-4">
@@ -36,7 +50,7 @@ export function CheckoutSummary() {
                 <span className="text-muted-foreground">
                   {item.name} × {item.quantity}
                 </span>
-                <span className="text-foreground font-medium">
+                <span className="text-foreground font-medium text-right">
                   ₹{(item.price * item.quantity).toFixed(2)}
                 </span>
               </div>
@@ -54,28 +68,21 @@ export function CheckoutSummary() {
 
               {discount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Discount</span>
-                  <span className="text-green-600 font-medium">
-                    -₹{discount.toFixed(2)}
-                  </span>
+                  <span className="text-muted-foreground">Cart Discount</span>
+                  <span className="text-green-600 font-medium">-₹{discount.toFixed(2)}</span>
                 </div>
               )}
-              {appliedCoupon && (
-  <div className="flex justify-between text-sm">
-    <span className="text-muted-foreground">Promo ({appliedCoupon})</span>
-    <span className="text-green-600 font-medium">-₹{discount.toFixed(2)}</span>
-  </div>
-)}
+
+              {promoDiscount > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Promo Discount ({appliedCoupon || ""})</span>
+                  <span className="text-green-600 font-medium">-₹{promoDiscount.toFixed(2)}</span>
+                </div>
+              )}
 
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Shipping</span>
-                <span className="text-foreground font-medium">
-                  {shipping === 0 ? (
-                    <span className="text-green-600 dark:text-green-400">Free</span>
-                  ) : (
-                    `₹${shipping.toFixed(2)}`
-                  )}
-                </span>
+                <span className="text-green-600 font-medium">Free</span>
               </div>
 
               <div className="flex justify-between text-sm">
