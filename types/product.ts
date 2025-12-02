@@ -25,6 +25,9 @@ export interface Product {
   features?: Feature[];
   outofstock: boolean;
   unitsSold?: number;
+  rating?: number
+  offerProduct?: boolean;
+  offerPercentage?: number;
 
     reviews?: Review[];
 }

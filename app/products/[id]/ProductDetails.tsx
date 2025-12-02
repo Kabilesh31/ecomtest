@@ -1,22 +1,20 @@
 "use client"
 
 import { motion, useScroll, useTransform } from "framer-motion"
-import { Product } from "@/types/product"
-import { useRef, useState,useEffect } from "react"
+import { Product, Review } from "@/types/product"
+import { useRef, useState, useEffect } from "react"
 import { ClientHeader } from "@/components/client/client-header"
 import { Lora } from "next/font/google"
 import { useCart } from "@/context/cart-context"
 import { Button } from "@/components/ui/button"
-import { ShoppingCart } from "lucide-react"
-import { useRouter } from "next/navigation"
-import { toast } from "react-hot-toast";
-import { useParams } from "next/navigation";
-import { ChevronLeft } from "lucide-react";
-import { Review } from "@/types/product";
-import { useAuth } from "@/context/auth-context";
-import Image from "next/image";
-import Link from "next/link";
-import axios from "axios";
+import { ShoppingCart,ShieldCheck, Truck, Sprout, Wallet } from "lucide-react"
+import { useRouter, useParams } from "next/navigation"
+import { toast } from "react-hot-toast"
+import { useAuth } from "@/context/auth-context"
+import Image from "next/image"
+import Link from "next/link"
+import axios from "axios"
+
 interface Props {
   product: Product
 }
@@ -25,519 +23,301 @@ const lora = Lora({
   subsets: ["latin"],
   weight: ["400", "600", "700"],
 })
+const monthCodes = ["JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"];
 
+const highlights = [
+    {
+      icon: <Truck size={32} />,
+      title: "Free Shipping",
+      subtitle: "above 1499",
+    },
+    {
+      icon: <ShieldCheck size={32} />,
+      title: "Secure",
+      subtitle: "Payments",
+    },
+    {
+      icon: <Sprout size={32} />,
+      title: "Farmers",
+      subtitle: "Empowerment",
+    },
+    {
+      icon: <Wallet size={32} />,
+      title: "COD",
+      subtitle: "available",
+    },
+  ];
 export default function ProductDetails({ product }: Props) {
   const router = useRouter()
-  const containerRef = useRef<HTMLDivElement>(null)
-  const [merged, setMerged] = useState(false)
-  const [quantity, setQuantity] = useState<number>(1)
-    const { items, addToCart, removeFromCart,updateQuantity  } = useCart();
-    const [showQuantity, setShowQuantity] = useState(false);
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [currentImage, setCurrentImage] = useState(0);
-    const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-    const effectRan = useRef(false);
-    const { user } = useAuth();
-    const hasUpdatedClick = useRef(false);
-    
-    
-    
+  const { items, addToCart, removeFromCart, updateQuantity } = useCart()
+  const { user } = useAuth()
+  const { id } = useParams()
+  const hasUpdatedClick = useRef(false)
 
-  const maxStock = product.quantity || 10; // fallback to 10 if undefined
+  const [selectedImage, setSelectedImage] = useState(product.mainImages?.[0] || "/placeholder.jpg")
+  const [showQuantity, setShowQuantity] = useState(false)
+    const [promoCode, setPromoCode] = useState("");
+  const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
 
-  const isOut = product.outofstock === true || Number(product.quantity) === 0;
+  const existingItem = items.find((i) => i.id === (product._id || product.id))
+  const currentQty = existingItem ? existingItem.quantity : 0
+  const maxStock = product.quantity || 10
+  const isOut = product.outofstock === true || Number(product.quantity) === 0
+// At the top of your component
+const featureImages = [
+  "/coin1.png",
+  "/coin2.png",
+  "/clay.png",
+  "/cup.png",
+  // add as many as needed
+];
 
-  // Find if product already in cart
-  const existingItem = items.find((i) => i.id === (product._id || product.id));
-  const currentQty = existingItem ? existingItem.quantity : 0;
+const descriptionImages = [
+  "/cones.png",
+  "/cup2.png",
+  "/sambrani.png",
+  "/coin1.png",
+  // add as many as needed
+];
 
-  const { id } = useParams();
+  // --- Update click count once per product ---
+  useEffect(() => {
+    if (user?.role === "admin") return
+    if (hasUpdatedClick.current || !product?._id) return
 
-  
-  // --- Scroll Animations ---
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  })
-
-  const scale = useTransform(scrollYProgress, [0, 0.33, 0.66, 1], [1.3, 1.2, 1, 1.6])
-  const x = useTransform(scrollYProgress, [0, 0.33, 0.66, 1], [0, 0, 300, 0])
-  const rotate = useTransform(scrollYProgress, [0, 0.33, 0.66, 1], [0, 0, -25, 0])
-  const opacity = useTransform(scrollYProgress, [0, 0.05, 0.33], [1, 1, 1])
-  const textOpacity = useTransform(scrollYProgress, [0, 0.1, 0.1, 0.1], [1, 0.1, 0.1, 0.1])
-  const textScale = useTransform(scrollYProgress, [0, 0.5], [2, 2])
-
-  // --- Fixed images ---
-  const featureImages = ["/coin1.png", "/coin2.png", "/creame.png", "/coin4.png"]
-  const descriptionImages = ["/coin1.png", "/coin2.png", "/creame.png", "/coin4.png"]
-
-   const mainImage = product.mainImages?.[0] || "/placeholder.jpg"
-
-
-useEffect(() => {
-  // ❌ Do NOT count for admin
-  if (user?.role === "admin") {
-    console.log("Admin detected → no click update");
-    return;
-  }
-
-  // ❌ Prevent double execution
-  if (hasUpdatedClick.current) return;
-
-  if (!product?._id) return;
-
-  const updateClick = async () => {
-    try {
-      await axios.put(`http://localhost:5000/api/products/click/${product._id}`);
-      console.log("Click count updated:", product._id);
-    } catch (error) {
-      console.error("Click update failed:", error);
+    const updateClick = async () => {
+      try {
+        await axios.put(`http://localhost:5000/api/products/click/${product._id}`)
+        console.log("Click count updated:", product._id)
+      } catch (error) {
+        console.error("Click update failed:", error)
+      }
     }
-  };
+    updateClick()
+    hasUpdatedClick.current = true
+  }, [product?._id, user?.role])
 
-  updateClick();
-  hasUpdatedClick.current = true;
-}, [product?._id, user?.role]);
-
-useEffect(() => {
-  if (product?.category) {
-    axios
-      .get(`http://localhost:5000/api/products`)
-      .then((res) => {
-        const allProducts = res.data;
-
-        const related = allProducts.filter((item: Product) =>
-          item.category === product.category && item._id !== product._id
-        );
-
-        setRelatedProducts(related);
-      })
-      .catch((err) => console.log(err));
-  }
-}, [product]);
-
-
-  // --- Cart functions ---
-  const handleAddToCartClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-  e.preventDefault();
-  
-  const productId = product._id || product.id || "";
-  const existingQty = existingItem ? existingItem.quantity : 0;
-
-  if (existingQty + 1 > maxStock) {
-    toast.error("No more stock available!");
-    return;
-  }
-
-  addToCart(
-    {
-      id: productId,
-      name: product.name,
-      price: product.price,
-      mainImages: [mainImage] // ✅ correct property
-    } // quantity to add
-  );
-
-  setShowQuantity(true);
-  toast.success("Added to cart!");
-};
-
-
-const handleDecrease = (e: React.MouseEvent<HTMLButtonElement>) => {
-  e.preventDefault();
-  if (!existingItem) return;
-
-  if (existingItem.quantity > 1) {
-    updateQuantity(existingItem.id, existingItem.quantity - 1);
-    toast("Quantity decreased");
-  } else {
-    removeFromCart(existingItem.id);
-    setShowQuantity(false); 
-    toast("Item removed from cart");
-  }
-};
-;
-
-const handleBuyNowClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-  e.preventDefault();
-
-  if (!existingItem) {
+  // --- Fetch related products ---
+  useEffect(() => {
+    if (product?.category) {
+      axios
+        .get(`http://localhost:5000/api/products`)
+        .then((res) => {
+          const allProducts = res.data
+          const related = allProducts.filter(
+            (item: Product) => item.category === product.category && item._id !== product._id
+          )
+          setRelatedProducts(related)
+        })
+        .catch((err) => console.log(err))
+    }
+  }, [product])
+  useEffect(() => {
+    const today = new Date();
+    const month = monthCodes[today.getMonth()];
+    const year = today.getFullYear();
+    setPromoCode(`${month}${year}`);
+  }, []);
+  // --- Cart Handlers ---
+  const handleAddToCartClick = () => {
+    if (currentQty + 1 > maxStock) {
+      toast.error("No more stock available!")
+      return
+    }
     addToCart({
       id: product._id || product.id || "",
       name: product.name,
       price: product.price,
-      mainImages: [mainImage]
-    });
+      mainImages: [selectedImage],
+    })
+    setShowQuantity(true)
+    toast.success("Added to cart!")
   }
 
-  router.push("/cart"); // Navigate immediately
-};
-const images = product.mainImages ?? [];
+  const handleDecrease = () => {
+    if (!existingItem) return
+    if (existingItem.quantity > 1) {
+      updateQuantity(existingItem.id, existingItem.quantity - 1)
+      toast("Quantity decreased")
+    } else {
+      removeFromCart(existingItem.id)
+      setShowQuantity(false)
+      toast("Item removed from cart")
+    }
+  }
 
-const nextImage = () => {
-  if (images.length === 0) return;
-  setCurrentImage((prev) =>
-    prev === images.length - 1 ? 0 : prev + 1
-  );
-};
+  const handleBuyNow = () => {
+    if (!existingItem) {
+      addToCart({
+        id: product._id || product.id || "",
+        name: product.name,
+        price: product.price,
+        mainImages: [selectedImage],
+      })
+    }
+    router.push("/cart")
+  }
 
-const prevImage = () => {
-  if (images.length === 0) return;
-  setCurrentImage((prev) =>
-    prev === 0 ? images.length - 1 : prev - 1
-  );
-};
   return (
-    <>
-    <div className="hidden md:block">
-    <div ref={containerRef} className="relative bg-black min-h-[400vh]">
+    <div className="min-h-screen text-black" style={{ backgroundColor: "#fcfaf8" }}>
       <ClientHeader />
 
-      {/* --- Landing Animation --- */}
-      {!merged && (
-        <motion.div
-          className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none flex flex-col items-center"
-          initial={{ scale: 0, opacity: 0 }}
-          animate={{ scale: 2, opacity: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-          onAnimationComplete={() => setMerged(true)}
-        >
-          <motion.img
-            src={mainImage}
-            alt={product.name}
-            className="w-40 md:w-56 object-contain drop-shadow-2xl"
-          />
-        </motion.div>
-      )}
+      {/* MAIN SECTION */}
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
 
-      {/* --- Floating Product --- */}
-      {merged && (
-        <motion.div
-          className="fixed top-[60%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none"
-          style={{ scale, x, rotate, opacity }}
-        >
-          <motion.img
-            src={mainImage}
-            alt={product.name}
-            className="w-40 md:w-56 object-contain drop-shadow-2xl"
-          />
-        </motion.div>
-      )}
-
-      {/* --- SECTION 1: FEATURES --- */}
-      <div
-        className="relative h-[200vh] w-full"
-        style={{
-          backgroundImage: "url(/bg1.jpg)",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-        }}
-      >
-        <div className="absolute inset-0 bg-black/40" />
-
-{product.features && (
-  <div className="absolute top-1/2 left-0 w-full -translate-y-1/2 grid grid-cols-1 md:grid-cols-2 gap-18 px-5 md:px-10 z-20">
-    {/* Left column (first 2 features) */}
-    <div className="flex flex-col gap-28">
-      {product.features.slice(0, 2).map((feature, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, x: -100 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6, delay: index * 0.2 }}
-          className="flex items-center gap-4 md:gap-6"
-        >
-          <img
-            src={featureImages[index] || "/placeholder.jpg"}
-            alt={typeof feature === "string" ? feature : feature.title}
-            className="w-20 h-20 md:w-30 md:h-30 rounded-full object-cover shadow-lg flex-shrink-0"
-          />
-          <p
-            className="bg-black/60 px-6 py-4 md:py-6 rounded-xl text-white 
-                       text-sm sm:text-base md:text-lg font-medium shadow-lg 
-                       w-fit text-center leading-relaxed break-words whitespace-pre-wrap"
-            style={{ maxWidth: "28ch" }}
-          >
-            {typeof feature === "string" ? feature : feature.title}
-          </p>
-        </motion.div>
-      ))}
-    </div>
-
-    {/* Right column (next 2 features) */}
-    <div className="flex flex-col gap-28 items-end">
-      {product.features.slice(2, 4).map((feature, index) => (
-        <motion.div
-          key={index + 2}
-          initial={{ opacity: 0, x: 100 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true, margin: "-100px" }}
-          transition={{ duration: 0.6, delay: index * 0.2 }}
-          className="flex items-center gap-4 md:gap-6 flex-row-reverse"
-        >
-          <img
-            src={featureImages[index + 2] || "/placeholder.jpg"}
-            alt={typeof feature === "string" ? feature : feature.title}
-            className="w-20 h-20 md:w-30 md:h-30 rounded-full object-cover shadow-lg flex-shrink-0"
-          />
-          <p
-            className="bg-black/60 px-6 py-4 md:py-6 rounded-xl text-white 
-                       text-sm sm:text-base md:text-lg font-medium shadow-lg 
-                       w-fit text-center leading-relaxed break-words whitespace-pre-wrap"
-            style={{ maxWidth: "28ch" }}
-          >
-            {typeof feature === "string" ? feature : feature.title}
-          </p>
-        </motion.div>
-      ))}
-    </div>
-  </div>
-)}
-
-
-
-        {/* Center text */}
-        <motion.div
-          className={`fixed top-[44%] left-1/2 -translate-x-1/2 -translate-y-1/2 z-40 text-5xl md:text-8xl font-bold text-center pointer-events-none select-none ${lora.className}`}
-          style={{
-            opacity: textOpacity,
-            scale: textScale,
-            color: "#888887",
-          }}
-        >
-          E-commerce
-        </motion.div>
-      </div>
-
-      
-
-<div
-  className="relative h-[150vh] w-full bg-cover bg-center bg-fixed"
-  style={{ backgroundImage: "url(/bg2.jpg)" }}
->
-  <div className="absolute inset-0 bg-black/30" />
-
-  {/* Side image */}
+        {/* LEFT IMAGE + THUMBNAILS */}
+        <div>
+          <div className="w-full h-[420px] md:h-[470px] bg-[#f7f3ef] rounded-xl shadow-2xl flex items-center justify-center overflow-hidden">
   <img
-    src="/hand.png"
-    alt="Side Image"
-    className="absolute top-1/2 right-0 -translate-y-1/2 w-32 md:w-180 object-contain"
-    style={{ top: "60%" }}
+    src={selectedImage}
+    alt={product.name}
+    className="max-w-full max-h-full object-contain"
   />
-
-  {/* Zig-zag layout for descriptions */}
-  {product.descriptions && (
-    <div className="absolute top-1/2 left-0 w-full -translate-y-1/2 flex flex-col gap-16 md:gap-20 z-10">
-      {product.descriptions.slice(0, 4).map((desc, index) => {
-        const isLeft = index % 2 === 0
-        return (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, x: isLeft ? -100 : 100 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true, margin: "-100px" }}
-            transition={{ duration: 0.6, delay: index * 0.2 }}
-            className={`flex items-center gap-4 md:gap-6 ${
-              isLeft
-                ? "justify-start pl-12 md:pl-20"
-                : "justify-end pr-12 md:pr-[57%]" // ✅ move closer to center
-            }`}
-          >
-            {/* Left side image */}
-            {isLeft && (
-              <img
-                src={descriptionImages[index] || "/placeholder.jpg"}
-                alt={`desc-${index}`}
-                className="w-10 h-10 md:w-29 md:h-29 rounded-full object-cover shadow-lg"
-              />
-            )}
-
-            {/* Description box */}
-            <p
-              className={`bg-black/60 px-6 py-4 md:py-6 rounded-xl text-white 
-                         text-sm sm:text-base md:text-lg font-medium shadow-lg 
-                         leading-relaxed break-words whitespace-pre-wrap 
-                         ${isLeft ? "text-left" : "text-left"}`}
-              style={{
-                maxWidth: "34ch",
-                lineHeight: "1.6",
-                wordBreak: "break-word",
-              }}
-            >
-              {desc}
-            </p>
-
-            {/* Right side image */}
-            {!isLeft && (
-              <img
-                src={descriptionImages[index] || "/placeholder.jpg"}
-                alt={`desc-${index}`}
-                className="w-10 h-10 md:w-29 md:h-29 rounded-full object-cover shadow-lg"
-              />
-            )}
-          </motion.div>
-        )
-      })}
-    </div>
-  )}
 </div>
 
 
-      {/* --- SECTION 3: BUY SECTION --- */}
-     <div
-  className="relative h-screen w-full"
-  style={{
-    backgroundImage: "url(/bg3.jpeg)",
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundAttachment: "fixed",
-  }}
->
-  <div className="absolute inset-0 bg-black/35" />
+          <div className="flex gap-3 mt-8 overflow-x-auto">
+            {product.mainImages?.map((img, idx) => (
+              <img
+                key={idx}
+                src={img}
+                alt={`thumb-${idx}`}
+                onClick={() => setSelectedImage(img)}
+                className={`h-20 w-20 rounded-lg object-cover cursor-pointer border ${
+                  selectedImage === img ? "border-black" : "border-gray-400"
+                }`}
+              />
+            ))}
+          </div>
 
-  {/* Product Name */}
-  <div
-    className={`absolute top-35 left-1/2 -translate-x-1/2 z-40 text-gray-200 text-3xl md:text-6xl font-bold text-center select-none ${lora.className}`}
-  >
-    {product.name}
-  </div>
-
-  {/* Right Side Buttons */}
-  <div className="absolute top-1/2 right-40 -translate-y-1/3 flex flex-col items-end gap-5 z-50 text-white">
-
-    {/* Add to Cart */}
-    {!showQuantity && (
-      <Button
-        size="sm"
-        disabled={isOut}
-        className={`gap-3 px-10 py-6 text-lg ${
-          isOut
-            ? "px-8 py-6 bg-gray-600 hover:bg-gray-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
-            : "bg-primary hover:bg-primary/90 text-primary-foreground"
-        }`}
-        onClick={(e) => {
-          e.preventDefault();
-          if (isOut) return;
-
-          addToCart({
-            id: product._id ?? "",
-            name: product.name,
-            price: product.price,
-            mainImages: product.mainImages,
-            stock: product.quantity,
-          });
-
-          setShowQuantity(true);
-        }}
-      >
-        <ShoppingCart className="w-5 h-5" />
-        <span className="hidden sm:inline">
-          {isOut ? "Not available" : "Add to Cart"}
-        </span>
-      </Button>
-    )}
-
-    {/* Quantity UI */}
-    {showQuantity && (
-      <div className="flex items-center gap-8 bg-black/60 px-6 py-4 rounded-2xl shadow-lg">
-        <button
-          onClick={handleDecrease}
-          className="px-3 text-xl font-bold"
-          disabled={currentQty <= 0}
-        >
-          −
-        </button>
-        <span className="px-4 text-lg font-medium">{currentQty}</span>
-        <button
-          onClick={handleAddToCartClick}
-          className="px-3 text-xl font-bold"
-          disabled={currentQty >= maxStock}
-        >
-          +
-        </button>
-
-        <p className="text-xl font-semibold">
-          ₹{(product.price * currentQty).toFixed(2)}
-        </p>
-      </div>
-    )}
-
-    {/* Buy Now */}
-    <Button
-      size="lg"
-      disabled={isOut}
-      className="px-6 py-4 bg-green-600 hover:bg-green-700 text-white text-lg font-semibold rounded-full shadow-lg transition-all duration-300"
-      onClick={handleBuyNowClick}
-    >
-      <ShoppingCart className="w-5 h-5 mr-2" />
-      Buy Now
-    </Button>
-
-  </div>
-
-  {/* RELATED PRODUCTS — BOTTOM RIGHT */}
-
-  {product.reviews && product.reviews.length > 0 && (
-  <div className="absolute bottom-[50%] left-6 z-50 w-[300px] md:w-[480px] bg-black/40 backdrop-blur-lg 
-                      border border-white/20 rounded-2xl p-5 shadow-xl">
-    <h2 className="text-xl font-bold text-white mb-4">Customer Reviews</h2>
-
-    <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-      {product.reviews.map((review: Review, index: number) => (
-        <div
-          key={index}
-          className="min-w-[180px] bg-white/10 backdrop-blur-md border border-white/10 
-                        rounded-xl p-4 shadow-lg"
-        >
-          <h3 className="text-white font-semibold text-sm">
-            {review.customerName || "Customer"}
-          </h3>
-
-          <p className="text-yellow-400 font-bold text-sm mt-1">
-            ⭐ {review.rating}/5
-          </p>
-
-          <p className="text-gray-200 text-xs mt-2 line-clamp-3">
-            {review.message}
-          </p>
-
-          {review.date && (
-  <p className="text-gray-400 text-[10px] mt-2">
-    {new Date(review.date).toLocaleDateString()}
-  </p>
-)}
-        </div>
-      ))}
-    </div>
-  </div>
-)}
-
-  {relatedProducts.length > 0 && (
-    <div className="absolute bottom-6 left-6 z-50 w-[300px] md:w-[480px] bg-black/40 backdrop-blur-lg 
-                    border border-white/20 rounded-2xl p-5 shadow-xl">
-      <h2 className="text-xl font-bold text-white mb-4">Related Products</h2>
-
-      <div className="flex gap-4 overflow-x-auto scrollbar-hide pb-2">
-        {relatedProducts.map((item) => (
-          <div
-            key={item._id}
-            onClick={() => router.push(`/products/${item._id}`)}
-            className="min-w-[130px] cursor-pointer p-3 bg-white/10 backdrop-blur-md 
-                       border border-white/10 rounded-xl hover:shadow-lg hover:scale-105 
-                       transition duration-300"
-          >
+          
+      {product.descriptions && product.descriptions.length > 0 && (
+    <div className="mb-12 mt-10">
+      <h2 className="text-2xl font-bold text-gray-600 mb-6">Description</h2>
+      <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
+        {product.descriptions.map((desc, index) => (
+          <div key={index} className="flex gap-4 items-start bg-black/10 p-4 rounded-xl shadow-lg">
             <img
-              src={item.mainImages?.[0]}
-              alt={item.name}
-              className="w-full h-24 object-cover rounded-xl"
+              src={descriptionImages[index] || "/placeholder.jpg"}
+              alt={`desc-${index}`}
+              className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover shadow-md mt-1"
             />
-            <h3 className="mt-2 font-semibold text-white text-sm">
-              {item.name}
-            </h3>
-            <p className="text-red-400 font-semibold text-sm">
-              ₹{item.price}
+            <p className="text-black text-sm md:text-base leading-relaxed">
+              {desc}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  )}
+        </div>
+
+        {/* RIGHT SECTION: Price, Offer, Rating, Buttons */}
+        <div className="flex flex-col justify-start gap-5">
+
+          {/* PRICE */}
+          {product.offerProduct ? (
+  <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 shadow-sm">
+    <div className="flex items-center justify-between">
+      <span className="text-3xl font-extrabold text-amber-800">
+        ₹{product.price - (product.price * product.offerPercentage / 100)}
+      </span>
+
+      <span className="bg-red-600 text-white text-sm font-semibold px-3 py-1 rounded-full animate-pulse">
+        🔥 {product.offerPercentage}% OFF
+      </span>
+    </div>
+
+    <div className="flex items-center gap-2 mt-1">
+      <span className="text-gray-400 text-lg line-through">₹{product.price}</span>
+      <span className="text-emerald-700 font-semibold">
+        You Save ₹{(product.price * product.offerPercentage / 100)}
+      </span>
+    </div>
+
+    <p className="mt-2 text-sm text-gray-600">
+      Special price available for a limited time.
+    </p>
+  </div>
+) : (
+  <div className="mt-6">
+    <span className="text-3xl font-extrabold text-amber-800">₹{product.price}</span>
+  </div>
+)}
+
+
+          {/* OFFER */}
+          
+
+          {/* RATING */}
+          <div className="flex items-center gap-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <span
+                key={i}
+                className={`text-xl ${i < (product.rating || 0) ? "text-yellow-500" : "text-gray-300"}`}
+              >
+                ★
+              </span>
+            ))}
+            <span className="ml-2 text-gray-600">{product.rating || 0}/5</span>
+          </div>
+
+          {/* ADD TO CART / BUY NOW */}
+          <div className="flex items-center gap-4 mt-4">
+            {!showQuantity ? (
+              <Button
+                className={`px-6 py-3 text-lg ${isOut ? "bg-gray-400 cursor-not-allowed" : "bg-blue-600 text-white"}`}
+                disabled={isOut}
+                onClick={handleAddToCartClick}
+              >
+                <ShoppingCart className="mr-2 h-5 w-5" /> {isOut ? "Not Available" : "Add to Cart"}
+              </Button>
+            ) : (
+              <div className="flex items-center gap-3 bg-gray-100 p-2 rounded-md">
+                <button
+                  className="px-3 text-xl font-bold"
+                  onClick={handleDecrease}
+                  disabled={currentQty <= 0}
+                >
+                  −
+                </button>
+                <span className="font-medium text-lg">{currentQty}</span>
+                <button
+                  className="px-3 text-xl font-bold"
+                  onClick={handleAddToCartClick}
+                  disabled={currentQty >= maxStock}
+                >
+                  +
+                </button>
+                <span className="ml-4 font-semibold">₹{(product.price * currentQty).toFixed(2)}</span>
+              </div>
+            )}
+            <Button
+              className={`px-6 py-3 text-lg ${isOut ? "bg-gray-400 cursor-not-allowed" : "bg-green-600 text-white"}`}
+              disabled={isOut}
+              onClick={handleBuyNow}
+            >
+              Buy Now
+            </Button>
+          </div>
+
+          {/* --- FEATURES & DESCRIPTION SECTION --- */}
+<div className="relative z-10 max-w-7xl mx-auto px-5 mt-2">
+
+  {/* FEATURES */}
+  {product.features && product.features.length > 0 && (
+    <div className="mb-18">
+      <h2 className="text-2xl font-bold text-gray-800 mb-1">Features</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
+        {product.features.map((feature, index) => (
+          <div key={index} className="flex flex-col items-center gap-2 bg-white/25 p-4 rounded-xl shadow-lg">
+            <img
+              src={featureImages[index] || "/placeholder.jpg"}
+              alt={typeof feature === "string" ? feature : feature.title}
+              className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover shadow-md"
+            />
+            <p className="text-gray text-center text-sm md:text-base font-medium">
+              {typeof feature === "string" ? feature : feature.title}
             </p>
           </div>
         ))}
@@ -545,170 +325,102 @@ const prevImage = () => {
     </div>
   )}
 
-</div>
-
-    </div>
-    </div>
-    
-    {/* MOBILE VIEW */}
-<div className="block md:hidden min-h-screen w-full bg-black relative text-white">
-  {/* NAV */}
-  <ClientHeader />
-  <div className="absolute top-19 left-4 z-50 flex items-center gap-3">
-    <Link href="/products" className="p-2 rounded-full bg-white/10 backdrop-blur-md">
-    <ChevronLeft size={24} />
-    </Link>
-    <p className="text-sm font-medium opacity-90">Back</p>
-    </div>
-
-      {/* BG IMAGE FULL SCREEN */}
-      <div
-        className="absolute inset-0 bg-cover bg-center"
-        style={{ backgroundImage: "url(/bg3.jpeg)" }}
-      >
-        <div className="absolute inset-0 bg-black/60" />
-      </div>
-
-      <div className="relative z-10 pb-20">
-
-        {/* PRODUCT IMAGE */}
-    {product.mainImages && product.mainImages.length > 0 && (
-      <div className="relative w-full flex justify-center pt-10">
-
-        <button
-          onClick={prevImage}
-          className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20"
-        >
-          ‹
-        </button>
-
-        <img
-          src={product.mainImages[currentImage]}
-          alt={product.name}
-          className="w-56 h-56 object-contain drop-shadow-xl transition-all duration-300"
-        />
-
-        <button
-          onClick={nextImage}
-          className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/60 text-white p-2 rounded-full z-20"
-        >
-          ›
-        </button>
-
-      </div>
-    )}
-
-
-    <h1 className="text-center text-2xl font-bold mt-4">{product.name}</h1>
-    
-
-    <p className="text-center text-xl font-semibold mt-1">
-      ₹{product.price}
-    </p>
-
-
-      <div className="flex flex-col items-center gap-3 px-5 mt-6">
-        {!showQuantity ? (
-          <Button
-            className={`w-full text-lg rounded-xl py-4 ${
-              isOut ? "bg-gray-600 text-white cursor-not-allowed" : "bg-blue-600 text-white"
-            }`}
-            disabled={isOut}
-            onClick={(e) => {
-              e.preventDefault();
-              if (isOut) return;
-
-              addToCart({
-                id: product._id || product.id || "",
-                name: product.name,
-                price: product.price,
-                mainImages: [mainImage],
-                stock: product.quantity,
-              });
-
-              setShowQuantity(true);
-              toast.success("Added to cart!");
-            }}
-          >
-            {isOut ? "Not Available" : "Add to Cart"}
-          </Button>
-        ) : (
-          <div className="flex items-center justify-between bg-black/50 w-full px-6 py-3 rounded-xl">
-            <button
-              className="text-2xl font-bold"
-              onClick={handleDecrease}
-              disabled={currentQty <= 0}
-            >
-              −
-            </button>
-
-            <span className="text-lg font-semibold">{currentQty}</span>
-
-            <button
-              className="text-2xl font-bold"
-              onClick={handleAddToCartClick}
-              disabled={currentQty >= maxStock}
-            >
-              +
-            </button>
-
-            <p className="text-lg font-semibold">
-              ₹{(product.price * currentQty).toFixed(2)}
-            </p>
-          </div>
-        )}
-
-        {/* BUY NOW */}
-        <Button
-          className={`w-full text-lg rounded-xl py-4 ${
-            isOut ? "bg-gray-600 text-white cursor-not-allowed" : "bg-green-600 text-white"
-          }`}
-          disabled={isOut}
-          onClick={handleBuyNowClick}
-        >
-          Buy Now
-        </Button>
+  <div className="mt-6 bg-gradient-to-r from-purple-700 to-indigo-700 text-white p-5 rounded-2xl shadow-lg flex flex-col gap-3">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold">🎉 Promo Code</h3>
         
       </div>
 
-
-    {/* DESCRIPTION SECTION */}
-    <div className="px-5 mt-10">
-      <h2 className="text-xl font-bold mb-4">Description</h2>
-
-      {product.descriptions?.map((desc, i) => (
-        <motion.p
-          key={i}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-50px" }}
-          transition={{ duration: 0.5, delay: i * 0.1 }}
-          className="bg-black/50 p-4 rounded-xl mb-3 leading-relaxed text-sm"
+      <div className="flex items-center justify-between bg-white text-purple-800 rounded-xl px-4 py-3 font-bold text-xl tracking-wider shadow-sm">
+        {promoCode}
+        <button
+          className="text-sm bg-purple-800 text-white px-3 py-1 rounded-md hover:bg-purple-900 transition"
+          onClick={() => navigator.clipboard.writeText(promoCode)}
         >
-          {desc}
-        </motion.p>
+          Copy
+        </button>
+      </div>
+
+      <p className="text-sm text-purple-100">
+        Apply this promo code at checkout to get special discount — valid only for this month!
+      </p>
+    </div>
+<div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-5">
+      {highlights.map((item, index) => (
+        <div
+          key={index}
+          className="flex flex-col items-center gap-2 bg-white50 p-4 rounded-xl border border-white/10 hover:bg-black/10 transition shadow-md"
+        >
+          <div className="text-yellow-400">{item.icon}</div>
+          <p className="text-black text-sm font-semibold">{item.title}</p>
+          <p className="text-black/80 text-xs">{item.subtitle}</p>
+        </div>
       ))}
     </div>
 
-    {/* FEATURES SECTION */}
-    <div className="px-5 mt-10 mb-10">
-      <h2 className="text-xl font-bold mb-4">Features</h2>
-          {product.features?.map((feature, i) => (
-            <motion.div
-              key={i}
-              initial={{ opacity: 0, x: i % 2 === 0 ? -40 : 40 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.5, delay: i * 0.15 }}
-              className="bg-black/50 p-4 rounded-xl mb-3 leading-relaxed text-sm"
-            >
-              {typeof feature === "string" ? feature : feature.title}
-            </motion.div>
-          ))}
+</div>
+
         </div>
       </div>
-    </div>
 
-    </>
+
+      {/* RELATED PRODUCTS */}
+      {relatedProducts.length > 0 && (
+        <div className="max-w-6xl mx-auto px-4 md:px-8 py-10">
+          <h3 className="text-2xl font-bold mb-6">Related Products</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+            {relatedProducts.map((item) => (
+              <div
+                key={item._id}
+                className="border rounded-lg p-3 cursor-pointer bg-black/15 hover:shadow-2xl transition"
+                onClick={() => router.push(`/products/${item._id}`)}
+              >
+                <img
+                  src={item.mainImages?.[0]}
+                  className="h-30 w-full object-contain mb-2"
+                />
+                <p className=" text-lg font-bold truncate">{item.name}</p>
+                <p className="text-gray-700">₹{item.price}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* REVIEWS & COMMENTS */}
+      <div className="max-w-5xl mx-auto px-4 md:px-8 py-10">
+        <h3 className="text-2xl font-bold mb-4">Reviews & Comments</h3>
+     {/* REVIEWS SECTION */}
+{product.reviews?.length ? (
+  product.reviews.map((review: Review, index: number) => (
+    <div
+      key={index}
+      className="min-w-[180px] bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-lg"
+    >
+      <h3 className="text-black font-semibold text-sm">
+        {review.customerName || "Customer"}
+      </h3>
+
+      <p className="text-yellow-400 font-bold text-sm mt-1">
+        ⭐ {review.rating}/5
+      </p>
+
+      <p className="text-gray-600 text-xs mt-2 line-clamp-3">
+        {review.message}
+      </p>
+
+      {review.date && (
+        <p className="text-gray-800 text-[10px] mt-2">
+          {new Date(review.date).toLocaleDateString()}
+        </p>
+      )}
+    </div>
+  ))
+) : (
+  <p className="text-gray-600">No reviews yet</p>
+)}
+
+      </div>
+    </div>
   )
 }

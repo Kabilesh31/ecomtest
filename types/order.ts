@@ -50,7 +50,7 @@ export interface Order {
   
   purchasedProducts: PurchasedProduct[];
   customerDetails: CustomerDetails;
- status: "Order Received" | "Delivered" | "Shipped" | "Processing" | "Cancelled";
+ status: "order Recieved" | "Delivered" | "Shipped" | "Processing" | "Cancelled";
 }
 
 
