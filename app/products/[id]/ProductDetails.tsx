@@ -60,6 +60,7 @@ export default function ProductDetails({ product }: Props) {
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([])
 
   const existingItem = items.find((i) => i.id === (product._id || product.id))
+  const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const currentQty = existingItem ? existingItem.quantity : 0
   const maxStock = product.quantity || 10
   const isOut = product.outofstock === true || Number(product.quantity) === 0
@@ -133,6 +134,25 @@ const descriptionImages = [
     setShowQuantity(true)
     toast.success("Added to cart!")
   }
+// 🟢 Save viewed products (recent history)
+useEffect(() => {
+  if (!product?._id) return;
+
+  const viewed = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
+
+  // remove if already exists (to avoid duplicates)
+  const filtered = viewed.filter((p: any) => p._id !== product._id);
+
+  // add product at first position
+  const updated = [{ _id: product._id, name: product.name, price: product.price, image: product.mainImages?.[0] }, ...filtered];
+
+  // limit to last 8 viewed items
+  localStorage.setItem("recentlyViewed", JSON.stringify(updated.slice(0, 8)));
+}, [product]);
+useEffect(() => {
+  const viewed = JSON.parse(localStorage.getItem("recentlyViewed") || "[]");
+  setRecentlyViewed(viewed.filter((p: any) => p._id !== product._id)); // avoid showing current product
+}, [product]);
 
   const handleDecrease = () => {
     if (!existingItem) return
@@ -192,7 +212,7 @@ const descriptionImages = [
 
           
       {product.descriptions && product.descriptions.length > 0 && (
-    <div className="mb-12 mt-10">
+    <div className="mb-12 mt-18">
       <h2 className="text-2xl font-bold text-gray-600 mb-6">Description</h2>
       <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
         {product.descriptions.map((desc, index) => (
@@ -218,32 +238,47 @@ const descriptionImages = [
           {/* PRICE */}
           {product.offerProduct ? (
   <div className="mt-6 rounded-xl border border-amber-300 bg-amber-50 p-4 shadow-sm">
-    <div className="flex items-center justify-between">
-      <span className="text-3xl font-extrabold text-amber-800">
-        ₹{product.price - (product.price * product.offerPercentage / 100)}
-      </span>
+    {(() => {
+      const offer = product.offerPercentage ?? 0; // fallback
+      const discountedPrice = Math.round(product.price - (product.price * offer / 100)); // 👈 rounded
+      const savings = Math.round(product.price * offer / 100); // 👈 rounded
+      return (
+        <>
+          <div className="flex items-center justify-between">
+            <span className="text-3xl font-extrabold text-amber-800">
+              ₹{discountedPrice}
+            </span>
 
-      <span className="bg-red-600 text-white text-sm font-semibold px-3 py-1 rounded-full animate-pulse">
-        🔥 {product.offerPercentage}% OFF
-      </span>
-    </div>
+            {offer > 0 && (
+              <span className="bg-red-600 text-white text-sm font-semibold px-3 py-1 rounded-full animate-pulse">
+                🔥 {offer}% OFF
+              </span>
+            )}
+          </div>
 
-    <div className="flex items-center gap-2 mt-1">
-      <span className="text-gray-400 text-lg line-through">₹{product.price}</span>
-      <span className="text-emerald-700 font-semibold">
-        You Save ₹{(product.price * product.offerPercentage / 100)}
-      </span>
-    </div>
+          <div className="flex items-center gap-2 mt-1">
+            <span className="text-gray-400 text-lg line-through">₹{product.price}</span>
 
-    <p className="mt-2 text-sm text-gray-600">
-      Special price available for a limited time.
-    </p>
+            {offer > 0 && (
+              <span className="text-emerald-700 font-semibold">
+                You Save ₹{savings}
+              </span>
+            )}
+          </div>
+
+          <p className="mt-2 text-sm text-gray-600">
+            Special price available for a limited time.
+          </p>
+        </>
+      );
+    })()}
   </div>
 ) : (
   <div className="mt-6">
     <span className="text-3xl font-extrabold text-amber-800">₹{product.price}</span>
   </div>
 )}
+
 
 
           {/* OFFER */}
@@ -365,7 +400,7 @@ const descriptionImages = [
 
 
       {/* RELATED PRODUCTS */}
-      {relatedProducts.length > 0 && (
+      {/* {relatedProducts.length > 0 && (
         <div className="max-w-6xl mx-auto px-4 md:px-8 py-10">
           <h3 className="text-2xl font-bold mb-6">Related Products</h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
@@ -385,7 +420,7 @@ const descriptionImages = [
             ))}
           </div>
         </div>
-      )}
+      )} */}
 
       {/* REVIEWS & COMMENTS */}
       <div className="max-w-5xl mx-auto px-4 md:px-8 py-10">
@@ -418,6 +453,28 @@ const descriptionImages = [
   ))
 ) : (
   <p className="text-gray-600">No reviews yet</p>
+)}
+{recentlyViewed.length > 0 && (
+  <div className="max-w-6xl mx-auto px-4 md:px-8 py-10">
+    <h3 className="text-2xl font-bold mb-6">Recently Viewed</h3>
+    
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+      {recentlyViewed.map((item: any, index: number) => (
+        <div
+          key={index}
+          className="border rounded-lg p-3 cursor-pointer hover:shadow-2xl bg-black/15 transition"
+          onClick={() => router.push(`/products/${item._id}`)}
+        >
+          <img
+            src={item.image}
+            className="h-32 w-full object-contain mb-2"
+          />
+          <p className="text-lg font-bold truncate">{item.name}</p>
+          <p className="text-gray-800">₹{item.price}</p>
+        </div>
+      ))}
+    </div>
+  </div>
 )}
 
       </div>
