@@ -334,6 +334,7 @@ export function ProductShowcase() {
       name: product.name,
       price: finalPrice,
       mainImages: product.mainImages,
+      
       stock: stockAvailable,
     });
   }}

@@ -292,9 +292,7 @@ export default function ProductsPage() {
                                       id: product._id,
                                       name: product.name,
                                       price: finalPrice,
-                                      mainImages:
-                                        product.mainImages?.[0] ||
-                                        "/placeholder.svg",
+                                      mainImages: product.mainImages,
                                       stock: product.quantity,
                                     });
                                   }
