@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -9,20 +9,82 @@ import Link from "next/link"
 import toast from "react-hot-toast"
 import { useAuth, User } from "@/context/auth-context"
 
+// 🔹 OTP Input Component (Hotstar-style)
+const OtpInput = ({ value, setValue, length = 6 }: { value: string, setValue: (val: string) => void, length?: number }) => {
+  const [otpValues, setOtpValues] = useState(Array(length).fill(""))
+  const inputsRef = useRef<Array<HTMLInputElement | null>>([])
+
+  // update parent state
+  useEffect(() => {
+    setValue(otpValues.join(""))
+  }, [otpValues])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const val = e.target.value.replace(/\D/, "")
+    if (!val) return
+    const newOtp = [...otpValues]
+    newOtp[index] = val[0]
+    setOtpValues(newOtp)
+    if (index < length - 1) inputsRef.current[index + 1]?.focus()
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, index: number) => {
+    if (e.key === "Backspace") {
+      e.preventDefault()
+      const newOtp = [...otpValues]
+      newOtp[index] = ""
+      setOtpValues(newOtp)
+      if (index > 0) inputsRef.current[index - 1]?.focus()
+    }
+  }
+
+  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const pasteData = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, length)
+    if (!pasteData) return
+    const newOtp = pasteData.split("")
+    setOtpValues([...newOtp, ...Array(length - newOtp.length).fill("")].slice(0, length))
+  }
+
+  return (
+    <div className="flex justify-between gap-2">
+      {otpValues.map((digit, idx) => (
+        <input
+          key={idx}
+          ref={el => { inputsRef.current[idx] = el }}
+          type="text"
+          maxLength={1}
+          value={digit}
+          onChange={e => handleChange(e, idx)}
+          onKeyDown={e => handleKeyDown(e, idx)}
+          onPaste={handlePaste}
+          className="w-12 h-12 text-center border rounded-md focus:ring-2 focus:ring-primary text-lg font-bold"
+        />
+      ))}
+    </div>
+  )
+}
+
+
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
 
   const [mobile, setMobile] = useState("")
   const [otp, setOtp] = useState("")
-  const [step, setStep] = useState<"login" | "otp">("login") // OTP flow
-
-  const [showAdmin, setShowAdmin] = useState(false) // toggle admin form
+  const [step, setStep] = useState<"login" | "otp">("login")
+  const [showAdmin, setShowAdmin] = useState(false)
 
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { setUser } = useAuth()
+
+  const otpRef = useRef<HTMLInputElement | null>(null)
+
+  // Autofocus first OTP box
+  useEffect(() => {
+    if (step === "otp") otpRef.current?.focus()
+  }, [step])
 
   // 🔹 Admin login
   const handleAdminLogin = async (e: React.FormEvent) => {
@@ -48,7 +110,6 @@ export default function LoginPage() {
 
         localStorage.setItem("token", data.token || "")
         setUser(finalUser)
-
         toast.success("Welcome back, Admin!")
         sessionStorage.setItem("postLoginRefresh", "1")
         router.push("/")
@@ -68,7 +129,7 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       const res = await fetch("http://localhost:5000/api/auth/send-otp", {
-        method: "POST",
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mobile }),
       })
@@ -98,7 +159,8 @@ export default function LoginPage() {
       })
 
       if (!res.ok) {
-        toast.error("Invalid OTP")
+        const data = await res.json()
+        toast.error(data.message || "Invalid OTP")
         return
       }
 
@@ -107,7 +169,6 @@ export default function LoginPage() {
 
       localStorage.setItem("token", data.token)
       setUser(finalUser)
-
       toast.success("Login Successful!")
       sessionStorage.setItem("postLoginRefresh", "1")
       router.push("/")
@@ -137,11 +198,11 @@ export default function LoginPage() {
                 value={mobile}
                 onChange={e => setMobile(e.target.value)}
               />
+
               <Button onClick={sendOtp} className="w-full" disabled={isLoading}>
                 {isLoading ? "Sending OTP..." : "Send OTP via WhatsApp"}
               </Button>
 
-              {/* Admin login toggle */}
               {!showAdmin && (
                 <button
                   type="button"
@@ -154,15 +215,10 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* 🔹 OTP verification */}
+          {/* 🔹 OTP VERIFICATION */}
           {step === "otp" && (
             <div className="space-y-4">
-              <Input
-                type="text"
-                placeholder="Enter OTP"
-                value={otp}
-                onChange={e => setOtp(e.target.value)}
-              />
+              <OtpInput value={otp} setValue={setOtp} />
               <Button onClick={verifyOtp} className="w-full" disabled={isLoading}>
                 {isLoading ? "Verifying..." : "Verify OTP"}
               </Button>
