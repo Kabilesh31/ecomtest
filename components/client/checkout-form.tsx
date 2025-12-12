@@ -415,7 +415,7 @@ console.log({
                   </div>
                 </div>
 
-                <div>
+                <div> 
                   <p className="font-semibold">Cash on Delivery (COD)</p>
                   <p className="text-sm text-gray-500">Pay after delivery</p>
                 </div>
