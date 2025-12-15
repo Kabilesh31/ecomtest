@@ -9,18 +9,21 @@ import toast from "react-hot-toast";
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = useRouter(); // <-- for navigation
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/users/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+      const res = await fetch(
+        "http://localhost:5000/api/users/forgot-password",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        }
+      );
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Error sending reset link");
       toast.success(data.message);
@@ -33,7 +36,10 @@ export default function ForgotPasswordPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <form className="p-8 bg-white shadow-md rounded-md w-full max-w-md" onSubmit={handleSubmit}>
+      <form
+        className="p-8 bg-white shadow-md rounded-md w-full max-w-md"
+        onSubmit={handleSubmit}
+      >
         <h2 className="text-2xl font-bold mb-4">Forgot Password</h2>
         <p className="text-sm text-muted-foreground mb-4">
           Enter your email to receive a password reset link.

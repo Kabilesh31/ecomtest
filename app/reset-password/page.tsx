@@ -3,14 +3,14 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CheckCircle } from "lucide-react"; // nice SVG tick
+import { CheckCircle } from "lucide-react"; 
 import toast from "react-hot-toast";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false); // <-- track success
+  const [success, setSuccess] = useState(false); 
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
 
@@ -36,7 +36,7 @@ export default function ResetPasswordPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message);
 
-      setSuccess(true); // <-- show success card
+      setSuccess(true); 
       toast.success("Password reset successfully!");
       setPassword("");
       setConfirmPassword("");

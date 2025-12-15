@@ -33,30 +33,34 @@ export function CartItems({ items }: CartItemsProps) {
   return (
     <>
       {items.map((item) => (
-        <Card key={item.id} className="p-4 md:p-6 flex flex-col md:flex-row items-center gap-4 md:gap-6">
+        <Card
+          key={item.id}
+          className="p-4 md:p-6 flex flex-col md:flex-row items-center gap-4 md:gap-6"
+        >
           <Link href={`/products/${item.id}`} className="flex-shrink-0">
             <img
-  src={
-    item?.mainImages?.[0]
-      ? item.mainImages[0]
-      : "/placeholder.svg" // fallback image
-  }
-  alt={item.name}
-  className="h-20 w-20 rounded-md object-cover"
-/>
-
+              src={
+                item?.mainImages?.[0] ? item.mainImages[0] : "/placeholder.svg"
+              }
+              alt={item.name}
+              className="h-20 w-20 rounded-md object-cover"
+            />
           </Link>
 
           <div className="flex-1 flex flex-col justify-between">
             <div>
-              <Link href={`/products/${item.id}`} className="hover:text-primary transition-colors">
+              <Link
+                href={`/products/${item.id}`}
+                className="hover:text-primary transition-colors"
+              >
                 <h3 className="font-semibold text-lg">{item.name}</h3>
               </Link>
-              <p className="text-sm text-muted-foreground mt-1">SKU: PROD-{item.id}</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                SKU: PROD-{item.id}
+              </p>
             </div>
 
             <div className="flex items-center justify-between mt-4">
-              {/* Quantity Controls */}
               <div className="flex items-center gap-3">
                 <Button
                   variant="outline"
@@ -66,7 +70,9 @@ export function CartItems({ items }: CartItemsProps) {
                 >
                   <Minus className="w-4 h-4" />
                 </Button>
-                <span className="w-8 text-center font-semibold">{item.quantity}</span>
+                <span className="w-8 text-center font-semibold">
+                  {item.quantity}
+                </span>
                 <Button
                   variant="outline"
                   size="sm"
@@ -77,7 +83,6 @@ export function CartItems({ items }: CartItemsProps) {
                 </Button>
               </div>
 
-              {/* Price */}
               <div className="text-right">
                 <p className="text-lg font-bold">
                   ₹{(item.price * item.quantity).toLocaleString("en-IN")}

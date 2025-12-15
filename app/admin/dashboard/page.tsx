@@ -92,10 +92,10 @@ export default function AdminDashboard() {
                   <Input
                     type="date"
                     value={fromDate}
-                    max={new Date().toISOString().split("T")[0]} // 👈 disables future dates
+                    max={new Date().toISOString().split("T")[0]} 
                     onChange={(e) => {
                       setFromDate(e.target.value)
-                      // Reset toDate if it's before fromDate
+                     
                       if (toDate && e.target.value && new Date(toDate) < new Date(e.target.value)) {
                         setToDate("")
                       }
@@ -106,11 +106,11 @@ export default function AdminDashboard() {
                   <Input
                     type="date"
                     value={toDate}
-                    min={fromDate || undefined} // 👈 disables earlier dates than fromDate
-                    max={new Date().toISOString().split("T")[0]} // 👈 disables future dates
+                    min={fromDate || undefined} 
+                    max={new Date().toISOString().split("T")[0]} 
                     onChange={(e) => setToDate(e.target.value)}
                     className="w-[130px]"
-                    disabled={!fromDate} // 👈 disables until from-date is chosen
+                    disabled={!fromDate} 
                   />
                 </div>
               )}

@@ -1,50 +1,52 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { useAuth } from "@/context/auth-context"
-import { useCart } from "@/context/cart-context"
-import { Button } from "@/components/ui/button"
-import { ShoppingCart, User, Menu, X } from "lucide-react"
+import Link from "next/link";
+import { useAuth } from "@/context/auth-context";
+import { useCart } from "@/context/cart-context";
+import { Button } from "@/components/ui/button";
+import { ShoppingCart, User, Menu, X } from "lucide-react";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/components/ui/dialog"
-import { useState, useRef, useEffect } from "react"
+} from "@/components/ui/dialog";
+import { useState, useRef, useEffect } from "react";
+import { Heart } from "lucide-react";
+import { useWishlist } from "@/context/wishlist-context";
 
 export function ClientHeader() {
-  const { user, logout } = useAuth()
-  const { items } = useCart()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [confirmLogout, setConfirmLogout] = useState(false)
+  const { user, logout } = useAuth();
+  const { items } = useCart();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [confirmLogout, setConfirmLogout] = useState(false);
 
-  // 🔹 For More dropdown
-  const [moreOpen, setMoreOpen] = useState(false)
-  const moreRef = useRef<HTMLDivElement | null>(null)
+  const [moreOpen, setMoreOpen] = useState(false);
+  const moreRef = useRef<HTMLDivElement | null>(null);
+  const { wishlist } = useWishlist();
 
-  // 🔹 Close More dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (moreRef.current && !moreRef.current.contains(event.target as Node)) {
-        setMoreOpen(false)
+        setMoreOpen(false);
       }
-    }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
-  }, [])
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
-  const toggleMenu = () => setMobileMenuOpen((prev) => !prev)
+  const toggleMenu = () => setMobileMenuOpen((prev) => !prev);
 
-  // 🔹 Navigation Links
   const navLinks = [
     { name: "Home", href: "/" },
     { name: "Products", href: "/products" },
     { name: "About", href: "/about" },
     { name: "Contact", href: "/contact" },
-    ...(user && user.role === "customer" ? [{ name: "Orders", href: "/orders" }] : []),
-    
+    ...(user && user.role === "customer"
+      ? [{ name: "Orders", href: "/orders" }]
+      : []),
+
     {
       name: "More",
       children: [
@@ -52,25 +54,26 @@ export function ClientHeader() {
         { name: "Privacy and Policy  ", href: "/policy-privacy" },
       ],
     },
-  ]
+  ];
 
   return (
     <header className="sticky top-0 z-50 bg-background border-b border-border shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* 🔹 Logo */}
           <Link href="/" className="flex items-center gap-2">
             <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">E</span>
+              <span className="text-primary-foreground font-bold text-lg">
+                E
+              </span>
             </div>
-            <span className="font-bold text-lg text-foreground hidden sm:inline">E-com</span>
+            <span className="font-bold text-lg text-foreground hidden sm:inline">
+              E-com
+            </span>
           </Link>
 
-          {/* 🔹 Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-8 relative">
             {navLinks.map((link) =>
               link.children ? (
-                // 👇 Updated: Click-based dropdown for "More"
                 <div key={link.name} className="relative" ref={moreRef}>
                   <button
                     onClick={() => setMoreOpen((prev) => !prev)}
@@ -105,10 +108,23 @@ export function ClientHeader() {
               )
             )}
           </nav>
+          {/* Wishlist Button */}
+          <Link href="/wishlist" className="relative">
+            <Button variant="ghost" size="icon">
+              <Heart
+                className={`w-5 h-5 ${
+                  wishlist.length > 0 ? "text-red-500 fill-red-500" : ""
+                }`}
+              />
+              {wishlist.length > 0 && (
+                <span className="absolute -top-1  -right-1 w-4 h-4 bg-red-500 text-white text-xs rounded-full flex items-center justify-center font-semibold">
+                  {wishlist.length}
+                </span>
+              )}
+            </Button>
+          </Link>
 
-          {/* 🔹 Right Section */}
           <div className="flex items-center gap-3">
-            {/* Cart Button */}
             <Link href="/cart" className="relative">
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="w-5 h-5" />
@@ -120,24 +136,30 @@ export function ClientHeader() {
               </Button>
             </Link>
 
-            {/* Admin/User */}
             {user ? (
               user.role === "admin" ? (
                 <Link href="/admin/dashboard">
-                  <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="hidden sm:inline-flex"
+                  >
                     Admin Dashboard
                   </Button>
                 </Link>
               ) : (
                 <Link href="/profile">
-                  <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="hidden sm:inline-flex"
+                  >
                     {user.name}
                   </Button>
                 </Link>
               )
             ) : null}
 
-            {/* Auth Buttons */}
             {user ? (
               <>
                 <Button
@@ -149,7 +171,6 @@ export function ClientHeader() {
                   Logout
                 </Button>
 
-                {/* Logout Confirmation Dialog */}
                 <Dialog open={confirmLogout} onOpenChange={setConfirmLogout}>
                   <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
@@ -159,14 +180,17 @@ export function ClientHeader() {
                       Are you sure you want to log out of your account?
                     </p>
                     <DialogFooter className="mt-4 flex justify-end gap-2">
-                      <Button variant="outline" onClick={() => setConfirmLogout(false)}>
+                      <Button
+                        variant="outline"
+                        onClick={() => setConfirmLogout(false)}
+                      >
                         Cancel
                       </Button>
                       <Button
                         variant="destructive"
                         onClick={() => {
-                          logout()
-                          setConfirmLogout(false)
+                          logout();
+                          setConfirmLogout(false);
                         }}
                       >
                         Logout
@@ -177,7 +201,11 @@ export function ClientHeader() {
               </>
             ) : (
               <Link href="/account/login">
-                <Button variant="outline" size="sm" className="hidden sm:inline-flex">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden sm:inline-flex"
+                >
                   <User className="w-4 h-4 mr-2" />
                   Login
                 </Button>
@@ -189,18 +217,23 @@ export function ClientHeader() {
               onClick={toggleMenu}
               className="md:hidden p-2 hover:bg-muted rounded-lg transition-colors"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? (
+                <X className="w-5 h-5" />
+              ) : (
+                <Menu className="w-5 h-5" />
+              )}
             </button>
           </div>
         </div>
 
-        {/* 🔹 Mobile Menu (unchanged) */}
         {mobileMenuOpen && (
           <nav className="md:hidden pb-4 space-y-2 animate-in fade-in slide-in-from-top-2">
             {navLinks.map((link) =>
               link.children ? (
                 <div key={link.name} className="space-y-1">
-                  <span className="block px-4 py-2 text-foreground font-semibold">{link.name}</span>
+                  <span className="block px-4 py-2 text-foreground font-semibold">
+                    {link.name}
+                  </span>
                   {link.children.map((child) => (
                     <Link
                       key={child.name}
@@ -225,11 +258,18 @@ export function ClientHeader() {
             )}
 
             {user ? (
-              <Button onClick={() => setConfirmLogout(true)} variant="outline" className="w-full">
+              <Button
+                onClick={() => setConfirmLogout(true)}
+                variant="outline"
+                className="w-full"
+              >
                 Logout
               </Button>
             ) : (
-              <Link href="/account/login" onClick={() => setMobileMenuOpen(false)}>
+              <Link
+                href="/account/login"
+                onClick={() => setMobileMenuOpen(false)}
+              >
                 <Button variant="outline" className="w-full">
                   Login
                 </Button>
@@ -239,5 +279,5 @@ export function ClientHeader() {
         )}
       </div>
     </header>
-  )
+  );
 }

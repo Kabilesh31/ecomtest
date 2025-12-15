@@ -4,7 +4,7 @@ export async function POST(request: NextRequest) {
   try {
     const { email, password } = await request.json()
 
-    // For demo purposes, accept admin@example.com / password123
+   
     if (email === "admin@example.com" && password === "password123") {
       return NextResponse.json(
         {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Invalid credentials
+    
     return NextResponse.json({ error: "Invalid email or password" }, { status: 401 })
   } catch (error) {
     console.error("[v0] Login error:", error)

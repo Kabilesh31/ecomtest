@@ -29,22 +29,24 @@ export default function EditProductPage() {
   const [descriptions, setDescriptions] = useState<string[]>([]);
   const [features, setFeatures] = useState<string[]>([]);
   const [hideReviews, setHideReviews] = useState(false);
-const [manualRatings, setManualRatings] = useState(false);
-const [manualRatingValue, setManualRatingValue] = useState(0);
-const [offerProduct, setOfferProduct] = useState(false);
-const [offerPercentage, setOfferPercentage] = useState(0);
-const [promoCodes, setPromoCodes] = useState<{ _id: string; code: string; title: string }[]>([]);
-const [selectedPromo, setSelectedPromo] = useState<string>(""); // promo ID
-
+  const [manualRatings, setManualRatings] = useState(false);
+  const [manualRatingValue, setManualRatingValue] = useState(0);
+  const [offerProduct, setOfferProduct] = useState(false);
+  const [offerPercentage, setOfferPercentage] = useState(0);
+  const [promoCodes, setPromoCodes] = useState<
+    { _id: string; code: string; title: string }[]
+  >([]);
+  const [selectedPromo, setSelectedPromo] = useState<string>("");
 
   const categories = ["Devine", "Cosmetics", "Accessories"];
 
-  // 🟢 Fetch product details
   useEffect(() => {
     if (!id) return;
     const fetchProduct = async () => {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`);
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`
+        );
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || "Failed to fetch product");
 
@@ -60,11 +62,11 @@ const [selectedPromo, setSelectedPromo] = useState<string>(""); // promo ID
         setDescriptions(data.descriptions || []);
         setFeatures(data.features || []);
         setHideReviews(data.hidereviews ?? false);
-setManualRatings(data.manualRatings ?? false);
-setManualRatingValue(data.manualRatingValue ?? 0);
-setOfferProduct(data.offerProduct ?? false);
-setOfferPercentage(data.offerPercentage ?? 0);
-setSelectedPromo(data.promoApplied || "");
+        setManualRatings(data.manualRatings ?? false);
+        setManualRatingValue(data.manualRatingValue ?? 0);
+        setOfferProduct(data.offerProduct ?? false);
+        setOfferPercentage(data.offerPercentage ?? 0);
+        setSelectedPromo(data.promoApplied || "");
       } catch (error) {
         console.error("Failed to load product", error);
         toast.error("Failed to load product details.");
@@ -75,29 +77,26 @@ setSelectedPromo(data.promoApplied || "");
     fetchProduct();
   }, [id]);
 
-useEffect(() => {
-  const fetchPromoCodes = async () => {
-    try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/promocode/`);
-      const data = await res.json();
+  useEffect(() => {
+    const fetchPromoCodes = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/promocode/`
+        );
+        const data = await res.json();
 
-      if (res.ok && Array.isArray(data.data)) {
-        const activePromos = data.data.filter((p: any) => p.isActive);
-        setPromoCodes(activePromos);
+        if (res.ok && Array.isArray(data.data)) {
+          const activePromos = data.data.filter((p: any) => p.isActive);
+          setPromoCodes(activePromos);
+        }
+      } catch (err) {
+        console.error("Failed to fetch promo codes", err);
       }
-    } catch (err) {
-      console.error("Failed to fetch promo codes", err);
-    }
-  };
+    };
 
-  fetchPromoCodes();
-}, []);
+    fetchPromoCodes();
+  }, []);
 
-
-
-
-
-  // 🧩 Handle basic input
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -105,7 +104,6 @@ useEffect(() => {
     setProduct((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🧩 Handle description / feature updates
   const handleArrayChange = (
     index: number,
     value: string,
@@ -118,7 +116,6 @@ useEffect(() => {
     });
   };
 
-  // 🧩 Handle image selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files ? Array.from(e.target.files) : [];
     setMainImages((prev) => [...prev, ...files]);
@@ -127,117 +124,123 @@ useEffect(() => {
     setPreviewUrls((prev) => [...prev, ...newPreviews]);
   };
 
-  // 🧩 Remove a newly selected image (before upload)
   const removeNewImage = (index: number) => {
     setMainImages((prev) => prev.filter((_, i) => i !== index));
     setPreviewUrls((prev) => prev.filter((_, i) => i !== index));
   };
 
-  // 🧩 Remove existing image (from server set)
   const removeExistingImage = (url: string) => {
     setExistingImages((prev) => prev.filter((img) => img !== url));
   };
-// ✔ Manual Rating Toggle Logic
-const handleManualRatingToggle = () => {
-  const newState = !manualRatings;
-  setManualRatings(newState);
 
-  if (newState === true) {
-    // If manual rating ON → hide reviews must be ON
-    setHideReviews(true);
-  }
-};
+  const handleManualRatingToggle = () => {
+    const newState = !manualRatings;
+    setManualRatings(newState);
 
-// ✔ Hide Reviews Toggle Logic
-const handleHideReviewToggle = () => {
-  const newState = !hideReviews;
-  setHideReviews(newState);
-
-  if (newState === false) {
-    // If hide reviews OFF → manual rating must be OFF
-    setManualRatings(false);
-  }
-};
-const handleOfferToggle = () => {
-  const newState = !offerProduct;
-  setOfferProduct(newState);
-
-  if (!newState) {
-    setOfferPercentage(0);
-  }
-};
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  const formData = new FormData();
-
-  formData.append("name", product.name);
-  formData.append("price", product.price);
-  formData.append("quantity", product.quantity);
-  formData.append("category", product.category);
-  formData.append("descriptions", JSON.stringify(descriptions));
-  formData.append("features", JSON.stringify(features));
-  formData.append("existingImages", JSON.stringify(existingImages));
-  formData.append("hidereviews", String(hideReviews));
-  formData.append("manualRatings", String(manualRatings));
-  formData.append("manualRatingValue", String(manualRatingValue));
-  formData.append("offerProduct", String(offerProduct));
-  formData.append("offerPercentage", String(offerPercentage));
-  formData.append("promoApplied", selectedPromo || "");
-
-  // append new images
-  mainImages.forEach((file) => {
-    formData.append("mainImages", file);
-  });
-
-  try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products/${id}`, {
-      method: "PUT",
-      body: formData,
-    });
-    const data = await res.json();
-
-    if (!res.ok) throw new Error(data.message || "Failed to update product");
-
-    // 🔹 Update promo code association
-    if (selectedPromo) {
-      await fetch(`${process.env.NEXT_PUBLIC_API_URL}/promocode/apply-to-product`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ promoId: selectedPromo, productId: id }),
-      });
+    if (newState === true) {
+      setHideReviews(true);
     }
+  };
 
-    toast.success("Product updated successfully!");
-    router.push("/admin/products");
-  } catch (err: any) {
-    console.error(err);
-    toast.error("❌ " + (err.message || "Something went wrong while updating."));
-  }
-};
+  const handleHideReviewToggle = () => {
+    const newState = !hideReviews;
+    setHideReviews(newState);
 
+    if (newState === false) {
+      setManualRatings(false);
+    }
+  };
+  const handleOfferToggle = () => {
+    const newState = !offerProduct;
+    setOfferProduct(newState);
+
+    if (!newState) {
+      setOfferPercentage(0);
+    }
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData();
+
+    formData.append("name", product.name);
+    formData.append("price", product.price);
+    formData.append("quantity", product.quantity);
+    formData.append("category", product.category);
+    formData.append("descriptions", JSON.stringify(descriptions));
+    formData.append("features", JSON.stringify(features));
+    formData.append("existingImages", JSON.stringify(existingImages));
+    formData.append("hidereviews", String(hideReviews));
+    formData.append("manualRatings", String(manualRatings));
+    formData.append("manualRatingValue", String(manualRatingValue));
+    formData.append("offerProduct", String(offerProduct));
+    formData.append("offerPercentage", String(offerPercentage));
+    formData.append("promoApplied", selectedPromo || "");
+
+    mainImages.forEach((file) => {
+      formData.append("mainImages", file);
+    });
+
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
+        {
+          method: "PUT",
+          body: formData,
+        }
+      );
+      const data = await res.json();
+
+      if (!res.ok) throw new Error(data.message || "Failed to update product");
+
+      if (selectedPromo) {
+        await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/promocode/apply-to-product`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ promoId: selectedPromo, productId: id }),
+          }
+        );
+      }
+
+      toast.success("Product updated successfully!");
+      router.push("/admin/products");
+    } catch (err: any) {
+      console.error(err);
+      toast.error(
+        "❌ " + (err.message || "Something went wrong while updating.")
+      );
+    }
+  };
 
   if (loading)
-    return <p className="text-center py-10 text-gray-500">Loading product...</p>;
-type ToggleRowProps = {
-  label: string;
-  checked: boolean;
-  onToggle: () => void;
-};
-  const ToggleRow: React.FC<ToggleRowProps> = ({ label, checked, onToggle }) => {
-  return (
-    <div className="flex items-center justify-between bg-white border rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-all">
-      <p className="text-sm font-medium text-gray-800">{label}</p>
+    return (
+      <p className="text-center py-10 text-gray-500">Loading product...</p>
+    );
+  type ToggleRowProps = {
+    label: string;
+    checked: boolean;
+    onToggle: () => void;
+  };
+  const ToggleRow: React.FC<ToggleRowProps> = ({
+    label,
+    checked,
+    onToggle,
+  }) => {
+    return (
+      <div className="flex items-center justify-between bg-white border rounded-xl px-4 py-3 shadow-sm hover:shadow-md transition-all">
+        <p className="text-sm font-medium text-gray-800">{label}</p>
 
-      <label className="relative inline-flex items-center cursor-pointer select-none">
-        <input
-          type="checkbox"
-          checked={checked}
-          onChange={onToggle}
-          className="sr-only peer"
-        />
+        <label className="relative inline-flex items-center cursor-pointer select-none">
+          <input
+            type="checkbox"
+            checked={checked}
+            onChange={onToggle}
+            className="sr-only peer"
+          />
 
-        <div
-          className="
+          <div
+            className="
             w-14 h-7 
             rounded-full 
             shadow-inner 
@@ -246,9 +249,9 @@ type ToggleRowProps = {
             bg-gray-300 
             relative
           "
-        >
-          <div
-            className="
+          >
+            <div
+              className="
               absolute top-0.5 left-0.5 
               w-6 h-6 
               bg-white 
@@ -257,14 +260,12 @@ type ToggleRowProps = {
               transition-all duration-300 
               peer-checked:translate-x-7
             "
-          ></div>
-        </div>
-      </label>
-    </div>
-  );
-};
-
-
+            ></div>
+          </div>
+        </label>
+      </div>
+    );
+  };
 
   return (
     <AdminLayout>
@@ -282,11 +283,31 @@ type ToggleRowProps = {
             <h1 className="text-2xl font-semibold mb-4">Edit Product</h1>
 
             <form onSubmit={handleSubmit} className="space-y-6">
-              {/* 🧩 Basic Info */}
+              {/* Basic Info */}
               <div className="grid md:grid-cols-2 gap-4">
-                <Input name="name" placeholder="Product Name" value={product.name} onChange={handleInputChange} required />
-                <Input name="price" type="number" placeholder="Price" value={product.price} onChange={handleInputChange} required />
-                <Input name="quantity" type="number" placeholder="Quantity" value={product.quantity} onChange={handleInputChange} required />
+                <Input
+                  name="name"
+                  placeholder="Product Name"
+                  value={product.name}
+                  onChange={handleInputChange}
+                  required
+                />
+                <Input
+                  name="price"
+                  type="number"
+                  placeholder="Price"
+                  value={product.price}
+                  onChange={handleInputChange}
+                  required
+                />
+                <Input
+                  name="quantity"
+                  type="number"
+                  placeholder="Quantity"
+                  value={product.quantity}
+                  onChange={handleInputChange}
+                  required
+                />
                 <div>
                   {/* <label className="block text-sm font-medium mb-1">Category</label> */}
                   <select
@@ -306,86 +327,89 @@ type ToggleRowProps = {
                 </div>
               </div>
               <div>
-  <label className="block text-sm font-medium mb-1">Apply Promo Code</label>
-  <select
-    value={selectedPromo}
-    onChange={(e) => setSelectedPromo(e.target.value)}
-    className="w-full border border-gray-300 rounded-md p-2 text-sm"
-  >
-    <option value="">No Promo</option>
-    {promoCodes.map((promo) => (
-      <option key={promo._id} value={promo._id}>
-        {promo.title} ({promo.code})
-      </option>
-    ))}
-  </select>
-  <p className="text-xs text-gray-500 mt-1">
-    Select a promo code to apply for this product.
-  </p>
-</div>
+                <label className="block text-sm font-medium mb-1">
+                  Apply Promo Code
+                </label>
+                <select
+                  value={selectedPromo}
+                  onChange={(e) => setSelectedPromo(e.target.value)}
+                  className="w-full border border-gray-300 rounded-md p-2 text-sm"
+                >
+                  <option value="">No Promo</option>
+                  {promoCodes.map((promo) => (
+                    <option key={promo._id} value={promo._id}>
+                      {promo.title} ({promo.code})
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select a promo code to apply for this product.
+                </p>
+              </div>
 
-              {/* ⚡ Review / Rating Toggles */}
-{/* ⚡ Review / Rating Toggles */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-4 rounded-lg bg-gray-50">
+              {/* Review / Rating Toggles */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-4 rounded-lg bg-gray-50">
+                <ToggleRow
+                  label="Hide Reviews"
+                  checked={hideReviews}
+                  onToggle={handleHideReviewToggle}
+                />
 
-  <ToggleRow
-    label="Hide Reviews"
-    checked={hideReviews}
-    onToggle={handleHideReviewToggle}
-  />
+                <ToggleRow
+                  label="Manual Rating"
+                  checked={manualRatings}
+                  onToggle={handleManualRatingToggle}
+                />
 
-  <ToggleRow
-    label="Manual Rating"
-    checked={manualRatings}
-    onToggle={handleManualRatingToggle}
-  />
+                {manualRatings && (
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium mb-1">
+                      Rating Value (0–5)
+                    </label>
+                    <Input
+                      type="number"
+                      min={0}
+                      max={5}
+                      value={manualRatingValue}
+                      onChange={(e) =>
+                        setManualRatingValue(Number(e.target.value))
+                      }
+                      className="w-32"
+                    />
+                  </div>
+                )}
+              </div>
 
-  {manualRatings && (
-    <div className="col-span-2">
-      <label className="block text-sm font-medium mb-1">Rating Value (0–5)</label>
-      <Input
-        type="number"
-        min={0}
-        max={5}
-        value={manualRatingValue}
-        onChange={(e) => setManualRatingValue(Number(e.target.value))}
-        className="w-32"
-      />
-    </div>
-  )}
+              {/*  Offer Section */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-4 rounded-lg bg-gray-50">
+                <ToggleRow
+                  label="Offer Product"
+                  checked={offerProduct}
+                  onToggle={handleOfferToggle}
+                />
 
-</div>
+                {offerProduct && (
+                  <div className="col-span-2">
+                    <label className="block text-sm font-medium mb-1">
+                      Offer Percentage (1–99)
+                    </label>
 
-{/* ⚡ Offer Section */}
-<div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-4 rounded-lg bg-gray-50">
+                    <Input
+                      type="number"
+                      min={1}
+                      max={99}
+                      value={offerPercentage}
+                      onChange={(e) =>
+                        setOfferPercentage(Number(e.target.value))
+                      }
+                      className="w-32"
+                      required={offerProduct}
+                    />
+                  </div>
+                )}
+              </div>
 
-  <ToggleRow
-    label="Offer Product"
-    checked={offerProduct}
-    onToggle={handleOfferToggle}
-  />
-
-  {offerProduct && (
-    <div className="col-span-2">
-      <label className="block text-sm font-medium mb-1">
-        Offer Percentage (1–99)
-      </label>
-
-      <Input
-        type="number"
-        min={1}
-        max={99}
-        value={offerPercentage}
-        onChange={(e) => setOfferPercentage(Number(e.target.value))}
-        className="w-32"
-        required={offerProduct}
-      />
-    </div>
-  )}
-</div>
-
-
-              {/* 🧩 Main Images */}
+              {/* Main Images */}
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Main Product Images
@@ -435,13 +459,19 @@ type ToggleRowProps = {
                   </div>
                 )}
 
-                <input type="file" multiple accept="image/*" onChange={handleFileChange} className="mt-2" />
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="mt-2"
+                />
                 <p className="text-sm text-gray-400 mt-1">
                   You can add or replace multiple transparent PNG images.
                 </p>
               </div>
 
-              {/* 🧩 Descriptions */}
+              {/*  Descriptions */}
               <div>
                 <h2 className="font-semibold mb-2">Descriptions</h2>
                 {descriptions.map((desc, i) => (
@@ -449,13 +479,15 @@ type ToggleRowProps = {
                     key={i}
                     placeholder={`Description ${i + 1}`}
                     value={desc}
-                    onChange={(e) => handleArrayChange(i, e.target.value, setDescriptions)}
+                    onChange={(e) =>
+                      handleArrayChange(i, e.target.value, setDescriptions)
+                    }
                     className="mb-2"
                   />
                 ))}
               </div>
 
-              {/* 🧩 Features */}
+              {/*  Features */}
               <div>
                 <h2 className="font-semibold mb-2">Features</h2>
                 {features.map((feat, i) => (
@@ -463,7 +495,9 @@ type ToggleRowProps = {
                     key={i}
                     placeholder={`Feature ${i + 1}`}
                     value={feat}
-                    onChange={(e) => handleArrayChange(i, e.target.value, setFeatures)}
+                    onChange={(e) =>
+                      handleArrayChange(i, e.target.value, setFeatures)
+                    }
                     className="mb-2"
                   />
                 ))}

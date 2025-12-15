@@ -1,19 +1,18 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 
 interface ReviewsSectionProps {
-  productId: number
-  productRating: number
-  productReviews: number
+  productId: number;
+  productRating: number;
+  productReviews: number;
 }
 
-// Mock reviews data
 const mockReviews = [
   {
     id: 1,
@@ -43,56 +42,81 @@ const mockReviews = [
     rating: 5,
     date: "1 month ago",
     title: "Best purchase ever",
-    content: "Worth every penny. The build quality is premium and it sounds incredible. Highly recommend!",
+    content:
+      "Worth every penny. The build quality is premium and it sounds incredible. Highly recommend!",
     images: ["/wireless-headphones.png", "/wireless-headphones.png"],
     helpful: 32,
   },
-]
+];
 
-export function ReviewsSection({ productId, productRating, productReviews }: ReviewsSectionProps) {
-  const [showReviewForm, setShowReviewForm] = useState(false)
+export function ReviewsSection({
+  productId,
+  productRating,
+  productReviews,
+}: ReviewsSectionProps) {
+  const [showReviewForm, setShowReviewForm] = useState(false);
   const [reviewData, setReviewData] = useState({
     rating: 5,
     title: "",
     content: "",
-  })
+  });
 
   const handleSubmitReview = (e: React.FormEvent) => {
-    e.preventDefault()
-    // Call your backend API to submit review
-    console.log("Submitting review:", reviewData)
-    setReviewData({ rating: 5, title: "", content: "" })
-    setShowReviewForm(false)
-  }
+    e.preventDefault();
+
+    console.log("Submitting review:", reviewData);
+    setReviewData({ rating: 5, title: "", content: "" });
+    setShowReviewForm(false);
+  };
 
   return (
     <div className="space-y-8 py-8 border-t border-border">
       <div>
-        <h2 className="text-2xl font-bold text-foreground mb-6">Customer Reviews</h2>
+        <h2 className="text-2xl font-bold text-foreground mb-6">
+          Customer Reviews
+        </h2>
 
         {/* Rating Summary */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           <Card className="p-6 text-center">
-            <p className="text-4xl font-bold text-foreground mb-2">{productRating}</p>
+            <p className="text-4xl font-bold text-foreground mb-2">
+              {productRating}
+            </p>
             <div className="flex justify-center gap-1 mb-2">
               {[...Array(5)].map((_, i) => (
-                <span key={i} className={i < Math.floor(productRating) ? "text-yellow-400" : "text-muted-foreground"}>
+                <span
+                  key={i}
+                  className={
+                    i < Math.floor(productRating)
+                      ? "text-yellow-400"
+                      : "text-muted-foreground"
+                  }
+                >
                   ★
                 </span>
               ))}
             </div>
-            <p className="text-sm text-muted-foreground">Based on {productReviews} reviews</p>
+            <p className="text-sm text-muted-foreground">
+              Based on {productReviews} reviews
+            </p>
           </Card>
 
           {/* Rating Distribution */}
           <div className="md:col-span-2 space-y-3">
             {[5, 4, 3, 2, 1].map((stars) => (
               <div key={stars} className="flex items-center gap-3">
-                <span className="text-sm text-muted-foreground w-12">{stars} ★</span>
+                <span className="text-sm text-muted-foreground w-12">
+                  {stars} ★
+                </span>
                 <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary" style={{ width: `${Math.random() * 100}%` }}></div>
+                  <div
+                    className="h-full bg-primary"
+                    style={{ width: `${Math.random() * 100}%` }}
+                  ></div>
                 </div>
-                <span className="text-sm text-muted-foreground w-12 text-right">{Math.floor(Math.random() * 50)}</span>
+                <span className="text-sm text-muted-foreground w-12 text-right">
+                  {Math.floor(Math.random() * 50)}
+                </span>
               </div>
             ))}
           </div>
@@ -111,19 +135,27 @@ export function ReviewsSection({ productId, productRating, productReviews }: Rev
         {/* Review Form */}
         {showReviewForm && (
           <Card className="p-6 mb-8">
-            <h3 className="text-lg font-semibold text-foreground mb-4">Share Your Experience</h3>
+            <h3 className="text-lg font-semibold text-foreground mb-4">
+              Share Your Experience
+            </h3>
             <form onSubmit={handleSubmitReview} className="space-y-4">
               {/* Rating */}
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Rating</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Rating
+                </label>
                 <div className="flex gap-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
                       key={star}
                       type="button"
-                      onClick={() => setReviewData({ ...reviewData, rating: star })}
+                      onClick={() =>
+                        setReviewData({ ...reviewData, rating: star })
+                      }
                       className={`text-3xl transition-colors ${
-                        star <= reviewData.rating ? "text-yellow-400" : "text-muted-foreground"
+                        star <= reviewData.rating
+                          ? "text-yellow-400"
+                          : "text-muted-foreground"
                       }`}
                     >
                       ★
@@ -134,23 +166,31 @@ export function ReviewsSection({ productId, productRating, productReviews }: Rev
 
               {/* Title */}
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Review Title</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Review Title
+                </label>
                 <Input
                   type="text"
                   placeholder="Summarize your experience"
                   value={reviewData.title}
-                  onChange={(e) => setReviewData({ ...reviewData, title: e.target.value })}
+                  onChange={(e) =>
+                    setReviewData({ ...reviewData, title: e.target.value })
+                  }
                   required
                 />
               </div>
 
               {/* Content */}
               <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Your Review</label>
+                <label className="block text-sm font-medium text-foreground mb-2">
+                  Your Review
+                </label>
                 <textarea
                   placeholder="Share your detailed experience with this product"
                   value={reviewData.content}
-                  onChange={(e) => setReviewData({ ...reviewData, content: e.target.value })}
+                  onChange={(e) =>
+                    setReviewData({ ...reviewData, content: e.target.value })
+                  }
                   rows={4}
                   className="w-full px-3 py-2 border border-input rounded-lg bg-background text-foreground"
                   required
@@ -159,7 +199,10 @@ export function ReviewsSection({ productId, productRating, productReviews }: Rev
 
               {/* Buttons */}
               <div className="flex gap-3">
-                <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                <Button
+                  type="submit"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                >
                   Submit Review
                 </Button>
                 <Button
@@ -181,19 +224,30 @@ export function ReviewsSection({ productId, productRating, productReviews }: Rev
             <Card key={review.id} className="p-6">
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <p className="font-semibold text-foreground">{review.author}</p>
+                  <p className="font-semibold text-foreground">
+                    {review.author}
+                  </p>
                   <p className="text-sm text-muted-foreground">{review.date}</p>
                 </div>
                 <div className="flex gap-1">
                   {[...Array(5)].map((_, i) => (
-                    <span key={i} className={i < review.rating ? "text-yellow-400" : "text-muted-foreground"}>
+                    <span
+                      key={i}
+                      className={
+                        i < review.rating
+                          ? "text-yellow-400"
+                          : "text-muted-foreground"
+                      }
+                    >
                       ★
                     </span>
                   ))}
                 </div>
               </div>
 
-              <h4 className="font-semibold text-foreground mb-2">{review.title}</h4>
+              <h4 className="font-semibold text-foreground mb-2">
+                {review.title}
+              </h4>
               <p className="text-muted-foreground mb-4">{review.content}</p>
 
               {/* Review Images */}
@@ -224,5 +278,5 @@ export function ReviewsSection({ productId, productRating, productReviews }: Rev
         </div>
       </div>
     </div>
-  )
+  );
 }

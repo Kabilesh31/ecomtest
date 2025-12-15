@@ -20,8 +20,6 @@ interface PromoCode {
   expiryDate: string;
   isActive: boolean;
   minOrderAmount: number;
-  
-  
 }
 
 export default function AdminPromoCodePage() {
@@ -35,27 +33,29 @@ export default function AdminPromoCodePage() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-  (async () => {
-    // Ensure auto monthly promo exists in DB
-    await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/promocode/auto/monthly`);
+    (async () => {
+      await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/promocode/auto/monthly`
+      );
 
-    // Then fetch all promos
+      fetchPromoCodes();
+    })();
+  }, []);
+
+  const toggleAutoPromo = async (promo: PromoCode) => {
+    await axios.put(
+      `${process.env.NEXT_PUBLIC_API_URL}/promocode/toggle/${promo._id}`
+    );
+    toast.success("Status updated");
     fetchPromoCodes();
-  })();
-}, []);
+  };
 
-const toggleAutoPromo = async (promo: PromoCode) => {
-  await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/promocode/toggle/${promo._id}`);
-  toast.success("Status updated");
-  fetchPromoCodes();
-};
-
-
-  // ---------------- Fetch Promo Codes ----------------
   const fetchPromoCodes = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/promocode/`);
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/promocode/`
+      );
       setPromoCodes(Array.isArray(res.data?.data) ? res.data.data : []);
     } catch {
       toast.error("Failed to fetch promo codes");
@@ -69,8 +69,6 @@ const toggleAutoPromo = async (promo: PromoCode) => {
     fetchPromoCodes();
   }, []);
 
-  
-  // ---------------- Create Promo Code ----------------
   const handleSubmit = async () => {
     if (!title || !description || !code || !discount || !expiry) {
       toast.error("All fields are required");
@@ -90,7 +88,6 @@ const toggleAutoPromo = async (promo: PromoCode) => {
 
       toast.success("Promocode created successfully");
 
-      // Reset form
       setTitle("");
       setDescription("");
       setCode("");
@@ -105,23 +102,27 @@ const toggleAutoPromo = async (promo: PromoCode) => {
     }
   };
 
-  // ---------------- Delete Promo Code ----------------
   const handleDelete = async (id: string) => {
-  if (!confirm("Are you sure you want to delete this promo code?")) return;
+    if (!confirm("Are you sure you want to delete this promo code?")) return;
 
-  try {
-    const res = await axios.delete(`${process.env.NEXT_PUBLIC_API_URL}/promocode/${id}`);
-    if (res.data.success) {
-      toast.success("Promo code deleted successfully");
-      fetchPromoCodes();
-    } else {
-      toast.error(res.data.message || "Failed to delete promo code");
+    try {
+      const res = await axios.delete(
+        `${process.env.NEXT_PUBLIC_API_URL}/promocode/${id}`
+      );
+      if (res.data.success) {
+        toast.success("Promo code deleted successfully");
+        fetchPromoCodes();
+      } else {
+        toast.error(res.data.message || "Failed to delete promo code");
+      }
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ||
+          err.message ||
+          "Failed to delete promo code"
+      );
     }
-  } catch (err: any) {
-    toast.error(err?.response?.data?.message || err.message || "Failed to delete promo code");
-  }
-};
-
+  };
 
   return (
     <ProtectedRoute>
@@ -135,30 +136,55 @@ const toggleAutoPromo = async (promo: PromoCode) => {
 
             <div>
               <Label>Title</Label>
-              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Festival Discount" />
+              <Input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Festival Discount"
+              />
             </div>
 
             <div>
               <Label>Description</Label>
-              <Textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Describe the promo..." />
+              <Textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Describe the promo..."
+              />
             </div>
 
             <div>
               <Label>Promo Code</Label>
-              <Input value={code} onChange={(e) => setCode(e.target.value)} placeholder="DIWALI2025" />
+              <Input
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                placeholder="DIWALI2025"
+              />
             </div>
 
             <div>
               <Label>Discount (%)</Label>
-              <Input type="number" value={discount} onChange={(e) => setDiscount(e.target.value)} placeholder="10" />
+              <Input
+                type="number"
+                value={discount}
+                onChange={(e) => setDiscount(e.target.value)}
+                placeholder="10"
+              />
             </div>
 
             <div>
               <Label>Expiry Date</Label>
-              <Input type="date" value={expiry} onChange={(e) => setExpiry(e.target.value)} />
+              <Input
+                type="date"
+                value={expiry}
+                onChange={(e) => setExpiry(e.target.value)}
+              />
             </div>
 
-            <Button className="w-full mt-4" onClick={handleSubmit} disabled={creating}>
+            <Button
+              className="w-full mt-4"
+              onClick={handleSubmit}
+              disabled={creating}
+            >
               {creating ? "Creating..." : "Create Promo Code"}
             </Button>
           </div>
@@ -179,7 +205,9 @@ const toggleAutoPromo = async (promo: PromoCode) => {
                     <p className="font-medium">{promo.title}</p>
                     <p className="text-sm text-gray-500">{promo.description}</p>
                     <p className="text-sm text-gray-500">Code: {promo.code}</p>
-                    <p className="text-sm">Discount: {promo.discountValue} ({promo.discountType})</p>
+                    <p className="text-sm">
+                      Discount: {promo.discountValue} ({promo.discountType})
+                    </p>
                     <p className="text-sm text-gray-500">
                       Expires: {new Date(promo.expiryDate).toLocaleDateString()}
                     </p>
@@ -192,13 +220,13 @@ const toggleAutoPromo = async (promo: PromoCode) => {
                     >
                       {promo.isActive ? "Active" : "Inactive"}
                     </span>
-                    <Button variant="destructive" onClick={() => handleDelete(promo._id)}>
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleDelete(promo._id)}
+                    >
                       Delete
                     </Button>
                   </div>
-                  {/* Auto Monthly Promo */}
-
-
                 </div>
               ))
             ) : (
@@ -206,26 +234,28 @@ const toggleAutoPromo = async (promo: PromoCode) => {
             )}
           </div>
           {promoCodes
-  .filter(p => /^[a-z]{3}\d{4}$/i.test(p.code))  // auto codes only (jan2025 pattern)
-  .map(auto => (
-    <div key={auto._id} className="p-3 border rounded bg-blue-50 flex justify-between items-center mb-3">
-      <div>
-        <p className="font-medium">{auto.title}</p>
-        <p className="text-sm text-gray-600">Code: {auto.code}</p>
-        <p className="text-sm">Discount: {auto.discountValue}%</p>
-        <p className="text-sm text-gray-600">
-          Expires: {new Date(auto.expiryDate).toLocaleDateString()}
-        </p>
-      </div>
-      <Button
-        className={auto.isActive ? "bg-red-500" : "bg-green-500"}
-        onClick={() => toggleAutoPromo(auto)}
-      >
-        {auto.isActive ? "Deactivate" : "Activate"}
-      </Button>
-    </div>
-  ))
-}
+            .filter((p) => /^[a-z]{3}\d{4}$/i.test(p.code))
+            .map((auto) => (
+              <div
+                key={auto._id}
+                className="p-3 border rounded bg-blue-50 flex justify-between items-center mb-3"
+              >
+                <div>
+                  <p className="font-medium">{auto.title}</p>
+                  <p className="text-sm text-gray-600">Code: {auto.code}</p>
+                  <p className="text-sm">Discount: {auto.discountValue}%</p>
+                  <p className="text-sm text-gray-600">
+                    Expires: {new Date(auto.expiryDate).toLocaleDateString()}
+                  </p>
+                </div>
+                <Button
+                  className={auto.isActive ? "bg-red-500" : "bg-green-500"}
+                  onClick={() => toggleAutoPromo(auto)}
+                >
+                  {auto.isActive ? "Deactivate" : "Activate"}
+                </Button>
+              </div>
+            ))}
         </div>
       </AdminLayout>
     </ProtectedRoute>

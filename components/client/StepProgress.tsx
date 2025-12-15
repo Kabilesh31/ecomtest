@@ -16,31 +16,30 @@ export const StepProgress: React.FC<StepProgressProps> = ({ currentStep }) => {
 
   return (
     <div className="relative flex items-center justify-between w-full max-w-lg sm:max-w-md md:max-w-xl mx-auto mt-8 mb-6 px-4">
-
-      {/* Background Line */}
       <div className="absolute top-1/2 left-5 right-14 h-[3px] bg-gray-200 rounded-full -translate-y-1/2" />
 
-      {/* Filled Line */}
       <motion.div
         className="absolute top-1/2 h-[3px] bg-green-600 rounded-full -translate-y-1/2"
-        style={{ left: "1.25rem" }} // left-5 equivalent
+        style={{ left: "1.25rem" }}
         initial={{ width: 0 }}
         animate={{
-          width: `calc(${((currentStep - 1) / (steps.length - 1)) * 100}% - 55px)` // optimized for mobile
+          width: `calc(${
+            ((currentStep - 1) / (steps.length - 1)) * 100
+          }% - 55px)`,
         }}
         transition={{ duration: 0.4 }}
       />
 
-      {/* Steps */}
       {steps.map((step) => {
         const isCompleted = currentStep > step.id;
         const isActive = currentStep === step.id;
         const showTick = isCompleted || (isActive && step.id === steps.length);
 
         return (
-          <div key={step.id} className="relative z-10 flex flex-col items-center">
-
-            {/* Circle */}
+          <div
+            key={step.id}
+            className="relative z-10 flex flex-col items-center"
+          >
             <div
               className={`w-9 h-9 md:w-13 md:h-13 flex items-center justify-center rounded-full border-2 text-sm md:text-base transition-all duration-300
                 ${
@@ -54,7 +53,6 @@ export const StepProgress: React.FC<StepProgressProps> = ({ currentStep }) => {
               {showTick ? <Check size={18} /> : step.id}
             </div>
 
-            {/* Label */}
             <span
               className={`mt-2 text-xs md:text-sm font-medium ${
                 isActive ? "text-green-600" : "text-gray-500"
@@ -62,7 +60,6 @@ export const StepProgress: React.FC<StepProgressProps> = ({ currentStep }) => {
             >
               {step.label}
             </span>
-
           </div>
         );
       })}

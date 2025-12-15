@@ -19,7 +19,6 @@ export default function ProductsPage() {
   const [priceRange, setPriceRange] = useState([0, 2000]);
   const [showPriceFilter, setShowPriceFilter] = useState(true);
 
-  // 🔥 Load products
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -34,20 +33,17 @@ export default function ProductsPage() {
 
   const categories = ["All", "Devine", "Accessories", "Cosmetics"];
 
-  // 🔥 Filter by category
   const filteredProducts =
     selectedCategory === "All"
       ? products
       : products.filter((p) => p.category === selectedCategory);
 
-  // 🔥 Sort
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "price-low") return a.price - b.price;
     if (sortBy === "price-high") return b.price - a.price;
     return 0;
   });
 
-  // 🔥 Price filter
   const priceFilteredProducts = sortedProducts.filter((p) => {
     const finalPrice =
       p.offerProduct === true || p.offerProduct === "true"
@@ -128,9 +124,7 @@ export default function ProductsPage() {
 
                       <div className="flex justify-between text-sm mt-2 text-muted-foreground">
                         <span>Max:</span>
-                        <span className="font-semibold">
-                          ₹{priceRange[1]}
-                        </span>
+                        <span className="font-semibold">₹{priceRange[1]}</span>
                       </div>
                     </div>
                   )}
@@ -151,8 +145,7 @@ export default function ProductsPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {priceFilteredProducts.map((product) => {
                   const cartItem = items.find(
-                    (i: CartItem) =>
-                      i.id === product._id || i.id === product.id
+                    (i: CartItem) => i.id === product._id || i.id === product.id
                   );
                   const quantityInCart = cartItem?.quantity || 0;
 
@@ -173,38 +166,37 @@ export default function ProductsPage() {
                       href={`/products/${product._id || product.id}`}
                     >
                       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
-                        {/* IMAGE */}
-                      <div
-                        className={`relative h-48 bg-muted overflow-hidden group ${
-                          product.outofstock || product.quantity === 0
-                            ? "opacity-40 grayscale"
-                            : ""
-                        }`}
-                      >
-                        {product.mainImages?.length > 0 ? (
-                          <ImageCarousel images={product.mainImages} />
-                        ) : (
-                          <img
-                            src="/placeholder.svg"
-                            alt="placeholder"
-                            className="w-full h-full object-contain"
-                          />
-                        )}
+                        <div
+                          className={`relative h-48 bg-muted overflow-hidden group ${
+                            product.outofstock || product.quantity === 0
+                              ? "opacity-40 grayscale"
+                              : ""
+                          }`}
+                        >
+                          {product.mainImages?.length > 0 ? (
+                            <ImageCarousel images={product.mainImages} />
+                          ) : (
+                            <img
+                              src="/placeholder.svg"
+                              alt="placeholder"
+                              className="w-full h-full object-contain"
+                            />
+                          )}
 
-                        {product.outofstock && (
-                          <div className="absolute top-38 left-4 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded-md">
-                            OUT OF STOCK
-                          </div>
-                        )}
-                        {!product.outofstock && product.quantity > 0 && product.quantity <= 5 && (
-                        <div className="absolute top-38 left-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md">
-                          {product.quantity} left
+                          {product.outofstock && (
+                            <div className="absolute top-38 left-4 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded-md">
+                              OUT OF STOCK
+                            </div>
+                          )}
+                          {!product.outofstock &&
+                            product.quantity > 0 &&
+                            product.quantity <= 5 && (
+                              <div className="absolute top-38 left-4 bg-red-600 text-white text-xs font-bold px-2 py-1 rounded-md">
+                                {product.quantity} left
+                              </div>
+                            )}
                         </div>
-                      )}
-                      </div>
 
-
-                        {/* INFO */}
                         <div className="p-4 space-y-3 flex-1 flex flex-col">
                           <div>
                             <p className="text-xs text-muted-foreground uppercase tracking-wide">
@@ -216,32 +208,35 @@ export default function ProductsPage() {
 
                             <div className="flex items-center gap-1">
                               {product.manualRatings ? (
-                                // Rule 1: Manual rating ON
                                 <Button className="flex items-center gap-1">
                                   {product.manualRatingValue}
-                                  <Star size={14} className="fill-yellow-500 text-yellow-500" />
+                                  <Star
+                                    size={14}
+                                    className="fill-yellow-500 text-yellow-500"
+                                  />
                                 </Button>
                               ) : product.hidereviews ? (
-                                // Rule 2: Manual OFF, hide reviews
-                                <span className="text-black text-sm">No Ratings</span>
+                                <span className="text-black text-sm">
+                                  No Ratings
+                                </span>
                               ) : product.rating ? (
-                                // Rule 3: Manual OFF, reviews visible, show rating
                                 <Button className="flex items-center gap-1 text-xs">
                                   {product.rating}
-                                  <Star size={10} className="fill-yellow-500 text-yellow-500" />
+                                  <Star
+                                    size={10}
+                                    className="fill-yellow-500 text-yellow-500"
+                                  />
                                   ({product.reviews?.length}) Reviews
                                 </Button>
                               ) : (
-                                // Fallback: no ratings
-                                <span className="text-black text-sm">No Ratings</span>
+                                <span className="text-black text-sm">
+                                  No Ratings
+                                </span>
                               )}
                             </div>
-
                           </div>
 
-                          {/* PRICE + ACTION */}
                           <div className="flex items-center justify-between pt-2 border-t border-border mt-auto">
-                            {/* PRICE */}
                             <div className="flex flex-col">
                               {product.offerProduct ? (
                                 <div className="flex items-center gap-2">
@@ -264,7 +259,6 @@ export default function ProductsPage() {
                               )}
                             </div>
 
-                            {/* CART / QUANTITY CONTROL */}
                             {quantityInCart === 0 ? (
                               <Button
                                 size="sm"
@@ -314,7 +308,6 @@ export default function ProductsPage() {
                                     : "bg-muted"
                                 }`}
                               >
-                                {/* - BUTTON */}
                                 <Button
                                   size="sm"
                                   variant="ghost"
@@ -338,7 +331,6 @@ export default function ProductsPage() {
                                   {quantityInCart}
                                 </span>
 
-                                {/* + BUTTON */}
                                 <Button
                                   size="sm"
                                   variant="ghost"
@@ -354,17 +346,13 @@ export default function ProductsPage() {
                                       return;
                                     }
 
-                                    if (
-                                      quantityInCart < product.quantity
-                                    ) {
+                                    if (quantityInCart < product.quantity) {
                                       updateQuantity(
                                         product._id,
                                         quantityInCart + 1
                                       );
                                     } else {
-                                      toast.error(
-                                        "No more stock available!"
-                                      );
+                                      toast.error("No more stock available!");
                                     }
                                   }}
                                 >

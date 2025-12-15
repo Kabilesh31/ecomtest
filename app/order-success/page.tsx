@@ -1,22 +1,20 @@
-"use client"
+"use client";
 
-import { ClientLayout } from "@/components/client/client-layout"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import Link from "next/link"
-import { CheckCircle, Package, Truck, Mail } from "lucide-react"
-import { useEffect } from "react"
-import { useCart } from "@/context/cart-context"
+import { ClientLayout } from "@/components/client/client-layout";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { CheckCircle, Package, Truck, Mail } from "lucide-react";
+import { useEffect } from "react";
+import { useCart } from "@/context/cart-context";
 import { StepProgress } from "@/components/client/StepProgress";
 
 export default function OrderSuccessPage() {
-
-   const { clearCart } = useCart()
+  const { clearCart } = useCart();
 
   useEffect(() => {
-  clearCart()
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, [])
+    clearCart();
+  }, []);
 
   return (
     <ClientLayout>
@@ -34,27 +32,39 @@ export default function OrderSuccessPage() {
 
             {/* Message */}
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">Order Confirmed!</h1>
-              <p className="text-muted-foreground text-lg">Thank you for your purchase</p>
+              <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
+                Order Confirmed!
+              </h1>
+              <p className="text-muted-foreground text-lg">
+                Thank you for your purchase
+              </p>
             </div>
 
             {/* Order Details */}
             <div className="bg-muted/50 rounded-lg p-6 space-y-3 text-left">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Order Number</span>
-                <span className="font-semibold text-foreground">#ORD-2025-001234</span>
+                <span className="font-semibold text-foreground">
+                  #ORD-2025-001234
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Order Date</span>
-                <span className="font-semibold text-foreground">{new Date().toLocaleDateString()}</span>
+                <span className="font-semibold text-foreground">
+                  {new Date().toLocaleDateString()}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Total Amount</span>
                 <span className="font-semibold text-foreground"></span>
               </div>
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Estimated Delivery</span>
-                <span className="font-semibold text-foreground">3-5 Business Days</span>
+                <span className="text-muted-foreground">
+                  Estimated Delivery
+                </span>
+                <span className="font-semibold text-foreground">
+                  3-5 Business Days
+                </span>
               </div>
             </div>
 
@@ -68,8 +78,12 @@ export default function OrderSuccessPage() {
                   <div className="w-1 h-12 bg-primary/20 my-2"></div>
                 </div>
                 <div className="pb-8">
-                  <p className="font-semibold text-foreground">Order Confirmed</p>
-                  <p className="text-sm text-muted-foreground">Your order has been received</p>
+                  <p className="font-semibold text-foreground">
+                    Order Confirmed
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    Your order has been received
+                  </p>
                 </div>
               </div>
 
@@ -82,7 +96,9 @@ export default function OrderSuccessPage() {
                 </div>
                 <div className="pb-8">
                   <p className="font-semibold text-foreground">Processing</p>
-                  <p className="text-sm text-muted-foreground">We're preparing your items</p>
+                  <p className="text-sm text-muted-foreground">
+                    We're preparing your items
+                  </p>
                 </div>
               </div>
 
@@ -94,7 +110,9 @@ export default function OrderSuccessPage() {
                 </div>
                 <div>
                   <p className="font-semibold text-foreground">Shipped</p>
-                  <p className="text-sm text-muted-foreground">On its way to you</p>
+                  <p className="text-sm text-muted-foreground">
+                    On its way to you
+                  </p>
                 </div>
               </div>
             </div>
@@ -103,8 +121,12 @@ export default function OrderSuccessPage() {
             <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 flex gap-3">
               <Mail className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
               <div className="text-left">
-                <p className="text-sm font-medium text-foreground">Confirmation email sent</p>
-                <p className="text-xs text-muted-foreground">Check your email for order details and tracking info</p>
+                <p className="text-sm font-medium text-foreground">
+                  Confirmation email sent
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Check your email for order details and tracking info
+                </p>
               </div>
             </div>
 
@@ -116,14 +138,18 @@ export default function OrderSuccessPage() {
                 </Button>
               </Link>
               <Link href="/" className="flex-1">
-                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">Back to Home</Button>
+                <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
+                  Back to Home
+                </Button>
               </Link>
             </div>
           </Card>
 
           {/* Help Section */}
           <Card className="mt-6 p-6 text-center">
-            <p className="text-muted-foreground mb-4">Need help with your order?</p>
+            <p className="text-muted-foreground mb-4">
+              Need help with your order?
+            </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link href="/contact">
                 <Button variant="outline" className="bg-transparent">
@@ -140,5 +166,5 @@ export default function OrderSuccessPage() {
         </div>
       </div>
     </ClientLayout>
-  )
+  );
 }
