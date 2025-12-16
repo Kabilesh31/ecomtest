@@ -1,54 +1,58 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Heart, Share2, ShoppingCart } from "lucide-react"
-import { useCart } from "@/context/cart-context"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Heart, Share2, ShoppingCart } from "lucide-react";
+import { useCart } from "@/context/cart-context";
 
 interface Product {
-  id: number
-  name: string
-  price: number
-  originalPrice: number
-  rating: number
-  reviews: number
-  inStock: boolean
-  category: string
-  mainImages?: string[]
+  id: number;
+  name: string;
+  price: number;
+  originalPrice: number;
+  rating: number;
+  reviews: number;
+  inStock: boolean;
+  category: string;
+  mainImages?: string[];
 }
 
 interface ProductDetailsProps {
-  product: Product
+  product: Product;
 }
 
 export function ProductDetails({ product }: ProductDetailsProps) {
-  const [quantity, setQuantity] = useState(1)
-  const [isWishlisted, setIsWishlisted] = useState(false)
-  const { addToCart } = useCart()
+  const [quantity, setQuantity] = useState(1);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  const { addToCart } = useCart();
 
-  const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+  const discount = Math.round(
+    ((product.originalPrice - product.price) / product.originalPrice) * 100
+  );
 
   const handleAddToCart = () => {
     for (let i = 0; i < quantity; i++) {
-       addToCart({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      mainImages: product.mainImages,
-                 // ✅ pass quantity directly
-      stock: product.inStock ? quantity : 0 // optional, if your cart tracks stock
-    })
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        mainImages: product.mainImages,
 
+        stock: product.inStock ? quantity : 0,
+      });
     }
-    setQuantity(1)
-  }
+    setQuantity(1);
+  };
 
   return (
     <div className="space-y-6">
-      {/* Category and Title */}
       <div>
-        <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2">{product.category}</p>
-        <h1 className="text-3xl md:text-4xl font-bold text-foreground">{product.name}</h1>
+        <p className="text-sm text-muted-foreground uppercase tracking-wide mb-2">
+          {product.category}
+        </p>
+        <h1 className="text-3xl md:text-4xl font-bold text-foreground">
+          {product.name}
+        </h1>
       </div>
 
       {/* Rating */}
@@ -69,7 +73,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
       {/* Price */}
       <div className="space-y-2">
         <div className="flex items-center gap-4">
-          <span className="text-4xl font-bold text-foreground">₹{product.price.toLocaleString("en-IN")}</span>
+          <span className="text-4xl font-bold text-foreground">
+            ₹{product.price.toLocaleString("en-IN")}
+          </span>
           {product.originalPrice > product.price && (
             <>
               <span className="text-xl text-muted-foreground line-through">
@@ -86,8 +92,18 @@ export function ProductDetails({ product }: ProductDetailsProps) {
 
       {/* Stock Status */}
       <div className="flex items-center gap-2">
-        <div className={`w-3 h-3 rounded-full ${product.inStock ? "bg-green-500" : "bg-destructive"}`}></div>
-        <span className={`font-medium ${product.inStock ? "text-green-600 dark:text-green-400" : "text-destructive"}`}>
+        <div
+          className={`w-3 h-3 rounded-full ${
+            product.inStock ? "bg-green-500" : "bg-destructive"
+          }`}
+        ></div>
+        <span
+          className={`font-medium ${
+            product.inStock
+              ? "text-green-600 dark:text-green-400"
+              : "text-destructive"
+          }`}
+        >
           {product.inStock ? "In Stock" : "Out of Stock"}
         </span>
       </div>
@@ -102,7 +118,9 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           >
             −
           </button>
-          <span className="text-lg font-semibold text-foreground w-8 text-center">{quantity}</span>
+          <span className="text-lg font-semibold text-foreground w-8 text-center">
+            {quantity}
+          </span>
           <button
             onClick={() => setQuantity(quantity + 1)}
             className="w-10 h-10 border border-border rounded-lg hover:bg-muted transition-colors flex items-center justify-center"
@@ -123,7 +141,10 @@ export function ProductDetails({ product }: ProductDetailsProps) {
           Add to Cart
         </Button>
 
-        <Button variant="outline" className="w-full bg-transparent py-6 text-lg font-semibold">
+        <Button
+          variant="outline"
+          className="w-full bg-transparent py-6 text-lg font-semibold"
+        >
           Buy Now
         </Button>
       </div>
@@ -151,5 +172,5 @@ export function ProductDetails({ product }: ProductDetailsProps) {
         <p className="text-sm text-muted-foreground">Free shipping on orders over ₹2500</p>
       </div> */}
     </div>
-  )
+  );
 }

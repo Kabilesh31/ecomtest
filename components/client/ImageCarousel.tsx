@@ -10,7 +10,6 @@ export function ImageCarousel({ images }: ImageCarouselProps) {
   const carouselRef = useRef<HTMLDivElement>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Auto-slide effect
   useEffect(() => {
     if (!images || images.length <= 1) return;
 
@@ -31,7 +30,6 @@ export function ImageCarousel({ images }: ImageCarouselProps) {
     return () => clearInterval(interval);
   }, [currentIndex, images]);
 
-  // Track manual scroll
   useEffect(() => {
     const container = carouselRef.current;
     if (!container) return;
@@ -59,7 +57,6 @@ export function ImageCarousel({ images }: ImageCarouselProps) {
 
   return (
     <div className="relative w-full h-full">
-      {/* Images */}
       <div
         ref={carouselRef}
         className="flex h-full overflow-x-hidden scroll-smooth snap-x snap-mandatory"
@@ -75,7 +72,6 @@ export function ImageCarousel({ images }: ImageCarouselProps) {
         ))}
       </div>
 
-      {/* 🔥 Dots Indicator */}
       {images.length > 1 && (
         <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2">
           {images.map((_, index) => (

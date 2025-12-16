@@ -1,50 +1,51 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/context/auth-context"
-import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import axios from "axios"
-import { toast } from "react-hot-toast"
-import { ClientLayout } from "@/components/client/client-layout"
+import { useAuth } from "@/context/auth-context";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import axios from "axios";
+import { toast } from "react-hot-toast";
+import { ClientLayout } from "@/components/client/client-layout";
 
 export default function OrdersPage() {
-  const { user, isLoading } = useAuth()
-  const [localUser, setLocalUser] = useState(user)
-  const [isEditing, setIsEditing] = useState(false)
-  const [formData, setFormData] = useState({ mobile: "", address: "" })
-  const [addresses, setAddresses] = useState<any[]>([])
+  const { user, isLoading } = useAuth();
+  const [localUser, setLocalUser] = useState(user);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({ mobile: "", address: "" });
+  const [addresses, setAddresses] = useState<any[]>([]);
 
-  // Fetch user and addresses
   useEffect(() => {
     if (user) {
-      setLocalUser(user)
+      setLocalUser(user);
       setFormData({
         mobile: user.mobile || "",
         address: user.address || "",
-      })
-      fetchAddresses(user._id)
+      });
+      fetchAddresses(user._id);
     }
-  }, [user])
+  }, [user]);
 
   const fetchAddresses = async (userId: string) => {
     try {
       const res = await axios.get(
         `http://localhost:5000/api/users/getSavedAddress/${userId}`
-      )
+      );
       if (res.data.success) {
-        setAddresses(res.data.addressList)
+        setAddresses(res.data.addressList);
       }
     } catch (err: any) {
-      console.error("Fetch address error:", err.response?.data || err.message)
+      console.error("Fetch address error:", err.response?.data || err.message);
     }
-  }
+  };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setFormData((prev) => ({ ...prev, [name]: value }))
-  }
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSave = async () => {
     try {
@@ -52,29 +53,28 @@ export default function OrdersPage() {
         `${process.env.NEXT_PUBLIC_API_URL}/users/update`,
         formData,
         { withCredentials: true }
-      )
-      setLocalUser(res.data.user)
-      toast.success("Profile updated successfully")
-      setIsEditing(false)
+      );
+      setLocalUser(res.data.user);
+      toast.success("Profile updated successfully");
+      setIsEditing(false);
     } catch (error: any) {
-      toast.error(error.response?.data?.message || "Failed to update profile")
+      toast.error(error.response?.data?.message || "Failed to update profile");
     }
-  }
+  };
 
-if (isLoading || !localUser) {
-  return (
-    <ClientLayout>
-      <div className="flex justify-center items-center min-h-screen text-lg">
-        Loading user details...
-      </div>
-    </ClientLayout>
-  )
-}
+  if (isLoading || !localUser) {
+    return (
+      <ClientLayout>
+        <div className="flex justify-center items-center min-h-screen text-lg">
+          Loading user details...
+        </div>
+      </ClientLayout>
+    );
+  }
 
   return (
     <ClientLayout>
       <div className="max-w-3xl mx-auto mt-10 bg-white shadow-md rounded-lg p-6">
-        {/* Profile Header */}
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-semibold">My Profile</h1>
           <Button onClick={() => setIsEditing(!isEditing)}>
@@ -82,11 +82,13 @@ if (isLoading || !localUser) {
           </Button>
         </div>
 
-        {/* Basic Info */}
         <div className="space-y-3">
-          <p><span className="font-medium">Name:</span> {localUser.name}</p>
-          <p><span className="font-medium">Email:</span> {localUser.email}</p>
-    
+          <p>
+            <span className="font-medium">Name:</span> {localUser.name}
+          </p>
+          <p>
+            <span className="font-medium">Email:</span> {localUser.email}
+          </p>
 
           {isEditing ? (
             <>
@@ -122,7 +124,6 @@ if (isLoading || !localUser) {
           )}
         </div>
 
-        {/* Saved Addresses Section */}
         <div className="mt-8">
           <h2 className="text-xl font-semibold mb-4">Saved Addresses</h2>
 
@@ -137,9 +138,12 @@ if (isLoading || !localUser) {
                     {addr.firstName} {addr.lastName}
                   </p>
                   <p className="text-sm text-gray-600">
-                    Address: {addr.add}, {addr.city}, {addr.state} - {addr.pincode}
+                    Address: {addr.add}, {addr.city}, {addr.state} -{" "}
+                    {addr.pincode}
                   </p>
-                  <p className="text-sm text-gray-600">Country: {addr.country}</p>
+                  <p className="text-sm text-gray-600">
+                    Country: {addr.country}
+                  </p>
                   <p className="text-sm text-gray-600">Phone: {addr.phone}</p>
                 </div>
               ))}
@@ -150,5 +154,5 @@ if (isLoading || !localUser) {
         </div>
       </div>
     </ClientLayout>
-  )
+  );
 }

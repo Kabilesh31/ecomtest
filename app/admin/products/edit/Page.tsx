@@ -35,7 +35,7 @@ export default function EditProductPage() {
 
   const categories = ["Devine", "Cosmetics", "Accessories"];
 
-  // 🟢 Fetch product by ID
+ 
   useEffect(() => {
     const fetchProduct = async () => {
       try {
@@ -132,10 +132,10 @@ export default function EditProductPage() {
 
     const data = await res.json();
 
-    // ✅ Only show toast AFTER a successful update
+  
     if (res.ok) {
       toast.success("✅ Product updated successfully!");
-      // Optional small delay to let toast show before redirect
+      
       setTimeout(() => {
         router.push("/admin/products");
       }, 1000);
@@ -193,7 +193,7 @@ export default function EditProductPage() {
           <h1 className="text-2xl font-semibold mb-4">Edit Product</h1>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 🧩 Basic Info */}
+            {/*  Basic Info */}
             <div className="grid md:grid-cols-2 gap-4">
               <Input
                 name="name"
@@ -237,7 +237,7 @@ export default function EditProductPage() {
               </div>
             </div>
 
-            {/* 🧩 Main Image */}
+            {/*  Main Image */}
             <div>
               <label className="block text-sm font-medium mb-1">Main Image</label>
               {mainImageUrl && !mainImage && (
@@ -254,7 +254,7 @@ export default function EditProductPage() {
               />
             </div>
 
-            {/* 🧩 Descriptions */}
+            {/* Descriptions */}
             <div>
               <h2 className="font-semibold mb-2">Descriptions</h2>
               {descriptions.map((desc, i) => (
@@ -287,7 +287,7 @@ export default function EditProductPage() {
               ))}
             </div>
 
-            {/* 🧩 Features */}
+            {/*  Features */}
             <div>
               <h2 className="font-semibold mb-2">Features</h2>
               {features.map((feat, i) => (

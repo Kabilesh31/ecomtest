@@ -6,6 +6,7 @@ import "./globals.css"
 import "@/styles/cropper.css";
 import { AuthProvider } from "@/context/auth-context"
 import { CartProvider } from "../context/cart-context"
+import { WishlistProvider } from "@/context/wishlist-context"
 import { Toaster } from "react-hot-toast";
 import Script from "next/script"
 
@@ -29,8 +30,10 @@ export default function RootLayout({
         <AuthProvider>
           <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="beforeInteractive" />
           <CartProvider>
+            <WishlistProvider>
             {children}
              <Toaster position="bottom-right" reverseOrder={false} />
+             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
         <Analytics />

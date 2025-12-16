@@ -64,9 +64,9 @@ export default function AdminHeroPage() {
     if (isVideo) {
       setFile(selected);
       setPreview(URL.createObjectURL(selected));
-      setCropMode(false); // no crop for videos
+      setCropMode(false); 
     } else {
-      // For images → open crop mode
+      
       const localPreview = URL.createObjectURL(selected);
       setPreview(localPreview);
       setCropMode(true);
@@ -204,7 +204,7 @@ export default function AdminHeroPage() {
             ))}
           </div>
 
-          {/* 🗑️ Confirmation Modal */}
+          {/*  Confirmation Modal */}
           {confirmDeleteId && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <Card className="p-6 w-full max-w-sm text-center">
@@ -227,7 +227,7 @@ export default function AdminHeroPage() {
             </div>
           )}
 
-          {/* ✏️ Add/Edit Modal */}
+          {/*  Add/Edit Modal */}
           {editing && !cropMode && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
               <Card className="p-6 w-full max-w-md">
@@ -294,7 +294,7 @@ export default function AdminHeroPage() {
             </div>
           )}
 
-          {/* 🖼️ Crop Modal */}
+          {/*  Crop Modal */}
           {cropMode && (
             <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[999]">
               <div className="relative w-[90vw] max-w-3xl h-[500px] bg-black rounded-md overflow-hidden">

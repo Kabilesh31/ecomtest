@@ -11,7 +11,7 @@ export default function SignInPage() {
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [mobile, setMobile] = useState("") // ✅ added mobile state
+  const [mobile, setMobile] = useState("") 
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
   const [isLoading, setIsLoading] = useState(false)
@@ -27,7 +27,7 @@ export default function SignInPage() {
       const res = await fetch("http://localhost:5000/api/users/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, mobile }), // ✅ send mobile
+        body: JSON.stringify({ name, email, password, mobile }), 
       })
 
       const data = await res.json()

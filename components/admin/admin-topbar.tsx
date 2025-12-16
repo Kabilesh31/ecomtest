@@ -1,21 +1,26 @@
-"use client"
+"use client";
 
-import { useAuth } from "@/context/auth-context"
-import { Button } from "@/components/ui/button"
-import { Menu } from "lucide-react"
+import { useAuth } from "@/context/auth-context";
+import { Button } from "@/components/ui/button";
+import { Menu } from "lucide-react";
 
 interface AdminTopbarProps {
-  onMenuClick: () => void
+  onMenuClick: () => void;
 }
 
 export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
-  const { user } = useAuth()
+  const { user } = useAuth();
 
-  if (!user || user.role !== "admin") return null
+  if (!user || user.role !== "admin") return null;
 
   return (
     <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
-      <Button variant="ghost" size="icon" onClick={onMenuClick} className="lg:hidden">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={onMenuClick}
+        className="lg:hidden"
+      >
         <Menu className="w-5 h-5" />
       </Button>
 
@@ -23,15 +28,21 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
 
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <p className="text-sm font-medium text-foreground">{user.email || "-"}</p>
-          <p className="text-xs text-muted-foreground capitalize">{user.role}</p>
+          <p className="text-sm font-medium text-foreground">
+            {user.email || "-"}
+          </p>
+          <p className="text-xs text-muted-foreground capitalize">
+            {user.role}
+          </p>
         </div>
         <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-         <span className="text-sm font-semibold text-primary">
-  {user?.email?.[0]?.toUpperCase() || user?.name?.[0]?.toUpperCase() || "A"}
-</span>
+          <span className="text-sm font-semibold text-primary">
+            {user?.email?.[0]?.toUpperCase() ||
+              user?.name?.[0]?.toUpperCase() ||
+              "A"}
+          </span>
         </div>
       </div>
     </header>
-  )
+  );
 }

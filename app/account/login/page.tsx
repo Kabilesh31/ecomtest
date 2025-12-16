@@ -9,7 +9,7 @@ import Link from "next/link"
 import toast from "react-hot-toast"
 import { useAuth, User } from "@/context/auth-context"
 
-// 🔹 OTP Input Component (Hotstar-style)
+// OTP Input Component (Hotstar-style)
 const OtpInput = ({ value, setValue, length = 6 }: { value: string, setValue: (val: string) => void, length?: number }) => {
   const [otpValues, setOtpValues] = useState(Array(length).fill(""))
   const inputsRef = useRef<Array<HTMLInputElement | null>>([])
@@ -86,7 +86,7 @@ export default function LoginPage() {
     if (step === "otp") otpRef.current?.focus()
   }, [step])
 
-  // 🔹 Admin login
+  // Admin login
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -122,7 +122,7 @@ export default function LoginPage() {
     }
   }
 
-  // 🔹 Send OTP
+  //  Send OTP
   const sendOtp = async () => {
     if (!mobile) return toast.error("Enter mobile number")
 
@@ -146,7 +146,7 @@ export default function LoginPage() {
     }
   }
 
-  // 🔹 Verify OTP
+  // Verify OTP
   const verifyOtp = async () => {
     if (!otp) return toast.error("Enter OTP")
 
@@ -189,7 +189,7 @@ export default function LoginPage() {
           <h2 className="text-2xl font-bold mb-6">Login</h2>
           {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
-          {/* 🔹 CUSTOMER LOGIN */}
+          {/*  CUSTOMER LOGIN */}
           {step === "login" && (
             <div className="space-y-4">
               <Input
@@ -215,7 +215,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* 🔹 OTP VERIFICATION */}
+          {/*  OTP VERIFICATION */}
           {step === "otp" && (
             <div className="space-y-4">
               <OtpInput value={otp} setValue={setOtp} />
@@ -225,7 +225,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* 🔹 ADMIN LOGIN */}
+          {/* ADMIN LOGIN */}
           {showAdmin && (
             <form onSubmit={handleAdminLogin} className="space-y-4 mt-6 border-t pt-6">
               <Input

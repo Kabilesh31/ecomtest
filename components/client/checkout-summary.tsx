@@ -5,10 +5,9 @@ import { useCart, CartItem } from "@/context/cart-context";
 import { useEffect, useState } from "react";
 
 export function CheckoutSummary() {
-  const { items, discount, appliedCoupon } = useCart(); // get cart items, discount, and applied promo
+  const { items, discount, appliedCoupon } = useCart();
   const [promoDiscount, setPromoDiscount] = useState(0);
 
-  // Load applied promo discount from localStorage
   useEffect(() => {
     const promo = localStorage.getItem("appliedPromo");
     if (promo) {
@@ -17,22 +16,17 @@ export function CheckoutSummary() {
     }
   }, []);
 
-  // Total discount
   const totalDiscount = discount + promoDiscount;
 
-  // Subtotal before discount
   const subtotal = items.reduce(
     (sum: number, item: CartItem) => sum + item.price * item.quantity,
     0
   );
 
-  // Shipping is free
   const shipping = 0;
 
-  // Tax after discount
   const tax = (subtotal - totalDiscount) * 0.1;
 
-  // Total after discount
   const total = subtotal - totalDiscount + shipping + tax;
 
   return (
@@ -63,20 +57,28 @@ export function CheckoutSummary() {
             <div className="space-y-3 border-b border-border pb-4">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Subtotal</span>
-                <span className="text-foreground font-medium">₹{subtotal.toFixed(2)}</span>
+                <span className="text-foreground font-medium">
+                  ₹{subtotal.toFixed(2)}
+                </span>
               </div>
 
               {discount > 0 && (
                 <div className="flex justify-between text-sm">
                   <span className="text-muted-foreground">Cart Discount</span>
-                  <span className="text-green-600 font-medium">-₹{discount.toFixed(2)}</span>
+                  <span className="text-green-600 font-medium">
+                    -₹{discount.toFixed(2)}
+                  </span>
                 </div>
               )}
 
               {promoDiscount > 0 && (
                 <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Promo Discount ({appliedCoupon || ""})</span>
-                  <span className="text-green-600 font-medium">-₹{promoDiscount.toFixed(2)}</span>
+                  <span className="text-muted-foreground">
+                    Promo Discount ({appliedCoupon || ""})
+                  </span>
+                  <span className="text-green-600 font-medium">
+                    -₹{promoDiscount.toFixed(2)}
+                  </span>
                 </div>
               )}
 
@@ -87,13 +89,17 @@ export function CheckoutSummary() {
 
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Tax (10%)</span>
-                <span className="text-foreground font-medium">₹{tax.toFixed(2)}</span>
+                <span className="text-foreground font-medium">
+                  ₹{tax.toFixed(2)}
+                </span>
               </div>
             </div>
 
             <div className="flex justify-between text-lg">
               <span className="font-semibold text-foreground">Total</span>
-              <span className="font-bold text-primary text-xl">₹{total.toFixed(2)}</span>
+              <span className="font-bold text-primary text-xl">
+                ₹{total.toFixed(2)}
+              </span>
             </div>
           </>
         )}
@@ -102,7 +108,9 @@ export function CheckoutSummary() {
       {/* Security Info */}
       <Card className="p-4 bg-primary/5 border-primary/20">
         <p className="text-xs text-muted-foreground">
-          <span className="font-semibold text-foreground">🔒 Secure Checkout</span>
+          <span className="font-semibold text-foreground">
+            🔒 Secure Checkout
+          </span>
           <br />
           Your information is protected with SSL encryption.
         </p>
@@ -110,9 +118,15 @@ export function CheckoutSummary() {
 
       {/* Guarantees */}
       <Card className="p-4 space-y-2">
-        <p className="text-xs font-semibold text-foreground">✓ 30-Day Money Back Guarantee</p>
-        <p className="text-xs font-semibold text-foreground">✓ Free Shipping on Orders Over Rs.300</p>
-        <p className="text-xs font-semibold text-foreground">✓ 24/7 Customer Support</p>
+        <p className="text-xs font-semibold text-foreground">
+          ✓ 30-Day Money Back Guarantee
+        </p>
+        <p className="text-xs font-semibold text-foreground">
+          ✓ Free Shipping on Orders Over Rs.300
+        </p>
+        <p className="text-xs font-semibold text-foreground">
+          ✓ 24/7 Customer Support
+        </p>
       </Card>
     </div>
   );

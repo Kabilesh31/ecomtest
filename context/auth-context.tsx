@@ -1,17 +1,21 @@
 "use client";
 
-import { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useState,
+  useEffect,
+} from "react";
 import toast from "react-hot-toast";
 import { jwtDecode } from "jwt-decode";
 
-// ✅ JWT Payload type
 interface JwtPayload {
   id: string;
   exp?: number;
   iat?: number;
 }
 
-// ✅ Common user type
 export interface User {
   _id: string;
   name: string;
@@ -42,7 +46,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ Fetch user/admin by ID
   const fetchUserById = async (id: string) => {
     console.log("Fetching user by ID:", id);
     try {
@@ -56,11 +59,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (!res.ok) throw new Error(data.message || "Failed to fetch user");
 
-      // ✅ Handle both admin and user response
       const fetchedUser = data.user || data.admin;
       setUser(fetchedUser);
-
-
     } catch (error) {
       console.error("Error fetching user by ID:", error);
       logout();
@@ -69,14 +69,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // ✅ Load from token on mount
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
       try {
         const decoded = jwtDecode<JwtPayload>(token);
 
-        // ✅ Check token expiry
         if (decoded.exp && decoded.exp * 1000 < Date.now()) {
           console.warn("Token expired");
           logout();
@@ -95,7 +93,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  // ✅ Login
   const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
@@ -108,13 +105,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Login failed");
 
-      // ✅ Save token
       localStorage.setItem("token", data.token);
-      console.log()
-      // ✅ Decode and fetch user by ID
+      console.log();
+
       const decoded = jwtDecode<JwtPayload>(data.token);
       if (decoded.id) {
-        localStorage.setItem("userId", decoded.id)
+        localStorage.setItem("userId", decoded.id);
         await fetchUserById(decoded.id);
       } else {
         throw new Error("Invalid token: missing user ID");
