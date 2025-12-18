@@ -108,8 +108,12 @@ export function ClientHeader() {
               )
             )}
           </nav>
-          {/* Wishlist Button */}
-          <Link href="/wishlist" className="relative">
+         
+        
+
+          <div className="flex items-center gap-3">
+
+              <Link href="/wishlist" className="relative">
             <Button variant="ghost" size="icon">
               <Heart
                 className={`w-5 h-5 ${
@@ -123,8 +127,6 @@ export function ClientHeader() {
               )}
             </Button>
           </Link>
-
-          <div className="flex items-center gap-3">
             <Link href="/cart" className="relative">
               <Button variant="ghost" size="icon">
                 <ShoppingCart className="w-5 h-5" />

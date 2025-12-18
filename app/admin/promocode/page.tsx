@@ -33,13 +33,18 @@ export default function AdminPromoCodePage() {
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      await axios.get(
-        `${process.env.NEXT_PUBLIC_API_URL}/promocode/auto/monthly`
-      );
+    const init = async () => {
+      try {
+        await axios.get(
+          `${process.env.NEXT_PUBLIC_API_URL}/promocode/auto/monthly`
+        );
+        await fetchPromoCodes();
+      } catch (err) {
+        toast.error("Failed to initialize promo codes");
+      }
+    };
 
-      fetchPromoCodes();
-    })();
+    init();
   }, []);
 
   const toggleAutoPromo = async (promo: PromoCode) => {
@@ -64,10 +69,6 @@ export default function AdminPromoCodePage() {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    fetchPromoCodes();
-  }, []);
 
   const handleSubmit = async () => {
     if (!title || !description || !code || !discount || !expiry) {

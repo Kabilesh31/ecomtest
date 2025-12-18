@@ -4,9 +4,11 @@ import { Card } from "@/components/ui/card";
 import { useCart, CartItem } from "@/context/cart-context";
 import { useEffect, useState } from "react";
 
+
 export function CheckoutSummary() {
   const { items, discount, appliedCoupon } = useCart();
   const [promoDiscount, setPromoDiscount] = useState(0);
+  
 
   useEffect(() => {
     const promo = localStorage.getItem("appliedPromo");
