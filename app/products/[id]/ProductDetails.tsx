@@ -73,13 +73,16 @@ export default function ProductDetails({ product }: Props) {
   const [showQuantity, setShowQuantity] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [showAll, setShowAll] = useState(false);
 
   const existingItem = items.find((i) => i.id === (product._id || product.id));
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
   const currentQty = existingItem ? existingItem.quantity : 0;
   const maxStock = product.quantity || 10;
   const isOut = product.outofstock === true || Number(product.quantity) === 0;
+  const scrollRef = useRef<HTMLDivElement>(null);
 
+  const INITIAL_REVIEWS = 4;
   const featureImages = ["/coin1.png", "/coin2.png", "/clay.png", "/cup.png"];
 
   const descriptionImages = [
@@ -375,7 +378,7 @@ export default function ProductDetails({ product }: Props) {
             {/* FEATURES */}
             {product.features && product.features.length > 0 && (
               <div className="mb-18">
-                <h2 className="text-2xl font-bold text-gray-800 mb-1">
+                <h2 className="text-2xl font-bold text-gray-800 mb-8">
                   Features
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6">
@@ -400,7 +403,7 @@ export default function ProductDetails({ product }: Props) {
               </div>
             )}
 
-            <div className="mt-6 bg-gradient-to-r from-purple-700 to-indigo-700 text-white p-5 rounded-2xl shadow-lg flex flex-col gap-3">
+            <div className="mt-12 bg-gradient-to-r from-purple-700 to-indigo-700 text-white p-5 rounded-2xl shadow-lg flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold">🎉 Promo Code</h3>
               </div>
@@ -420,20 +423,30 @@ export default function ProductDetails({ product }: Props) {
                 valid only for this month!
               </p>
             </div>
-            <div className="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-5">
-              {highlights.map((item, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center gap-2 bg-white50 p-4 rounded-xl border border-white/10 hover:bg-black/10 transition shadow-md"
-                >
-                  <div className="text-yellow-400">{item.icon}</div>
-                  <p className="text-black text-sm font-semibold">
-                    {item.title}
-                  </p>
-                  <p className="text-black/80 text-xs">{item.subtitle}</p>
-                </div>
-              ))}
-            </div>
+            <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
+  {highlights.map((item, index) => (
+    <div
+      key={index}
+      className="flex flex-col items-center gap-1.5
+                 bg-white/50 p-2.5 rounded-lg
+                 border border-white/10
+                 hover:bg-black/10 transition shadow-sm"
+    >
+      <div className="text-yellow-400 text-lg">
+        {item.icon}
+      </div>
+
+      <p className="text-black text-xs font-semibold text-center">
+        {item.title}
+      </p>
+
+      <p className="text-black/80 text-[10px] text-center">
+        {item.subtitle}
+      </p>
+    </div>
+  ))}
+</div>
+
           </div>
         </div>
       </div>
@@ -462,54 +475,97 @@ export default function ProductDetails({ product }: Props) {
       )} */}
 
       {/* REVIEWS & COMMENTS */}
-      <div className="max-w-5xl mx-auto px-4 md:px-8 py-10">
-        <h3 className="text-2xl font-bold mb-4">Reviews & Comments</h3>
-        {/* REVIEWS SECTION */}
-        {product.reviews?.length ? (
-          product.reviews.map((review: Review, index: number) => (
-            <div
-              key={index}
-              className="min-w-[180px] bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-lg"
-            >
-              <h3 className="text-black font-semibold text-sm">
-                {review.customerName || "Customer"}
-              </h3>
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-10">
+        {product.reviews && product.reviews.length > 0 && (
+          <div className="mt-6">
+            <h3 className="text-2xl font-bold mb-6">Reviews & Comments</h3>
 
-              <p className="text-yellow-400 font-bold text-sm mt-1">
-                ⭐ {review.rating}/5
-              </p>
+            <div className="space-y-4">
+              {product.reviews
+                .slice(0, showAll ? product.reviews.length : INITIAL_REVIEWS)
+                .map((review: Review, index: number) => (
+                  <div
+                    key={index}
+                    className="w-full bg-white/10 backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-lg"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="text-black font-semibold text-sm">
+                        {review.customerName || "Customer"}
+                      </h3>
 
-              <p className="text-gray-600 text-xs mt-2 line-clamp-3">
-                {review.message}
-              </p>
+                      <p className="text-yellow-400 font-bold text-sm">
+                        ⭐ {review.rating}/5
+                      </p>
+                    </div>
 
-              {review.date && (
-                <p className="text-gray-800 text-[10px] mt-2">
-                  {new Date(review.date).toLocaleDateString()}
-                </p>
-              )}
+                    <p className="text-gray-600 text-sm mt-2">
+                      {review.message}
+                    </p>
+
+                    {review.date && (
+                      <p className="text-gray-800 text-xs mt-2">
+                        {new Date(review.date).toLocaleDateString()}
+                      </p>
+                    )}
+                  </div>
+                ))}
             </div>
-          ))
-        ) : (
-          <p className="text-gray-600">No reviews yet</p>
+
+            {product.reviews.length > INITIAL_REVIEWS && (
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="mt-4 text-sm font-semibold text-blue-600 hover:underline"
+              >
+                {showAll ? "View Less" : "View More"}
+              </button>
+            )}
+          </div>
         )}
+
         {recentlyViewed.length > 0 && (
-          <div className="max-w-6xl mx-auto px-4 md:px-8 py-10">
+          <div className="max-w-7xl mx-auto px-4 md:px-1 py-10 relative">
             <h3 className="text-2xl font-bold mb-6">Recently Viewed</h3>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+            {/* Left Button */}
+            <button
+              onClick={() =>
+                scrollRef.current?.scrollBy({ left: -300, behavior: "smooth" })
+              }
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-10
+                 bg-white shadow-lg p-2 rounded-full hover:bg-gray-100"
+            >
+              ◀
+            </button>
+
+            {/* Right Button */}
+            <button
+              onClick={() =>
+                scrollRef.current?.scrollBy({ left: 300, behavior: "smooth" })
+              }
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-10
+                 bg-white shadow-lg p-2 rounded-full hover:bg-gray-100"
+            >
+              ▶
+            </button>
+
+            {/* Scroll Area */}
+            <div
+              ref={scrollRef}
+              className="flex gap-4 overflow-x-auto scrollbar-hide px-8"
+            >
               {recentlyViewed.map((item: any, index: number) => (
                 <div
                   key={index}
-                  className="border rounded-lg p-3 cursor-pointer hover:shadow-2xl bg-black/15 transition"
                   onClick={() => router.push(`/products/${item._id}`)}
+                  className="min-w-[160px] border rounded-lg p-2 cursor-pointer bg-black/15 hover:shadow-xl transition"
                 >
                   <img
                     src={item.image}
-                    className="h-32 w-full object-contain mb-2"
+                    className="h-24 w-full object-contain mb-2"
                   />
-                  <p className="text-lg font-bold truncate">{item.name}</p>
-                  <p className="text-gray-800">₹{item.price}</p>
+
+                  <p className="text-sm font-semibold truncate">{item.name}</p>
+                  <p className="text-gray-800 text-sm">₹{item.price}</p>
                 </div>
               ))}
             </div>

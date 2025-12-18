@@ -7,11 +7,12 @@ import { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 import { useCart } from "@/context/cart-context";
+import toast from "react-hot-toast";
 
 export function CartSummary() {
   const [couponCode, setCouponCode] = useState("");
   const [loading, setLoading] = useState(false);
-
+const [promoError, setPromoError] = useState<string>("");
   const { items, discount, appliedCoupon, applyCoupon } = useCart(); // ✅ use discount from context
 
   const subtotal = items.reduce(
@@ -24,35 +25,45 @@ export function CartSummary() {
   const tax = taxableAmount * 0.1;
   const total = taxableAmount + tax + shipping;
 
-  const handleApplyCoupon = async () => {
-    if (!couponCode.trim()) return alert("Enter promocode");
-    setLoading(true);
+const handleApplyCoupon = async () => {
+  if (!couponCode.trim()) {
+    setPromoError("Please enter a promo code");
+    return;
+  }
 
-    try {
-      const response = await axios.post(
-        "http://localhost:5000/api/promocode/apply",
-        {
-          code: couponCode,
-          products: items.map((item) => ({
-            productId: item.id,
-            qty: item.quantity,
-          })),
-        }
-      );
+  setPromoError("");
+  setLoading(true);
 
-      if (response.data.success) {
-        const discountInRupees = response.data.discount;
-        applyCoupon(couponCode, discountInRupees);
-        alert(`Promo applied: ₹${discountInRupees}`);
-      } else {
-        alert(response.data.message);
+  try {
+    const response = await axios.post(
+      "http://localhost:5000/api/promocode/apply",
+      {
+        code: couponCode,
+        products: items.map((item) => ({
+          productId: item.id,
+          qty: item.quantity,
+        })),
       }
-    } catch (err) {
-      alert("Invalid or expired promocode");
-    } finally {
-      setLoading(false);
+    );
+
+    if (response.data.success) {
+      const discountInRupees = response.data.discount;
+
+      applyCoupon(couponCode, discountInRupees);
+
+      // ✅ SUCCESS → TOAST ONLY
+      toast.success(`Promo applied! You saved ₹${discountInRupees}`);
+    } else {
+      // ❌ ERROR → INLINE MESSAGE ONLY
+      setPromoError(response.data.message || "Invalid promo code");
     }
-  };
+  } catch (err) {
+    // ❌ API ERROR → INLINE MESSAGE ONLY
+    setPromoError("Invalid or expired promo code");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="space-y-4 sticky top-24">
@@ -77,6 +88,9 @@ export function CartSummary() {
               {loading ? "Applying..." : "Apply"}
             </Button>
           </div>
+          {promoError && (
+  <p className="text-xs text-red-500 mt-1">{promoError}</p>
+)}
         </Card>
       ) : (
         <Card className="p-4 bg-green-50 border-green-300">
@@ -91,6 +105,8 @@ export function CartSummary() {
               Remove
             </button>
           </div>
+          
+
         </Card>
       )}
 

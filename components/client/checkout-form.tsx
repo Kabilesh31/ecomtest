@@ -9,6 +9,7 @@ import { useCart, CartItem } from "@/context/cart-context";
 import { useAuth } from "@/context/auth-context";
 import axios from "axios";
 import { motion } from "framer-motion";
+import toast from "react-hot-toast";
 
 declare global {
   interface Window {
@@ -18,7 +19,7 @@ declare global {
 
 export function CheckoutForm() {
   const router = useRouter();
-  const { items, discount: cartDiscount, appliedCoupon } = useCart();
+  const { items, discount: cartDiscount, appliedCoupon, clearCart } = useCart();
   const { user } = useAuth();
 
   const [localUser, setLocalUser] = useState(user);
@@ -127,7 +128,7 @@ export function CheckoutForm() {
         setShowForm(false);
         const latest = res.data.addressList[res.data.addressList.length - 1];
         setSelectedAddress(latest);
-        alert("Address added successfully!");
+        toast.success("Address added successfully");
       }
     } catch (err: any) {
       console.error("Save address error:", err.response?.data || err.message);
@@ -205,11 +206,15 @@ export function CheckoutForm() {
         );
 
         if (codOrder.data.success) {
-          alert("Order placed successfully with Cash on Delivery!");
-          router.push("/order-success");
+          toast.success("Order placed successfully (Cash on Delivery)");
+
+          clearCart();
           localStorage.removeItem("appliedPromo");
+
+          const orderId = codOrder.data.order._id;
+          router.push(`/order-success?orderId=${orderId}`);
         } else {
-          alert("Failed to place COD order.");
+          toast.error("Failed to place COD order");
         }
 
         return;
@@ -255,14 +260,20 @@ export function CheckoutForm() {
             );
 
             if (verifyResponse.data.success) {
-              alert("Payment Verified Successfully!");
-              router.push("/order-success");
+              toast.success("Payment successful! Order placed");
+
+
+              clearCart();
+              localStorage.removeItem("appliedPromo");
+
+              const orderId = verifyResponse.data.order._id;
+              router.push(`/order-success?orderId=${orderId}`);
             } else {
               alert("Payment verification failed!");
             }
           } catch (err) {
             console.error("Payment verification error:", err);
-            alert("Payment verification failed.");
+            toast.error("Payment verification failed");
           }
         },
         prefill: {
@@ -279,11 +290,11 @@ export function CheckoutForm() {
       const rzp = new window.Razorpay(options);
       rzp.open();
       rzp.on("payment.failed", function (response: any) {
-        alert("Payment Failed: " + response.error.description);
+        toast.error(response.error.description || "Payment failed");
       });
     } catch (error: any) {
       console.error("Checkout Error:", error);
-      alert("Something went wrong. Please try again.");
+      toast.error("Something went wrong. Please try again");
     } finally {
       setIsLoading(false);
     }
