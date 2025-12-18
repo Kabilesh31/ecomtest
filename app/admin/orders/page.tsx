@@ -34,9 +34,10 @@ export default function OrdersPage() {
   const [showOrderDetails, setShowOrderDetails] = useState<boolean>(false);
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [orderDatas, setOrderDatas] = useState<Order[]>([]);
-  const [statusFilter, setStatusFilter] = useState<
-    "All" | "Pending" | "Delivered"
-  >("All");
+ const [statusFilter, setStatusFilter] = useState<
+  "All" | "Pending" | "Delivered" | "Return Initiated"
+>("All");
+
   const [searchTerm, setSearchTerm] = useState("");
   const [allProducts, setAllProducts] = useState<any[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,29 +74,48 @@ export default function OrdersPage() {
   }, [user]);
 
   // Helper to normalize status for filtering
-  const getFilterStatus = (
-    status: string
-  ): "Pending" | "Delivered" | "Other" => {
-    const normalized = status.toLowerCase().trim();
-    if (normalized === "order recieved") return "Pending"; // typo handled
-    if (normalized === "completed") return "Delivered";
-    return "Other";
-  };
+ const getFilterStatus = (
+  status: string
+): "Pending" | "Delivered" | "Return Initiated" | "Other" => {
+  const normalized = status.toLowerCase().trim();
 
-  const getStatusColor = (status: string) => {
-    const normalized = status.toLowerCase().trim();
-    switch (normalized) {
-      case "completed":
-        return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200";
-      case "shipped":
-        return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200";
-      case "order recieved":
-      case "processing":
-        return "bg-gray-300 text-white-400 dark:bg-yellow-900 dark:text-yellow-200";
-      default:
-        return "bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-200";
-    }
-  };
+  if (normalized === "order recieved" || normalized === "pending")
+    return "Pending";
+
+  if (normalized === "completed" || normalized === "delivered")
+    return "Delivered";
+
+  if (normalized === "return initiated")
+    return "Return Initiated";
+
+  return "Other";
+};
+
+
+ const getStatusColor = (status: string) => {
+  const normalized = status.toLowerCase().trim();
+
+  switch (normalized) {
+    case "completed":
+    case "delivered":
+      return "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200";
+
+    case "shipped":
+      return "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200";
+
+    case "order recieved":
+    case "processing":
+    case "pending":
+      return "bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-200";
+
+    case "return initiated":
+      return "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200";
+
+    default:
+      return "bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-200";
+  }
+};
+
 
   const viewOrderDetailsHandler = (order: Order) => {
     setSelectedOrder(order);
@@ -106,6 +126,7 @@ export default function OrdersPage() {
     setShowOrderDetails(false);
     setSelectedOrder(null);
   };
+  
   const handleMarkCompleted = async (orderId: string) => {
     await axios.put("http://localhost:5000/api/order/update-status", {
       orderId,
@@ -119,6 +140,15 @@ export default function OrdersPage() {
     await axios.delete(`http://localhost:5000/api/order/${orderId}`);
     getOrdersByAdmin();
   };
+const getReturnTotal = (order: Order) => {
+  return order.purchasedProducts
+    .filter(
+      (p) =>
+        p.returnEligible === true &&
+        p.returnStatus === "Return Initiated"
+    )
+    .reduce((sum, p) => sum + p.price * p.quantity, 0);
+};
 
   return (
     <ProtectedRoute>
@@ -129,33 +159,37 @@ export default function OrdersPage() {
             <AdminHeader title="Orders" description="Manage customer orders" />
 
             {/* Tabs */}
-            <div className="relative flex bg-muted rounded-xl p-1">
-              {(["All", "Pending", "Delivered"] as const).map((status) => (
-                <Button
-                  key={status}
-                  variant="ghost"
-                  onClick={() => setStatusFilter(status)}
-                  className={`relative z-10 px-6 py-2 rounded-lg font-medium transition-colors ${
-                    statusFilter === status
-                      ? "text-primary"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  {status}
-                  {statusFilter === status && (
-                    <motion.span
-                      layoutId="activeTab"
-                      className="absolute inset-0 bg-primary/10 rounded-lg"
-                      transition={{
-                        type: "spring",
-                        stiffness: 350,
-                        damping: 25,
-                      }}
-                    />
-                  )}
-                </Button>
-              ))}
-            </div>
+           <div className="relative flex bg-muted rounded-xl p-1">
+  {(
+    ["All", "Pending", "Delivered", "Return Initiated"] as const
+  ).map((status) => (
+    <Button
+      key={status}
+      variant="ghost"
+      onClick={() => setStatusFilter(status)}
+      className={`relative z-10 px-6 py-2 rounded-lg font-medium transition-colors ${
+        statusFilter === status
+          ? "text-primary"
+          : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {status}
+
+      {statusFilter === status && (
+        <motion.span
+          layoutId="activeTab"
+          className="absolute inset-0 bg-primary/10 rounded-lg"
+          transition={{
+            type: "spring",
+            stiffness: 350,
+            damping: 25,
+          }}
+        />
+      )}
+    </Button>
+  ))}
+</div>
+
           </div>
           <div className="flex justify-between items-center mb-4">
             <Input
@@ -253,8 +287,12 @@ export default function OrdersPage() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm font-semibold text-foreground">
-                          Rs. {order.totalAmount}
-                        </td>
+  Rs.{" "}
+  {order.status.toLowerCase() === "return initiated"
+    ? getReturnTotal(order)
+    : order.totalAmount}
+</td>
+
                         <td className="px-6 py-4">
                           <span
                             className={`text-xs font-semibold px-3 py-1 rounded-full ${getStatusColor(
@@ -431,7 +469,10 @@ export default function OrdersPage() {
                           Total:
                         </span>{" "}
                         <span className="text-base font-semibold text-green-700 dark:text-green-300">
-                          ₹{selectedOrder.totalAmount}
+                          ₹{selectedOrder.status.toLowerCase() === "return initiated"
+  ? getReturnTotal(selectedOrder)
+  : selectedOrder.totalAmount}
+
                         </span>
                       </p>
                     </div>
@@ -466,8 +507,14 @@ export default function OrdersPage() {
                       </thead>
 
                       <tbody>
-                        {selectedOrder?.purchasedProducts?.map(
-                          (product, index) => {
+                       {selectedOrder?.purchasedProducts
+  ?.filter((product) =>
+    selectedOrder.status.toLowerCase() === "return initiated"
+      ? product.returnStatus === "Return Initiated"
+      : true
+  )
+  .map((product, index) => {
+
                             console.log("All Products:", allProducts);
                             console.log("Order productId:", product.productId);
                             const fullProduct = allProducts?.find(
@@ -513,7 +560,10 @@ export default function OrdersPage() {
                             Grand Total
                           </td>
                           <td className="px-4 py-3 ml-50">
-                            ₹{selectedOrder.totalAmount}
+                            ₹{selectedOrder.status.toLowerCase() === "return initiated"
+  ? getReturnTotal(selectedOrder)
+  : selectedOrder.totalAmount}
+
                           </td>
                         </tr>
                       </tfoot>

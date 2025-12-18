@@ -18,12 +18,14 @@ export interface PurchasedProduct {
   price: number;
   quantity: number;
   _id: string;
+  returnEligible?: boolean;
+  returnStatus: "None" | "Return Initiated" | "Returned";
 
   review?: {
     rating: number;
-    comment: string;     // 🟢 you already have this
-    message?: string;    // 🟢 FIX: your code uses review.message
-    reviewedAt?: string; // 🟢 FIX: your code uses review.reviewedAt
+    comment: string;     
+    message?: string;   
+    reviewedAt?: string; 
   };
 
   reviews?: ProductReview[];
@@ -47,6 +49,8 @@ export interface Order {
   totalAmount: number;
   customerId?: string;
   createdAt: string;
+  returnAmount?: number;
+  returnEligible?: boolean; 
   
   purchasedProducts: PurchasedProduct[];
   customerDetails: CustomerDetails;
@@ -58,5 +62,6 @@ export interface Counts {
   orderCount : number,
   productCount : number,
   totalRevenue : number,
-  userCount : number
+  userCount : number,
+  returnCount : number,
 }
