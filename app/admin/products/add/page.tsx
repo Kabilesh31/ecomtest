@@ -23,6 +23,7 @@ export default function AddProductPage() {
     manualRatingValue: "", 
     outofstock: "false", 
     hidereviews: "false", 
+     returnEligible: "false",
   });
 
   const [mainImages, setMainImages] = useState<File[]>([]);
@@ -51,7 +52,7 @@ export default function AddProductPage() {
     });
   };
 
-  // 🧩 Submit form with multiple images
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -73,11 +74,13 @@ export default function AddProductPage() {
     formData.append("outofstock", product.outofstock);
     formData.append("hidereviews", product.hidereviews);
 
-    // append all selected images
+ 
     mainImages.forEach((img) => formData.append("mainImages", img));
 
     formData.append("descriptions", JSON.stringify(descriptions));
     formData.append("features", JSON.stringify(features));
+    formData.append("returnEligible", product.returnEligible);
+
 
     try {
       const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/products`, {
@@ -99,6 +102,7 @@ export default function AddProductPage() {
           manualRatingValue: "",
           outofstock: "false",
           hidereviews: "false",
+          returnEligible: "false",
         });
         setMainImages([]);
         setPreviewUrls([]);
@@ -113,7 +117,7 @@ export default function AddProductPage() {
     }
   };
 
-  // 🧩 Add images handler
+ 
   const handleImageSelect = (files: FileList | null) => {
     if (!files) return;
     const fileArray = Array.from(files);
@@ -162,9 +166,7 @@ export default function AddProductPage() {
                   required
                 />
                 <div>
-                  {/* <label className="block text-sm font-medium mb-1">
-                    Category
-                  </label> */}
+                  
                   <select
                     name="category"
                     value={product.category}
@@ -229,6 +231,38 @@ export default function AddProductPage() {
               </div>
             )}
           </div>
+          <div className="grid md:grid-cols-2 gap-4 items-center">
+  <div>
+    <label className="block text-sm font-medium mb-2">
+      Return Eligible
+    </label>
+
+    <div className="flex items-center gap-6">
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="radio"
+          name="returnEligible"
+          value="true"
+          checked={product.returnEligible === "true"}
+          onChange={handleInputChange}
+        />
+        Yes
+      </label>
+
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="radio"
+          name="returnEligible"
+          value="false"
+          checked={product.returnEligible === "false"}
+          onChange={handleInputChange}
+        />
+        No
+      </label>
+    </div>
+  </div>
+</div>
+
 
 
           <div className="grid md:grid-cols-2 gap-4 items-center">
@@ -341,7 +375,7 @@ export default function AddProductPage() {
               </div>
             </div>
 
-              {/* ✅ Multiple Image Upload */}
+              {/*  Multiple Image Upload */}
               <div>
                 <label className="block text-sm font-medium mb-2">
                   <span className="text-orange-600 text-2xl">*</span> Main Product Images

@@ -44,6 +44,7 @@ export default function OrdersPage() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [showReviewModal, setShowReviewModal] = useState(false);
   const [reviewOrder, setReviewOrder] = useState<Order | null>(null);
+  const [selectedReturnProducts, setSelectedReturnProducts] = useState<string[]>([]);
   const [productImages, setProductImages] = useState<
     Record<string, string | null>
   >({});
@@ -52,6 +53,7 @@ export default function OrdersPage() {
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [token, setToken] = useState<string | null>(null);
+  
 
   const [reviewData, setReviewData] = useState(
     {} as { [productId: string]: { rating: number; review: string } }
@@ -86,6 +88,13 @@ export default function OrdersPage() {
       getOrdersByAdmin();
     }
   }, [user, orderDatas]);
+const isWithin7Days = (createdAt: string) => {
+  const orderDate = new Date(createdAt);
+  const now = new Date();
+  const diffDays =
+    (now.getTime() - orderDate.getTime()) / (1000 * 60 * 60 * 24);
+  return diffDays <= 7;
+};
 
   const handleViewDetails = (order: Order) => {
     setSelectedOrder(order);
@@ -194,6 +203,38 @@ export default function OrdersPage() {
     });
     doc.save(`Order_${selectedOrder._id}.pdf`);
   };
+const submitReturnRequest = async () => {
+  if (selectedReturnProducts.length === 0) {
+    toast.error("Please select at least one product");
+    return;
+  }
+
+  try {
+    await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/order/initiate-return`,
+      {
+        orderId: selectedOrder?._id,
+        products: selectedReturnProducts.map((id) => ({
+          productId: id,
+        })),
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    toast.success("Return request submitted successfully");
+    setShowReturnModal(false);
+    setSelectedReturnProducts([]);
+    getOrdersByAdmin(); // refresh orders
+  } catch (err) {
+    console.error(err);
+    toast.error("Failed to submit return request");
+  }
+};
+
+
+
 
   const StarRating = ({
     value,
@@ -482,40 +523,52 @@ export default function OrdersPage() {
                           Review
                         </Button>
                       </td>
-                      <td className="text-center">
-                        {order.status.toLowerCase() !== "order canceled" && (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <button className="p-2 rounded hover:bg-gray-100">
-                                <MoreVertical size={18} />
-                              </button>
-                            </DropdownMenuTrigger>
+                      
 
-                            <DropdownMenuContent align="end">
-                              {order.status === "order Recieved" && (
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setSelectedOrderId(order._id);
-                                    setShowCancelModal(true);
-                                  }}
-                                >
-                                  Cancel Order
-                                </DropdownMenuItem>
-                              )}
-                              {order.status === "Delivered" && (
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setSelectedOrderId(order._id);
-                                    setShowReturnModal(true);
-                                  }}
-                                >
-                                  Return / Replacement
-                                </DropdownMenuItem>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        )}
-                      </td>
+                      <td className="text-center">
+  {order.status.toLowerCase() !== "order canceled" && (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className="p-2 rounded hover:bg-gray-100">
+          <MoreVertical size={18} />
+        </button>
+      </DropdownMenuTrigger>
+
+      <DropdownMenuContent align="end">
+        {/* Cancel Order */}
+        {order.status === "order Recieved" && (
+          <DropdownMenuItem
+            onClick={() => {
+              setSelectedOrderId(order._id);
+              setShowCancelModal(true);
+            }}
+          >
+            Cancel Order
+          </DropdownMenuItem>
+        )}
+
+        {/* Return / Replacement */}
+         
+         <DropdownMenuItem
+  onClick={() => {
+    if (!isWithin7Days(order.createdAt)) {
+      toast.error("Return window expired (7 days)");
+      return;
+    }
+
+    setSelectedOrder(order);
+    setShowReturnModal(true);
+  }}
+>
+  Return / Replacement
+</DropdownMenuItem>
+
+        
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )}
+</td>
+
                     </tr>
                   ))}
                 </tbody>
@@ -545,32 +598,69 @@ export default function OrdersPage() {
           </Dialog>
 
           <Dialog open={showReturnModal} onOpenChange={setShowReturnModal}>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Return / Replacement</DialogTitle>
-                <DialogDescription>
-                  Do you want to return or replace this order?
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => setShowReturnModal(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="bg-blue-600"
-                  onClick={() => {
-                    toast.success("Return / Replacement request submitted!");
-                    setShowReturnModal(false);
-                  }}
-                >
-                  Confirm
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+  <DialogContent className="max-h-[80vh] overflow-y-auto">
+    <DialogHeader>
+      <DialogTitle>Return / Replacement</DialogTitle>
+      <DialogDescription>
+        Select return-eligible products (within 7 days)
+      </DialogDescription>
+    </DialogHeader>
+
+    {/* Check if order is within 7 days */}
+    {!selectedOrder || !isWithin7Days(selectedOrder.createdAt) ? (
+      <p className="text-center text-sm text-gray-500 py-4">
+        Return window expired (7 days)
+      </p>
+    ) : selectedOrder.purchasedProducts?.filter(
+        (p: any) => p.returnEligible
+      ).length === 0 ? (
+      <p className="text-center text-sm text-gray-500 py-4">
+        No return-eligible products in this order
+      </p>
+    ) : (
+      // Show only return-eligible products
+      selectedOrder.purchasedProducts
+        .filter((p: any) => p.returnEligible)
+        .map((p: any) => (
+          <div
+            key={p._id}
+            className="flex items-center gap-3 border rounded-lg p-3 mb-2"
+          >
+            <input
+              type="checkbox"
+              checked={selectedReturnProducts.includes(p.productId)}
+              onChange={() => {
+                setSelectedReturnProducts((prev) =>
+                  prev.includes(p.productId)
+                    ? prev.filter((id) => id !== p.productId)
+                    : [...prev, p.productId]
+                );
+              }}
+            />
+
+            <div className="flex-1">
+              <p className="font-medium">{p.name}</p>
+              <p className="text-xs text-gray-500">
+                Qty: {p.quantity} | ₹{p.price}
+              </p>
+            </div>
+          </div>
+        ))
+    )}
+
+    <DialogFooter>
+      <Button
+        disabled={selectedReturnProducts.length === 0}
+        onClick={submitReturnRequest}
+      >
+        Submit Return
+      </Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+
+
+
 
           {orderDatas.length === 0 && (
             <p className="text-center mt-6 text-gray-500">

@@ -24,6 +24,8 @@ export default function AdminDashboard() {
     productCount: 0,
     totalRevenue: 0,
     userCount: 0,
+    returnCount: 0,
+     returnAmount: 0,
   })
 
   const [filter, setFilter] = useState<"today" | "7days" | "30days" | "custom">("today")
@@ -159,6 +161,32 @@ export default function AdminDashboard() {
               </div>
             </Card>
           </div>
+          {/* Total Returns */}
+{/* Total Returns */}
+<div className="grid grid-cols-2 gap-4">
+<Card className="p-6">
+  <div className="flex items-center justify-between">
+    <div>
+      <p className="text-sm text-muted-foreground mb-1">Total Returns</p>
+      <p className="text-3xl font-bold text-foreground">{countData.returnCount || 0}</p>
+    </div>
+    <Package className="w-10 h-10 text-red-400/20" />
+  </div>
+</Card>
+
+{/* Total Return Amount */}
+<Card className="p-6">
+  <div className="flex items-center justify-between">
+    <div>
+      <p className="text-sm text-muted-foreground mb-1">Return Amount</p>
+      <p className="text-3xl font-bold text-foreground">₹{countData.returnAmount || 0}</p>
+    </div>
+    <BarChart3 className="w-10 h-10 text-red-400/20" />
+  </div>
+</Card>
+</div>
+
+
 
           {/* Quick Actions */}
           <Card className="p-6">
