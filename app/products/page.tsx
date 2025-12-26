@@ -10,6 +10,8 @@ import axios from "axios";
 import { useCart, CartItem } from "@/context/cart-context";
 import { toast } from "react-hot-toast";
 import { ImageCarousel } from "@/components/client/ImageCarousel";
+import { Heart } from "lucide-react";
+import { useWishlist } from "@/context/wishlist-context";
 
 export default function ProductsPage() {
   const [selectedCategory, setSelectedCategory] = useState("All");
@@ -18,6 +20,7 @@ export default function ProductsPage() {
   const { items, addToCart, updateQuantity, removeFromCart } = useCart();
   const [priceRange, setPriceRange] = useState([0, 2000]);
   const [showPriceFilter, setShowPriceFilter] = useState(true);
+   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -165,6 +168,7 @@ export default function ProductsPage() {
                       key={product._id || product.id}
                       href={`/products/${product._id || product.id}`}
                     >
+                       
                       <Card className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer h-full flex flex-col">
                         <div
                           className={`relative h-48 bg-muted overflow-hidden group ${
@@ -172,6 +176,7 @@ export default function ProductsPage() {
                               ? "opacity-40 grayscale"
                               : ""
                           }`}
+                          
                         >
                           {product.mainImages?.length > 0 ? (
                             <ImageCarousel images={product.mainImages} />
@@ -182,7 +187,34 @@ export default function ProductsPage() {
                               className="w-full h-full object-contain"
                             />
                           )}
+<button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
 
+                            if (isInWishlist(product._id)) {
+                              removeFromWishlist(product._id);
+                              toast.success("Removed from wishlist");
+                            } else {
+                              addToWishlist({
+                                id: product._id,
+                                name: product.name,
+                                price: finalPrice,
+                                mainImages: product.mainImages,
+                              });
+                              toast.success("Added to wishlist");
+                            }
+                          }}
+                          className="absolute top-2 right-2 z-20 bg-white/90 p-2 rounded-full shadow hover:scale-105 transition"
+                        >
+                          <Heart
+                            className={`w-5 h-5 ${
+                              isInWishlist(product._id)
+                                ? "fill-red-500 text-red-500"
+                                : "text-gray-600"
+                            }`}
+                          />
+                        </button>
                           {product.outofstock && (
                             <div className="absolute top-38 left-4 bg-black/80 text-white text-xs font-bold px-2 py-1 rounded-md">
                               OUT OF STOCK

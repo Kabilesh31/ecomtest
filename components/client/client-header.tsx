@@ -259,24 +259,40 @@ export function ClientHeader() {
               )
             )}
 
-            {user ? (
-              <Button
-                onClick={() => setConfirmLogout(true)}
-                variant="outline"
-                className="w-full"
-              >
-                Logout
-              </Button>
-            ) : (
-              <Link
-                href="/account/login"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                <Button variant="outline" className="w-full">
-                  Login
-                </Button>
-              </Link>
-            )}
+          {user ? (
+      <>
+        {user.role === "admin" ? (
+          <Link href="/admin/dashboard" onClick={() => setMobileMenuOpen(false)}>
+            <Button variant="outline" className="w-full mb-1.5">
+              Admin Dashboard
+            </Button>
+          </Link>
+        ) : (
+          <Link href="/profile" onClick={() => setMobileMenuOpen(false)}>
+            <Button variant="outline" className="w-full mb-1.5">
+              {user.name}
+            </Button>
+          </Link>
+        )}
+
+        <Button
+          onClick={() => {
+            setConfirmLogout(true);
+            setMobileMenuOpen(false);
+          }}
+          variant="outline"
+          className="w-full"
+        >
+          Logout
+        </Button>
+      </>
+    ) : (
+      <Link href="/account/login" onClick={() => setMobileMenuOpen(false)}>
+        <Button variant="outline" className="w-full">
+          Login
+        </Button>
+      </Link>
+    )}
           </nav>
         )}
       </div>

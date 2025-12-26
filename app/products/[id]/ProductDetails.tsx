@@ -142,6 +142,8 @@ export default function ProductDetails({ product }: Props) {
       name: product.name,
       price: product.price,
       mainImages: [selectedImage],
+      stock: maxStock,
+      
     });
     setShowQuantity(true);
     toast.success("Added to cart!");
@@ -190,6 +192,7 @@ export default function ProductDetails({ product }: Props) {
         name: product.name,
         price: product.price,
         mainImages: [selectedImage],
+        stock: maxStock,
       });
     }
     router.push("/cart");

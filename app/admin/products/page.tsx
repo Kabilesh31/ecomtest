@@ -153,7 +153,7 @@ export default function ProductsPage() {
               description="Manage your product catalog"
             />
             <Link href="/admin/products/add">
-              <Button className="bg-primary hover:bg-primary/90 text-primary-foreground gap-2">
+              <Button className="bg-primary hover:bg-primary/90 mb-9 text-primary-foreground gap-1">
                 <Plus className="w-4 h-4" />
                 Add Product
               </Button>
@@ -172,227 +172,188 @@ export default function ProductsPage() {
           </div>
 
           <Card className="overflow-hidden">
-            {loading ? (
-              <div className="p-8 text-center text-muted-foreground">
-                Loading products...
-              </div>
-            ) : products.length === 0 ? (
-              <div className="p-8 text-center text-muted-foreground">
-                No products found.
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-muted border-b border-border">
-                    <tr>
-                      <th className="px-6 py-3 text-left text-sm font-semibold"></th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">
-                        Product
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">
-                        Category
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">
-                        Price
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">
-                        Quantity
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">
-                        Total Clicks
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">
-                        Stock
-                      </th>
-                      <th className="px-6 py-3 text-left text-sm font-semibold">
-                        Created At
-                      </th>
-                      {/* <th className="px-6 py-3 text-left text-sm font-semibold">Ratings</th> */}
-                      <th className="px-6 py-3 text-left text-sm font-semibold">
-                        Actions
-                      </th>
-                      {/* <th className="px-6 py-3 text-left text-sm font-semibold">Manual Ratings</th> */}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-border">
-                    {paginatedProducts.map((product) => (
-                      <tr
-                        key={product._id}
-                        className="hover:bg-muted/50 transition-colors"
-                      >
-                        <td className="px-6 py-3">
-                          <div className="flex items-center gap-2">
-                            {product.mainImages?.length ? (
-                              <img
-                                src={product.mainImages[0]}
-                                alt={product.name}
-                                className="w-20 h-20 object-cover rounded-md border"
-                              />
-                            ) : (
-                              <div className="w-20 h-20 flex items-center justify-center rounded-md border bg-muted text-xs text-muted-foreground">
-                                No Image
-                              </div>
-                            )}
-                          </div>
-                        </td>
-                        <td className="text-lg px-6 py-2 font-medium">
-                          {product.name}
-                        </td>
-                        <td className="px-6 py-2 text-sm text-muted-foreground">
-                          {product.category}
-                        </td>
-                        <td className="px-6 py-2 text-sm font-semibold">
-                          ₹{product.price}
-                        </td>
-                        <td className="px-6 py-2 text-sm font-semibold text-center">
-                          {product.quantity}
-                        </td>
-                        <td className="px-6 py-2 text-sm font-semibold text-center">
-                          {product?.noOfClicks ?? 0}
-                        </td>
-                        <td className="px-6 py-2">
-                          <Button
-                            onClick={() =>
-                              toggleStockStatus(product._id, product.outofstock)
-                            }
-                            disabled={updating === product._id}
-                            className={`
-      relative inline-flex w-14 h-7 items-center rounded-full transition-all duration-300
-      ${product.outofstock ? "bg-red-500" : "bg-green-600"}
-      ${updating === product._id && "opacity-50 cursor-not-allowed"}
-    `}
-                          >
-                            <span
-                              className={`
-        inline-block w-4 h-4 transform rounded-full bg-white shadow-md transition-all duration-300
-        ${product.outofstock ? "translate-x-0" : "translate-x-4"}
-      `}
-                            />
-                          </Button>
-                        </td>
-
-                        <td className="px-6 py-2 text-sm font-semibold">
-                          {product?.createdAt
-                            .slice(0, 10)
-                            .split("-")
-                            .reverse()
-                            .join("-")}
-                        </td>
-                        {/* <td className="px-6 py-2">
-  <Button
-    onClick={() => toggleHideReviews(product._id, product.hidereviews)}
-    disabled={updating === product._id}
-    className={`
-      relative inline-flex w-14 h-7 items-center rounded-full transition-all duration-300
-      ${product.hidereviews ? "bg-gray-400" : "bg-yellow-500"}
-      ${updating === product._id && "opacity-50 cursor-not-allowed"}
-    `}
-  >
-    <span
-      className={`
-        inline-block w-4 h-4 transform rounded-full bg-white shadow-md transition-all duration-300
-        ${product.hidereviews ? "translate-x-0" : "translate-x-4"}
-      `}
-    />
-  </Button>
-</td> */}
-
-                        <td className="px-6 py-2">
-                          <div className="flex items-center gap-2">
-                            <Link href={`/admin/products/${product._id}/edit`}>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-primary hover:bg-primary/10"
-                              >
-                                <Edit2 className="w-4 h-4" />
-                              </Button>
-                            </Link>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setDeleteId(product._id)}
-                              className="text-destructive hover:bg-destructive/10"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                        {/* <td className="px-6 py-2">
-  <Button
-    onClick={async () => {
-      setUpdating(product._id);
-      try {
-        // Toggle manualRatings
-        const newManual = !product.manualRatings;
-        await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/products/${product._id}`, {
-          manualRatings: newManual,
-          hidereviews: newManual ? true : product.hidereviews, // auto-hide if manual is on
-        });
-
-        setProducts((prev) =>
-          prev.map((p) =>
-            p._id === product._id
-              ? { ...p, manualRatings: newManual, hidereviews: newManual ? true : p.hidereviews }
-              : p
-          )
-        );
-
-        toast.success(`Manual Ratings ${newManual ? "enabled" : "disabled"}`);
-      } catch (err) {
-        toast.error("Failed to update manual ratings");
-      } finally {
-        setUpdating(null);
-      }
-    }}
-    disabled={updating === product._id}
-    className={`
-      relative inline-flex w-14 h-7 items-center rounded-full transition-all duration-300
-      ${product.manualRatings ? "bg-yellow-500" : "bg-gray-400"}
-      ${updating === product._id && "opacity-50 cursor-not-allowed"}
-    `}
-  >
-    <span
-      className={`
-        inline-block w-4 h-4 transform rounded-full bg-white shadow-md transition-all duration-300
-        ${product.manualRatings ? "translate-x-4" : "translate-x-0"}
-      `}
-    />
-    {product.manualRatings && (
-      <span className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-xs font-semibold text-white">
-        {product.manualRatingValue}
-      </span>
-    )}
-  </Button>
-</td> */}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="flex justify-center items-center gap-3 py-4">
-                  <Button
-                    variant="outline"
-                    disabled={currentPage === 1}
-                    onClick={() => setCurrentPage((prev) => prev - 1)}
-                  >
-                    Previous
-                  </Button>
-
-                  <span className="text-sm font-medium">
-                    Page {currentPage} of {totalPages}
-                  </span>
-
-                  <Button
-                    variant="outline"
-                    disabled={currentPage === totalPages}
-                    onClick={() => setCurrentPage((prev) => prev + 1)}
-                  >
-                    Next
-                  </Button>
+  {loading ? (
+    <div className="p-8 text-center text-muted-foreground">Loading products...</div>
+  ) : products.length === 0 ? (
+    <div className="p-8 text-center text-muted-foreground">No products found.</div>
+  ) : (
+    <>
+      {/* 📱 MOBILE FULL CARD VIEW */}
+      <div className="block md:hidden space-y-4 p-2">
+        {paginatedProducts.map((product) => (
+          <Card key={product._id} className="p-4 rounded-xl shadow-sm">
+            {/* Image + Name */}
+            <div className="flex gap-3 w-full">
+              {product.mainImages?.length ? (
+                <img
+                  src={product.mainImages[0]}
+                  alt={product.name}
+                  className="w-24 h-24 rounded-md object-cover border"
+                />
+              ) : (
+                <div className="w-24 h-24 flex items-center justify-center rounded-md border bg-muted text-xs text-muted-foreground">
+                  No Image
                 </div>
+              )}
+
+              <div className="flex-1">
+                <p className="text-lg font-semibold">{product.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  Category: {product.category}
+                </p>
+                <p className="text-sm font-semibold">₹{product.price}</p>
               </div>
-            )}
+            </div>
+
+            {/* Detail Section */}
+            <div className="mt-3 space-y-1 text-sm text-muted-foreground">
+              <p>Quantity: <span className="font-semibold">{product.quantity}</span></p>
+              <p>Total Clicks: <span className="font-semibold">{product.noOfClicks ?? 0}</span></p>
+              <p>
+                Created:{" "}
+                <span className="font-semibold">
+                  {product?.createdAt?.slice(0, 10).split("-").reverse().join("-")}
+                </span>
+              </p>
+            </div>
+
+            {/* Stock Toggle + Actions */}
+            <div className="mt-4 flex items-center justify-between">
+              {/* Toggle Switch */}
+              <Button
+                onClick={() => toggleStockStatus(product._id, product.outofstock)}
+                disabled={updating === product._id}
+                className={`
+                  relative inline-flex w-16 h-7 items-center rounded-full transition-all duration-300
+                  ${product.outofstock ? "bg-red-500" : "bg-green-600"}
+                  ${updating === product._id && "opacity-50 cursor-not-allowed"}
+                `}
+              >
+                <span
+                  className={`
+                    inline-block w-5 h-5 transform rounded-full bg-white shadow-md transition-all duration-300
+                    ${product.outofstock ? "translate-x-0" : "translate-x-7"}
+                  `}
+                />
+              </Button>
+
+              <div className="flex gap-2">
+                <Link href={`/admin/products/${product._id}/edit`}>
+                  <Button size="sm" variant="outline">
+                   <Edit2 className="w-4 h-4" />
+                  </Button>
+                </Link>
+                <Button
+                  size="sm"
+                  className="text-destructive"
+                  variant="outline"
+                  onClick={() => setDeleteId(product._id)}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
           </Card>
+        ))}
+      </div>
+
+      {/* 🖥 DESKTOP TABLE VIEW */}
+      <div className="hidden md:block overflow-x-auto">
+        <table className="w-full">
+          <thead className="bg-muted border-b border-border">
+            <tr>
+              <th className="px-6 py-3 text-left text-sm font-semibold"></th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Product</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Category</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Price</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Quantity</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Total Clicks</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Stock</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Created At</th>
+              <th className="px-6 py-3 text-left text-sm font-semibold">Actions</th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y divide-border">
+            {paginatedProducts.map((product) => (
+              <tr key={product._id} className="hover:bg-muted/50 transition-colors">
+                <td className="px-6 py-3">
+                  {product.mainImages?.length ? (
+                    <img
+                      src={product.mainImages[0]}
+                      className="w-20 h-20 object-cover rounded-md border"
+                    />
+                  ) : (
+                    <div className="w-20 h-20 flex items-center justify-center rounded-md border bg-muted text-xs">
+                      No Image
+                    </div>
+                  )}
+                </td>
+                <td className="px-6 py-2 text-lg font-medium">{product.name}</td>
+                <td className="px-6 py-2 text-sm text-muted-foreground">{product.category}</td>
+                <td className="px-6 py-2 text-sm font-semibold">₹{product.price}</td>
+                <td className="px-6 py-2 text-sm font-semibold text-center">{product.quantity}</td>
+                <td className="px-6 py-2 text-sm font-semibold text-center">
+                  {product.noOfClicks ?? 0}
+                </td>
+                <td className="px-6 py-2">
+                  <Button
+                    onClick={() => toggleStockStatus(product._id, product.outofstock)}
+                    className={`relative inline-flex w-14 h-7 rounded-full transition-all duration-300 ${
+                      product.outofstock ? "bg-red-500" : "bg-green-600"
+                    }`}
+                  >
+                    <span
+                      className={`inline-block w-4 h-4 bg-white rounded-full transform duration-300 ${
+                        product.outofstock ? "translate-x-0" : "translate-x-4"
+                      }`}
+                    />
+                  </Button>
+                </td>
+                <td className="px-6 py-2 text-sm font-semibold">
+                  {product.createdAt.slice(0, 10).split("-").reverse().join("-")}
+                </td>
+                <td className="px-6 py-2">
+                  <div className="flex items-center gap-2">
+                    <Link href={`/admin/products/${product._id}/edit`}>
+                      <Button variant="ghost" size="sm" className="text-primary">
+                         <Edit2 className="w-4 h-4" />
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive"
+                      onClick={() => setDeleteId(product._id)}
+                    >
+                       <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Pagination */}
+      <div className="flex justify-center items-center gap-3 py-4">
+        <Button variant="outline" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)}>
+          Previous
+        </Button>
+
+        <span className="text-sm font-medium">
+          Page {currentPage} of {totalPages}
+        </span>
+
+        <Button variant="outline" disabled={currentPage === totalPages} onClick={() => setCurrentPage(prev => prev + 1)}>
+          Next
+        </Button>
+      </div>
+    </>
+  )}
+</Card>
+
         </div>
         {deleteId && (
           <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">

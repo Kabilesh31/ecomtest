@@ -14,7 +14,7 @@ export interface Review {
 export interface Product {
   _id?: string;
   id?: string | number; 
-  // support both
+  
   name: string;
   price: number;
   mainImages?: string[];
@@ -24,10 +24,12 @@ export interface Product {
   descriptionItems?: Feature[];
   features?: Feature[];
   outofstock: boolean;
+  
   unitsSold?: number;
   rating?: number
   offerProduct?: boolean;
   offerPercentage?: number;
+  
 
     reviews?: Review[];
 }

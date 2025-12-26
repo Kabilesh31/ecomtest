@@ -101,13 +101,13 @@ export function ClientFooter() {
           <p>&copy; 2025. All rights reserved.</p>
           <div className="flex gap-6 mt-4 md:mt-0">
             <Link
-              href="/privacy"
+              href="/policy-privacy"
               className="hover:text-foreground transition-colors"
             >
               Privacy Policy
             </Link>
             <Link
-              href="/terms"
+              href="/policy-privacy"
               className="hover:text-foreground transition-colors"
             >
               Terms of Service

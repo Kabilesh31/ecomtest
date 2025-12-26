@@ -15,14 +15,14 @@ export function AdminTopbar({ onMenuClick }: AdminTopbarProps) {
 
   return (
     <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
-      <Button
+      {/* <Button
         variant="ghost"
         size="icon"
         onClick={onMenuClick}
         className="lg:hidden"
       >
         <Menu className="w-5 h-5" />
-      </Button>
+      </Button> */}
 
       <div className="flex-1" />
 
