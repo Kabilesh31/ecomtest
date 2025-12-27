@@ -5,7 +5,7 @@ export function useStockSocket(onStockUpdate: (data: any) => void) {
   const [status, setStatus] = useState<"connected" | "disconnected">("disconnected")
 
   useEffect(() => {
-    const socket = new WebSocket("ws://localhost:5000") // your backend URL
+    const socket = new WebSocket("ws://localhost:5000") 
 
     socket.onopen = () => {
       console.log("📡 WebSocket Connected")

@@ -1,11 +1,11 @@
-// hooks/useStockUpdates.js
+
 import { useEffect, useState } from "react";
 
 export default function useStockUpdates() {
   const [stockData, setStockData] = useState({});
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:5000"); // connect to your backend WS
+    const ws = new WebSocket("ws://localhost:5000"); 
 
     ws.onopen = () => console.log("WebSocket connected");
     ws.onclose = () => console.log("WebSocket disconnected");

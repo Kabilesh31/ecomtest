@@ -22,11 +22,10 @@ export const StepProgress: React.FC<StepProgressProps> = ({ currentStep }) => {
         className="absolute top-1/2 h-[3px] bg-green-600 rounded-full -translate-y-1/2"
         style={{ left: "1.25rem" }}
         initial={{ width: 0 }}
-        animate={{
-          width: `calc(${
-            ((currentStep - 1) / (steps.length - 1)) * 100
-          }% - 55px)`,
-        }}
+       animate={{
+  width: `calc(${((currentStep - 1) / (steps.length - 1)) * 100}% - 65px)`,
+}}
+
         transition={{ duration: 0.4 }}
       />
 

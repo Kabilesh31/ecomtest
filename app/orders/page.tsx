@@ -415,11 +415,14 @@ const submitReturnRequest = async () => {
               >
                 <div className="flex justify-between items-start mb-3">
                   <div className="flex items-center gap-2">
-                    <CreditCard size={16} className="text-gray-500" />
-                    <span className="text-sm font-medium text-gray-700">
-                      {truncatePaymentId(order.razorpayPaymentId)}
-                    </span>
-                  </div>
+  <CreditCard size={16} className="text-gray-500" />
+  <span className="text-sm font-medium text-gray-700">
+    {order.razorpayPaymentId
+      ? truncatePaymentId(order.razorpayPaymentId)
+      : truncatePaymentId(order._id)}
+  </span>
+</div>
+
                   <Badge className={`text-xs ${getStatusColor(order.status)}`}>
                     {order.status}
                   </Badge>
@@ -487,7 +490,10 @@ const submitReturnRequest = async () => {
                 <tbody>
                   {orderDatas.map((order) => (
                     <tr key={order._id} className="border-b hover:bg-gray-50">
-                      <td className="px-4 py-4">{order.razorpayPaymentId}</td>
+                      <td className="px-4 py-3">
+  {order.razorpayPaymentId ? order.razorpayPaymentId : order._id}
+</td>
+
                       <td className="px-4 py-4">
                         {formatDate(order.createdAt)}
                       </td>
@@ -792,14 +798,14 @@ const submitReturnRequest = async () => {
                   <Download size={16} />
                   Download PDF
                 </Button>
-                <Button
+                {/* <Button
                   variant="outline"
                   className="flex items-center gap-2"
                   onClick={handleSendInvoiceWhatsapp}
                 >
                   <Package size={16} />
                   Send to WhatsApp
-                </Button>
+                </Button> */}
               </DialogFooter>
             </DialogContent>
           </Dialog>
