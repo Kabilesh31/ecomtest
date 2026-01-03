@@ -93,7 +93,7 @@ export default function LoginPage() {
     setError("")
 
     try {
-      const res = await fetch("http://localhost:5000/api/admin/login", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -128,7 +128,7 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-      const res = await fetch("http://localhost:5000/api/auth/send-otp", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/send-otp`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mobile }),
@@ -152,7 +152,7 @@ export default function LoginPage() {
 
     setIsLoading(true)
     try {
-      const res = await fetch("http://localhost:5000/api/auth/verify-otp", {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/verify-otp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mobile, otp }),
