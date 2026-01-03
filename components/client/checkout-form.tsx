@@ -91,7 +91,7 @@ export function CheckoutForm() {
     if (!localUser?._id) return;
     try {
       const res = await axios.get(
-        `http://localhost:5000/api/users/getSavedAddress/${localUser._id}`
+        `${process.env.NEXT_PUBLIC_API_URL}/users/getSavedAddress/${localUser._id}`
       );
       if (res.data.success) {
         setAddresses(res.data.addressList);
@@ -119,7 +119,7 @@ export function CheckoutForm() {
 
     try {
       const res = await axios.post(
-        `http://localhost:5000/api/users/saveAddress/${localUser._id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/users/saveAddress/${localUser._id}`,
         { address }
       );
 

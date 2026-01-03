@@ -22,7 +22,7 @@ function OrderSuccessClient() {
     const fetchOrder = async () => {
       try {
         const res = await axios.get(
-          `http://localhost:5000/api/order/${orderId}`
+          `${process.env.NEXT_PUBLIC_API_URL}/order/${orderId}`
         );
         setOrder(res.data.order);
       } catch (err) {

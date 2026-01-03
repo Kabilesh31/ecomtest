@@ -49,7 +49,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserById = async (id: string) => {
     console.log("Fetching user by ID:", id);
     try {
-      const res = await fetch(`http://localhost:5000/api/users/getUser/${id}`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/getUser/${id}`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

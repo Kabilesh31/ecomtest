@@ -27,7 +27,7 @@ export function HeroSection() {
 
   const fetchHeroData = async () => {
     try {
-      const res = await fetch(`${API_URL}/hero`);
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/hero`);
       if (!res.ok) throw new Error("Failed to fetch hero slides");
       const data = await res.json();
       console.log("✅ Hero data fetched:", data);

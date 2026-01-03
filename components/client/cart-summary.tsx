@@ -36,7 +36,7 @@ const handleApplyCoupon = async () => {
 
   try {
     const response = await axios.post(
-      "http://localhost:5000/api/promocode/apply",
+      `${process.env.NEXT_PUBLIC_API_URL}/promocode/apply`,
       {
         code: couponCode,
         products: items.map((item) => ({
