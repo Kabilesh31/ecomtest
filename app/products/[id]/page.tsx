@@ -1,16 +1,16 @@
 import ProductDetails from "./ProductDetails";
 
 interface ProductPageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
+  const { id } = await params;
+
   try {
     const res = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/products/${params.id}`,
-      {
-        cache: "no-store",
-      }
+      `${process.env.NEXT_PUBLIC_API_URL}/products/${id}`,
+      { cache: "no-store" }
     );
 
     if (!res.ok) {
@@ -21,7 +21,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
     if (!product) {
       return (
-        <div className="text-center text-gray-400 py-10">Product not found</div>
+        <div className="text-center text-gray-400 py-10">
+          Product not found
+        </div>
       );
     }
 
