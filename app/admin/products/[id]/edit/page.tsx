@@ -414,7 +414,7 @@ const [returnDays, setReturnDays] = useState<number | "">("");
                 />
 
                 {offerProduct && (
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     <label className="block text-sm font-medium mb-1">
                       Offer Percentage (1–99)
                     </label>

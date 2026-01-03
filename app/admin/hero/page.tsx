@@ -157,52 +157,77 @@ export default function AdminHeroPage() {
     <ProtectedRoute>
       <AdminLayout>
         <div className="p-6">
-          <h1 className="text-2xl font-semibold mb-4">🎞️ Homepage Management</h1>
+           <div className="flex items-center justify-between mb-10">
+    <h1 className="text-2xl font-semibold">
+      🎞️ Homepage Management
+    </h1>
 
-          <Button onClick={() => setEditing({ type: "image", media: "" })}>
-            Add New Slide
-          </Button>
+    <Button onClick={() => setEditing({ type: "image", media: "" })}>
+      + Add New Slide
+    </Button>
+  </div>
 
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 mt-4">
-            {slides.length === 0 && (
-              <p className="text-gray-500 text-sm">No slides found.</p>
+  {slides.length === 0 && (
+    <p className="text-gray-500 text-sm">No slides found.</p>
+  )}
+
+  {slides.map((slide) => {
+    const hasContent =
+      slide.title || slide.subtitle || slide.description;
+
+    return (
+      <Card key={slide._id} className="p-4 relative">
+        {/* Media */}
+        {slide.type === "image" ? (
+          <img
+            src={buildSrc(slide.media)}
+            className="w-full h-42 rounded-md object-cover"
+            alt={slide.title || "hero image"}
+          />
+        ) : (
+          <video controls className="w-full h-50 rounded-md">
+            <source src={buildSrc(slide.media)} />
+          </video>
+        )}
+
+        {/* Text content (only if exists) */}
+        {hasContent && (
+          <div className=" space-y-1 pr-20">
+            {slide.title && (
+              <h3 className="font-semibold">{slide.title}</h3>
             )}
-
-            {slides.map((slide) => (
-              <Card key={slide._id} className="p-4 relative">
-                {slide.type === "image" ? (
-                  <img
-                    src={buildSrc(slide.media)}
-                    className="w-full h-40 rounded-md object-cover"
-                    alt={slide.title || "hero image"}
-                  />
-                ) : (
-                  <video controls className="w-full h-40 rounded-md">
-                    <source src={buildSrc(slide.media)} />
-                  </video>
-                )}
-
-                <div className="mt-2">
-                  <h3 className="font-semibold">{slide.title}</h3>
-                  <p className="text-sm text-gray-600">{slide.subtitle}</p>
-                  <p className="text-xs text-gray-500">{slide.description}</p>
-                </div>
-
-                <div className="flex gap-2 mt-3">
-                  <Button size="sm" onClick={() => setEditing(slide)}>
-                    Edit
-                  </Button>
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => setConfirmDeleteId(slide._id!)}
-                  >
-                    Delete
-                  </Button>
-                </div>
-              </Card>
-            ))}
+            {slide.subtitle && (
+              <p className="text-sm text-gray-600">
+                {slide.subtitle}
+              </p>
+            )}
+            {slide.description && (
+              <p className="text-xs text-gray-500">
+                {slide.description}
+              </p>
+            )}
           </div>
+        )}
+
+        {/* Edit / Delete buttons - bottom right */}
+        <div className="absolute bottom-3 right-3 flex gap-2">
+          <Button size="sm" onClick={() => setEditing(slide)}>
+            Edit
+          </Button>
+          <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => setConfirmDeleteId(slide._id!)}
+          >
+            Delete
+          </Button>
+        </div>
+      </Card>
+    );
+  })}
+</div>
+
 
           {/*  Confirmation Modal */}
           {confirmDeleteId && (
@@ -273,18 +298,18 @@ export default function AdminHeroPage() {
                   }
                   className="mb-2"
                 />
-                <p className="text-red-500 text-2xl -mb-14 ml-0.5">*</p>
+                <p className="text-red-500 text-2xl -mb-14 ml-47">*</p>
 
                   <Input
                   type="file"
                   accept="image/*,video/*"
                   onChange={handleFileChange}
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 ">
                  Image crop ratio: 1920×900 (landscape) | max image 10mb & video 99mb
                 </p>
 
-                <div className="flex justify-between mt-3">
+                <div className="flex justify-end gap-2">
                   <Button onClick={handleSave}>Save</Button>
                   <Button variant="outline" onClick={() => setEditing(null)}>
                     Cancel
