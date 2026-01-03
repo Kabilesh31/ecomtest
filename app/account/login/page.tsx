@@ -57,7 +57,7 @@ const OtpInput = ({ value, setValue, length = 6 }: { value: string, setValue: (v
           onChange={e => handleChange(e, idx)}
           onKeyDown={e => handleKeyDown(e, idx)}
           onPaste={handlePaste}
-          className="w-12 h-12 text-center border rounded-md focus:ring-2 focus:ring-primary text-lg font-bold"
+         className="w-8 h-8 sm:w-12 sm:h-12 text-center border rounded-md focus:ring-2 focus:ring-primary text-base sm:text-lg font-bold"
         />
       ))}
     </div>
@@ -193,64 +193,74 @@ useEffect(() => {
 
         <Card className="p-8 w-full max-w-md shadow-lg">
           <h2 className="text-2xl font-bold mb-6">Login</h2>
-          {error && <div className="text-red-500 text-sm mb-4">{error}</div>}
+{error && <div className="text-red-500 text-sm mb-4">{error}</div>}
 
-          {/*  CUSTOMER LOGIN */}
-          {step === "login" && (
-            <div className="space-y-4">
-              <Input
-                type="text"
-                placeholder="Mobile Number"
-                value={mobile}
-                onChange={e => setMobile(e.target.value)}
-              />
+{/* SHOW CUSTOMER LOGIN ONLY WHEN NOT SHOWING ADMIN */}
+{!showAdmin && step === "login" && (
+  <div className="space-y-4">
+    <Input
+      type="text"
+      placeholder="Mobile Number"
+      value={mobile}
+      onChange={e => setMobile(e.target.value)}
+    />
 
-              <Button onClick={sendOtp} className="w-full" disabled={isLoading}>
-                {isLoading ? "Sending OTP..." : "Send OTP via WhatsApp"}
-              </Button>
+    <Button onClick={sendOtp} className="w-full" disabled={isLoading}>
+      {isLoading ? "Sending OTP..." : "Send OTP via WhatsApp"}
+    </Button>
 
-              {!showAdmin && (
-                <button
-                  type="button"
-                  className="text-sm text-primary hover:underline mt-2 block"
-                  onClick={() => setShowAdmin(true)}
-                >
-                  Admin Login?
-                </button>
-              )}
-            </div>
-          )}
+    <button
+      type="button"
+      className="text-sm text-primary hover:underline mt-2 block"
+      onClick={() => setShowAdmin(true)}
+    >
+      Admin Login?
+    </button>
+  </div>
+)}
 
-          {/*  OTP VERIFICATION */}
-          {step === "otp" && (
-            <div className="space-y-4">
-              <OtpInput value={otp} setValue={setOtp} />
-              <Button onClick={verifyOtp} className="w-full" disabled={isLoading}>
-                {isLoading ? "Verifying..." : "Verify OTP"}
-              </Button>
-            </div>
-          )}
+{/* SHOW OTP ONLY WHEN NOT IN ADMIN MODE */}
+{!showAdmin && step === "otp" && (
+  <div className="space-y-4">
+    <OtpInput value={otp} setValue={setOtp} />
+    <Button onClick={verifyOtp} className="w-full" disabled={isLoading}>
+      {isLoading ? "Verifying..." : "Verify OTP"}
+    </Button>
+  </div>
+)}
 
-          {/* ADMIN LOGIN */}
-          {showAdmin && (
-            <form onSubmit={handleAdminLogin} className="space-y-4 mt-6 border-t pt-6">
-              <Input
-                type="email"
-                placeholder="Admin Email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-              />
-              <Input
-                type="password"
-                placeholder="Admin Password"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-              />
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Loading..." : "Admin Login"}
-              </Button>
-            </form>
-          )}
+{/* SHOW ADMIN LOGIN ONLY WHEN showAdmin = TRUE */}
+{showAdmin && (
+  <form onSubmit={handleAdminLogin} className="space-y-4 mt-6">
+    <Input
+      type="email"
+      placeholder="Admin Email"
+      value={email}
+      onChange={e => setEmail(e.target.value)}
+    />
+    <Input
+      type="password"
+      placeholder="Admin Password"
+      value={password}
+      onChange={e => setPassword(e.target.value)}
+    />
+
+    <div className="flex justify-between items-center">
+      <button
+        type="button"
+        className="text-sm text-primary hover:underline"
+        onClick={() => setShowAdmin(false)}   // 🔥 SWITCH BACK
+      >
+        Back to Mobile Login
+      </button>
+
+      <Button type="submit" disabled={isLoading}>
+        {isLoading ? "Loading..." : "Admin Login"}
+      </Button>
+    </div>
+  </form>
+)}
+
 
           <div className="text-right mt-2">
             <Link href="/forget" className="text-sm text-primary hover:underline">

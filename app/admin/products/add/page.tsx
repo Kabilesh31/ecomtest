@@ -230,9 +230,7 @@ export default function AddProductPage() {
                 <p className="text-xs text-gray-400 mt-1">Enter a number between 1 and 100.</p>
               </div>
             )}
-          </div>
-          <div className="grid md:grid-cols-2 gap-4 items-center">
-  <div>
+            <div>
     <label className="block text-sm font-medium mb-2">
       Return Eligible
     </label>
@@ -261,7 +259,8 @@ export default function AddProductPage() {
       </label>
     </div>
   </div>
-</div>
+          </div>
+          
 
 
 
@@ -312,11 +311,7 @@ export default function AddProductPage() {
               <p className="text-xs text-gray-400 mt-1">Rating between 0 and 5.</p>
             </div>
           )}
-        </div>
-
-
-            <div className="grid md:grid-cols-2 gap-4 items-center">
-              <div>
+             <div>
                 <label className="block text-sm font-medium mb-2">Mark As Outofstock</label>
                 <div className="flex items-center gap-6">
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -344,6 +339,11 @@ export default function AddProductPage() {
                   </label>
                 </div>
               </div>
+        </div>
+
+
+            <div className="grid md:grid-cols-2 gap-4 items-center">
+           
 
               <div>
                 <label className="block text-sm font-medium mb-2">Hide Ratings & Reviews</label>

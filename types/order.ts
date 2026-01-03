@@ -64,4 +64,5 @@ export interface Counts {
   totalRevenue : number,
   userCount : number,
   returnCount : number,
+  returnAmount: number;
 }

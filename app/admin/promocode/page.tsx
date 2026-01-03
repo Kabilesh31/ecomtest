@@ -8,7 +8,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ProtectedRoute } from "@/components/protected-route";
+import { Switch } from "@/components/ui/switch";
 import { AdminLayout } from "@/components/admin/admin-layout";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+
+import {
+  AlertDialog,
+  AlertDialogTrigger,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogCancel,
+  AlertDialogAction,
+} from "@/components/ui/alert-dialog";
+
 
 interface PromoCode {
   _id: string;
@@ -22,6 +43,7 @@ interface PromoCode {
   minOrderAmount: number;
 }
 
+
 export default function AdminPromoCodePage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -31,6 +53,10 @@ export default function AdminPromoCodePage() {
   const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
   const [loading, setLoading] = useState(false);
   const [creating, setCreating] = useState(false);
+  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [discountType, setDiscountType] = useState<"percentage" | "flat">(
+    "percentage"
+  );
 
   useEffect(() => {
     const init = async () => {
@@ -79,13 +105,14 @@ export default function AdminPromoCodePage() {
     setCreating(true);
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/promocode/create`, {
-        title,
-        description,
-        code,
-        discountValue: Number(discount),
-        discountType: "percentage",
-        expiryDate: new Date(expiry).toISOString(),
-      });
+  title,
+  description,
+  code,
+  discountValue: Number(discount),
+  discountType, // percentage | flat
+  expiryDate: new Date(expiry).toISOString(),
+});
+
 
       toast.success("Promocode created successfully");
 
@@ -101,29 +128,31 @@ export default function AdminPromoCodePage() {
     } finally {
       setCreating(false);
     }
-  };
+  };  
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this promo code?")) return;
+  try {
+    const res = await axios.delete(
+      `${process.env.NEXT_PUBLIC_API_URL}/promocode/${id}`
+    );
 
-    try {
-      const res = await axios.delete(
-        `${process.env.NEXT_PUBLIC_API_URL}/promocode/${id}`
-      );
-      if (res.data.success) {
-        toast.success("Promo code deleted successfully");
-        fetchPromoCodes();
-      } else {
-        toast.error(res.data.message || "Failed to delete promo code");
-      }
-    } catch (err: any) {
-      toast.error(
-        err?.response?.data?.message ||
-          err.message ||
-          "Failed to delete promo code"
-      );
+    if (res.data.success) {
+      toast.success("Promo code deleted successfully");
+      fetchPromoCodes();
+    } else {
+      toast.error(res.data.message || "Failed to delete promo code");
     }
-  };
+  } catch (err: any) {
+    toast.error(
+      err?.response?.data?.message ||
+        err.message ||
+        "Failed to delete promo code"
+    );
+  } finally {
+    setDeleteId(null);
+  }
+};
+
 
   return (
     <ProtectedRoute>
@@ -162,15 +191,41 @@ export default function AdminPromoCodePage() {
               />
             </div>
 
-            <div>
-              <Label>Discount (%)</Label>
-              <Input
-                type="number"
-                value={discount}
-                onChange={(e) => setDiscount(e.target.value)}
-                placeholder="10"
-              />
-            </div>
+            <div className="space-y-2">
+  <Label>Discount Type</Label>
+
+  <Select
+    value={discountType}
+    onValueChange={(value: "percentage" | "flat") =>
+      setDiscountType(value)
+    }
+  >
+    <SelectTrigger>
+      <SelectValue placeholder="Select discount type" />
+    </SelectTrigger>
+    <SelectContent>
+      <SelectItem value="percentage">Percentage (%)</SelectItem>
+      <SelectItem value="flat">Flat Amount (₹)</SelectItem>
+    </SelectContent>
+  </Select>
+
+  <div>
+    <Label>
+      {discountType === "percentage"
+        ? "Discount Percentage (%)"
+        : "Flat Discount Amount (₹)"}
+    </Label>
+
+    <Input
+      type="number"
+      value={discount}
+      onChange={(e) => setDiscount(e.target.value)}
+      placeholder={discountType === "percentage" ? "10" : "100"}
+      min={0}
+    />
+  </div>
+</div>
+
 
             <div>
               <Label>Expiry Date</Label>
@@ -192,7 +247,7 @@ export default function AdminPromoCodePage() {
 
           {/* Existing Promo Codes */}
           <div className="mt-6">
-            <h2 className="text-xl font-semibold mb-4">Existing Promo Codes</h2>
+            <h2 className="text-xl font-semibold mb-4">🎉Promo Codes</h2>
 
             {loading ? (
               <p>Loading promo codes...</p>
@@ -207,34 +262,72 @@ export default function AdminPromoCodePage() {
                     <p className="text-sm text-gray-500">{promo.description}</p>
                     <p className="text-sm text-gray-500">Code: {promo.code}</p>
                     <p className="text-sm">
-                      Discount: {promo.discountValue} ({promo.discountType})
-                    </p>
+  Discount:{" "}
+  {promo.discountType === "percentage"
+    ? `${promo.discountValue}%`
+    : `₹${promo.discountValue}`}
+</p>
+
                     <p className="text-sm text-gray-500">
                       Expires: {new Date(promo.expiryDate).toLocaleDateString()}
                     </p>
                   </div>
-                  <div className="mt-2 md:mt-0 flex gap-2">
-                    <span
-                      className={`px-2 py-1 rounded text-white ${
-                        promo.isActive ? "bg-green-500" : "bg-red-500"
-                      }`}
-                    >
-                      {promo.isActive ? "Active" : "Inactive"}
-                    </span>
-                    <Button
-                      variant="destructive"
-                      onClick={() => handleDelete(promo._id)}
-                    >
-                      Delete
-                    </Button>
-                  </div>
+                  <div className="mt-2 md:mt-0 flex gap-2 items-center">
+ {/* <span
+  className={`w-3 h-3 rounded-full ${
+    promo.isActive ? "bg-green-500" : "bg-red-500"
+  }`}
+  title={promo.isActive ? "Active" : "Inactive"}
+/> */}
+
+
+  <Switch
+  checked={promo.isActive}
+  onCheckedChange={() => toggleAutoPromo(promo)}
+  className="data-[state=checked]:bg-green-500 data-[state=unchecked]:bg-red-500"
+/>
+
+
+  <AlertDialog>
+  <AlertDialogTrigger asChild>
+    <Button
+      size="sm"
+      variant="destructive"
+      onClick={() => setDeleteId(promo._id)}
+    >
+      Delete
+    </Button>
+  </AlertDialogTrigger>
+
+  <AlertDialogContent>
+    <AlertDialogHeader>
+      <AlertDialogTitle>Delete Promo Code?</AlertDialogTitle>
+      <AlertDialogDescription>
+        This action cannot be undone. The promo code will be permanently removed.
+      </AlertDialogDescription>
+    </AlertDialogHeader>
+
+    <AlertDialogFooter>
+      <AlertDialogCancel>Cancel</AlertDialogCancel>
+      <AlertDialogAction
+        className="bg-red-500 hover:bg-red-600"
+        onClick={() => deleteId && handleDelete(deleteId)}
+      >
+        Delete
+      </AlertDialogAction>
+    </AlertDialogFooter>
+  </AlertDialogContent>
+</AlertDialog>
+
+</div>
+
                 </div>
               ))
             ) : (
               <p>No promo codes yet.</p>
             )}
           </div>
-          {promoCodes
+          {/* {promoCodes
             .filter((p) => /^[a-z]{3}\d{4}$/i.test(p.code))
             .map((auto) => (
               <div
@@ -256,7 +349,7 @@ export default function AdminPromoCodePage() {
                   {auto.isActive ? "Deactivate" : "Activate"}
                 </Button>
               </div>
-            ))}
+            ))} */}
         </div>
       </AdminLayout>
     </ProtectedRoute>

@@ -127,53 +127,54 @@ export function ProductShowcase() {
             <p className="text-sm text-muted-foreground">
               Showing {filteredProducts.length} products
             </p>
-            <div className="flex gap-3">
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="px-3 py-2 border border-input rounded-lg bg-background text-foreground text-sm"
-              >
-                <option value="all">All Categories</option>
-                {[...new Set(products.map((p) => p.category))].map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
+            <div className="flex flex-row sm:flex-row sm:gap-3 gap-2">
+  <select
+    value={selectedCategory}
+    onChange={(e) => setSelectedCategory(e.target.value)}
+    className="px-2 sm:px-3 py-1 sm:py-2 border border-input rounded-lg bg-background text-foreground text-xs sm:text-sm"
+  >
+    <option value="all">All Categories</option>
+    {[...new Set(products.map((p) => p.category))].map((cat) => (
+      <option key={cat} value={cat}>
+        {cat}
+      </option>
+    ))}
+  </select>
 
-              <div className="w-full mt-4">
-                <input
-                  type="range"
-                  min={0}
-                  max={2000}
-                  step={100}
-                  value={priceRange[1]}
-                  onChange={(e) => setPriceRange([0, Number(e.target.value)])}
-                  className="w-full accent-primary h-[3px] mt-2"
-                />
+  <div className="w-full mt-2 sm:mt-4">
+    <input
+      type="range"
+      min={0}
+      max={2000}
+      step={100}
+      value={priceRange[1]}
+      onChange={(e) => setPriceRange([0, Number(e.target.value)])}
+      className="w-full accent-primary h-[3px] mt-2"
+    />
 
-                <div className="flex justify-between text-xs mt-1 text-muted-foreground">
-                  <span>₹0</span>
-                  <span>₹1000</span>
-                  <span>₹2000</span>
-                </div>
+    <div className="flex justify-between text-[10px] sm:text-xs mt-1 text-muted-foreground">
+      <span>₹0</span>
+      <span>₹1000</span>
+      <span>₹2000</span>
+    </div>
 
-                <div className="flex justify-between text-sm mt-2 text-muted-foreground">
-                  <span>Selected:</span>
-                  <span className="font-semibold">₹{priceRange[1]}</span>
-                </div>
-              </div>
+    <div className="flex justify-between text-xs sm:text-sm mt-1 sm:mt-2 text-muted-foreground">
+      <span>Selected:</span>
+      <span className="font-semibold text-sm sm:text-base">₹{priceRange[1]}</span>
+    </div>
+  </div>
 
-              <select
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value)}
-                className="px-3 py-2 border border-input rounded-lg bg-background text-foreground text-sm"
-              >
-                <option value="featured">Featured</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
-              </select>
-            </div>
+  <select
+    value={sortBy}
+    onChange={(e) => setSortBy(e.target.value)}
+    className="px-1 sm:px-3 py-1 sm:py-2 border border-input rounded-lg bg-background text-foreground text-xs sm:text-sm mt-2 sm:mt-0"
+  >
+    <option value="featured">Featured</option>
+    <option value="price-low">Price: Low to High</option>
+    <option value="price-high">Price: High to Low</option>
+  </select>
+</div>
+
           </div>
 
           {/* Products */}

@@ -6,7 +6,7 @@ import { ChevronUp, ChevronDown } from "lucide-react";
 interface HeroItem {
   _id: string;
   type: "image" | "video";
-  media: string;  // ✅ changed from src → media
+  media: string;
   title: string;
   subtitle?: string;
   description: string;
@@ -16,12 +16,15 @@ export function HeroSection() {
   const [heroContent, setHeroContent] = useState<HeroItem[]>([]);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isTransitioning, setIsTransitioning] = useState(false);
-  const [bgAttachment, setBgAttachment] = useState<"fixed" | "scroll">("scroll");
+  const [bgAttachment, setBgAttachment] = useState<"fixed" | "scroll">(
+    "scroll"
+  );
 
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
-  const MEDIA_URL = process.env.NEXT_PUBLIC_MEDIA_URL || "http://localhost:5000";
+  const API_URL =
+    process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+  const MEDIA_URL =
+    process.env.NEXT_PUBLIC_MEDIA_URL || "http://localhost:5000";
 
-  // ✅ Fetch hero data
   const fetchHeroData = async () => {
     try {
       const res = await fetch(`${API_URL}/hero`);
@@ -38,7 +41,6 @@ export function HeroSection() {
     fetchHeroData();
   }, []);
 
-  // ✅ Adjust background scroll/fixed
   useEffect(() => {
     const handleResize = () => {
       setBgAttachment(window.innerWidth > 768 ? "fixed" : "scroll");
@@ -48,7 +50,6 @@ export function HeroSection() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // ✅ Auto slide every 5s
   useEffect(() => {
     if (!heroContent.length) return;
     const interval = setInterval(() => goToNextSlide(), 5000);
@@ -68,7 +69,8 @@ export function HeroSection() {
   const goToPrevSlide = () => {
     if (isTransitioning || !heroContent.length) return;
     setIsTransitioning(true);
-    const prevIndex = (currentSlide - 1 + heroContent.length) % heroContent.length;
+    const prevIndex =
+      (currentSlide - 1 + heroContent.length) % heroContent.length;
     setTimeout(() => {
       setCurrentSlide(prevIndex);
       setIsTransitioning(false);
@@ -90,7 +92,6 @@ export function HeroSection() {
       id="home"
       className="relative min-h-screen flex items-center justify-center overflow-hidden"
     >
-      {/* 🔹 Background Layer */}
       <div className="absolute inset-0">
         {heroContent.map((content, index) => {
           const isActive = index === currentSlide;
@@ -126,12 +127,12 @@ export function HeroSection() {
                 />
               ) : (
                 <div
-  className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
-  style={{
-    backgroundImage: `url(${content.media})`,
-    opacity: 1,
-  }}
-></div>
+                  className="absolute inset-0 w-full h-full bg-cover bg-center bg-no-repeat transition-opacity duration-1000"
+                  style={{
+                    backgroundImage: `url(${content.media})`,
+                    opacity: 1,
+                  }}
+                ></div>
               )}
               <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/50 to-black/60" />
             </div>
@@ -139,7 +140,6 @@ export function HeroSection() {
         })}
       </div>
 
-      {/* 🔹 Slide Controls */}
       <div className="absolute right-8 top-1/2 -translate-y-1/2 z-20 flex flex-col items-center gap-4">
         <button
           onClick={goToPrevSlide}
@@ -162,7 +162,6 @@ export function HeroSection() {
         </button>
       </div>
 
-      {/* 🔹 Text Layer */}
       <div className="relative z-10 container mx-auto px-4 text-center text-white">
         <h1 className="text-4xl md:text-6xl font-bold leading-tight mb-4">
           {currentContent.title}
@@ -179,7 +178,6 @@ export function HeroSection() {
         </p>
       </div>
 
-      {/* 🔹 Scroll Indicator */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce">
         <div className="w-6 h-10 border-2 border-white/60 rounded-full flex justify-center">
           <div className="w-1 h-3 bg-white/60 rounded-full mt-2 animate-pulse" />

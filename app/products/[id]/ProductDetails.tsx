@@ -7,6 +7,7 @@ import { ClientHeader } from "@/components/client/client-header";
 import { Lora } from "next/font/google";
 import { useCart } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
+import type { PromoCode } from "@/types/promo";
 import { ShoppingCart, ShieldCheck, Truck, Sprout, Wallet } from "lucide-react";
 import { useRouter, useParams } from "next/navigation";
 import { toast } from "react-hot-toast";
@@ -74,6 +75,9 @@ export default function ProductDetails({ product }: Props) {
   const [promoCode, setPromoCode] = useState("");
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
   const [showAll, setShowAll] = useState(false);
+const [promoCodes, setPromoCodes] = useState<PromoCode[]>([]);
+const [selectedPromo, setSelectedPromo] = useState<PromoCode | null>(null);
+const [loading, setLoading] = useState(false);
 
   const existingItem = items.find((i) => i.id === (product._id || product.id));
   const [recentlyViewed, setRecentlyViewed] = useState<Product[]>([]);
@@ -110,6 +114,7 @@ export default function ProductDetails({ product }: Props) {
     hasUpdatedClick.current = true;
   }, [product?._id, user?.role]);
 
+  
   useEffect(() => {
     if (product?.category) {
       axios
@@ -142,10 +147,41 @@ export default function ProductDetails({ product }: Props) {
       name: product.name,
       price: product.price,
       mainImages: [selectedImage],
+      stock: maxStock,
+      
     });
     setShowQuantity(true);
     toast.success("Added to cart!");
   };
+useEffect(() => {
+  const fetchPromoCodes = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_API_URL}/promocode/`
+      );
+
+      const promos: PromoCode[] = Array.isArray(res.data?.data)
+        ? res.data.data.filter(
+            (p: PromoCode) =>
+              p.isActive && new Date(p.expiryDate) >= new Date()
+          )
+        : [];
+
+      setPromoCodes(promos);
+      setSelectedPromo(promos.length > 0 ? promos[0] : null);
+    } catch {
+      toast.error("Failed to fetch promo codes");
+      setPromoCodes([]);
+      setSelectedPromo(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPromoCodes();
+}, []);
+
 
   useEffect(() => {
     if (!product?._id) return;
@@ -190,6 +226,7 @@ export default function ProductDetails({ product }: Props) {
         name: product.name,
         price: product.price,
         mainImages: [selectedImage],
+        stock: maxStock,
       });
     }
     router.push("/cart");
@@ -203,10 +240,10 @@ export default function ProductDetails({ product }: Props) {
       <ClientHeader />
 
       {/* MAIN SECTION */}
-      <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 grid grid-cols-1 md:grid-cols-2 gap-10">
+      <div className="max-w-7xl mx-auto px-4 md:px-8 py-10 grid grid-cols-1 md:grid-cols-2 gap-2">
         {/* LEFT IMAGE + THUMBNAILS */}
         <div>
-          <div className="w-full h-[420px] md:h-[470px] bg-[#f7f3ef] rounded-xl shadow-2xl flex items-center justify-center overflow-hidden">
+          <div className="w-full h-[420px] md:w-[450px] md:h-[350px] bg-[#e7e4e2] rounded-xl shadow-2xl flex items-center justify-center overflow-hidden">
             <img
               src={selectedImage}
               alt={product.name}
@@ -236,18 +273,19 @@ export default function ProductDetails({ product }: Props) {
               <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
                 {product.descriptions.map((desc, index) => (
                   <div
-                    key={index}
-                    className="flex gap-4 items-start bg-black/10 p-4 rounded-xl shadow-lg"
-                  >
-                    <img
-                      src={descriptionImages[index] || "/placeholder.jpg"}
-                      alt={`desc-${index}`}
-                      className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover shadow-md mt-1"
-                    />
-                    <p className="text-black text-sm md:text-base leading-relaxed">
-                      {desc}
-                    </p>
-                  </div>
+  key={index}
+  className="flex gap-4 items-center bg-black/10 p-4 rounded-xl shadow-lg"
+>
+  <img
+    src={descriptionImages[index] || "/placeholder.jpg"}
+    alt={`desc-${index}`}
+    className="w-12 h-12 md:w-16 md:h-16 rounded-full object-cover shadow-md"
+  />
+  <p className="text-black text-sm md:text-base leading-relaxed">
+    {desc}
+  </p>
+</div>
+
                 ))}
               </div>
             </div>
@@ -394,7 +432,7 @@ export default function ProductDetails({ product }: Props) {
                         }
                         className="w-16 h-16 md:w-20 md:h-20 rounded-full object-cover shadow-md"
                       />
-                      <p className="text-gray text-center text-sm md:text-base font-medium">
+                      <p className="text-gray justify-center text-sm md:text-base font-medium">
                         {typeof feature === "string" ? feature : feature.title}
                       </p>
                     </div>
@@ -403,26 +441,72 @@ export default function ProductDetails({ product }: Props) {
               </div>
             )}
 
-            <div className="mt-12 bg-gradient-to-r from-purple-700 to-indigo-700 text-white p-5 rounded-2xl shadow-lg flex flex-col gap-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">🎉 Promo Code</h3>
-              </div>
+         <div className="mt-12 bg-gradient-to-r from-orange-50 to-yellow-50 text-gray-800 p-5 rounded-xl shadow-lg flex flex-col gap-3 border border-orange-200">
+  <h3 className="text-lg font-semibold text-orange-800">
+    🎉 Available Promo Codes
+  </h3>
 
-              <div className="flex items-center justify-between bg-white text-purple-800 rounded-xl px-4 py-3 font-bold text-xl tracking-wider shadow-sm">
-                {promoCode}
-                <button
-                  className="text-sm bg-purple-800 text-white px-3 py-1 rounded-md hover:bg-purple-900 transition"
-                  onClick={() => navigator.clipboard.writeText(promoCode)}
-                >
-                  Copy
-                </button>
-              </div>
+  {loading && (
+    <p className="text-sm text-orange-600">
+      Loading promo codes...
+    </p>
+  )}
 
-              <p className="text-sm text-purple-100">
-                Apply this promo code at checkout to get special discount —
-                valid only for this month!
-              </p>
-            </div>
+  {!loading && promoCodes.length === 0 && (
+    <p className="text-sm text-gray-600">
+      No active promo codes available
+    </p>
+  )}
+
+  {!loading && promoCodes.length > 0 && selectedPromo && (
+    <>
+      <select
+        className="rounded-lg px-1 py-1 bg-white text-gray-700 font-medium outline-none border border-orange-30"
+        value={selectedPromo._id}
+        onChange={(e) => {
+          const promo =
+            promoCodes.find(p => p._id === e.target.value) || null;
+          setSelectedPromo(promo);
+        }}
+      >
+        {promoCodes.map((promo) => (
+          <option key={promo._id} value={promo._id}>
+            {promo.title} ({promo.code.toUpperCase()})
+          </option>
+        ))}
+      </select>
+
+      <div className="flex items-center justify-between bg-white text-orange-700 rounded-lg px-4 py-3 font-bold text-xl tracking-wider shadow-sm border border-orange-100">
+        {selectedPromo.code.toUpperCase()}
+        <button
+          className="text-sm bg-orange-600 text-white px-3 py-1 rounded-md hover:bg-gray-700 transition"
+          onClick={() => navigator.clipboard.writeText(selectedPromo.code)}
+        >
+          Copy
+        </button>
+      </div>
+
+      <div className="text-sm text-gray-700 ">
+       
+        <p>
+          Discount:{" "}
+          <span className="font-semibold">
+            {selectedPromo.discountType === "percentage"
+              ? `${selectedPromo.discountValue}%`
+              : `₹${selectedPromo.discountValue}`}
+          </span>
+        </p>
+        <p>
+          Expires on:{" "}
+          {new Date(selectedPromo.expiryDate).toLocaleDateString()}
+        </p>
+      </div>
+    </>
+  )}
+</div>
+
+
+
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
   {highlights.map((item, index) => (
     <div

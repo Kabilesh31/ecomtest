@@ -21,6 +21,7 @@ export default function EditProductPage() {
     quantity: "",
     category: "",
     createdAt: "",
+    
   });
 
   const [mainImages, setMainImages] = useState<File[]>([]);
@@ -37,6 +38,8 @@ export default function EditProductPage() {
     { _id: string; code: string; title: string }[]
   >([]);
   const [selectedPromo, setSelectedPromo] = useState<string>("");
+  const [returnEligible, setReturnEligible] = useState(false);
+const [returnDays, setReturnDays] = useState<number | "">("");
 
   const categories = ["Devine", "Cosmetics", "Accessories"];
 
@@ -67,6 +70,7 @@ export default function EditProductPage() {
         setOfferProduct(data.offerProduct ?? false);
         setOfferPercentage(data.offerPercentage ?? 0);
         setSelectedPromo(data.promoApplied || "");
+        setReturnEligible(data.returnEligible ?? false);
       } catch (error) {
         console.error("Failed to load product", error);
         toast.error("Failed to load product details.");
@@ -96,6 +100,14 @@ export default function EditProductPage() {
 
     fetchPromoCodes();
   }, []);
+
+  const handleReturnToggle = () => {
+  const newState = !returnEligible;
+  setReturnEligible(newState);
+
+  if (!newState) setReturnDays("");
+};
+
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -175,6 +187,7 @@ export default function EditProductPage() {
     formData.append("offerProduct", String(offerProduct));
     formData.append("offerPercentage", String(offerPercentage));
     formData.append("promoApplied", selectedPromo || "");
+    formData.append("returnEligible", returnEligible ? "true" : "false");
 
     mainImages.forEach((file) => {
       formData.append("mainImages", file);
@@ -380,6 +393,18 @@ export default function EditProductPage() {
                 )}
               </div>
 
+              {/* Return Eligible Section */}
+<div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-4 rounded-lg bg-gray-50">
+  <ToggleRow
+    label="Return Eligible"
+    checked={returnEligible}
+    onToggle={handleReturnToggle}
+  />
+
+  
+</div>
+
+
               {/*  Offer Section */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-4 rounded-lg bg-gray-50">
                 <ToggleRow
@@ -389,7 +414,7 @@ export default function EditProductPage() {
                 />
 
                 {offerProduct && (
-                  <div className="col-span-2">
+                  <div className="col-span-1">
                     <label className="block text-sm font-medium mb-1">
                       Offer Percentage (1–99)
                     </label>

@@ -78,7 +78,7 @@ export default function AdminDashboard() {
             {/* Filter dropdown */}
             <div className="flex items-center space-x-3">
               <Select value={filter} onValueChange={(value: any) => setFilter(value)}>
-                <SelectTrigger className="w-[170px]">
+                <SelectTrigger className="w-[100px] mb-10">
                   <SelectValue placeholder="Select Filter" />
                 </SelectTrigger>
                 <SelectContent>

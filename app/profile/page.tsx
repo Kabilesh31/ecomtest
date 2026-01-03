@@ -77,9 +77,9 @@ export default function OrdersPage() {
       <div className="max-w-3xl mx-auto mt-10 bg-white shadow-md rounded-lg p-6">
         <div className="flex items-center justify-between mb-4">
           <h1 className="text-2xl font-semibold">My Profile</h1>
-          <Button onClick={() => setIsEditing(!isEditing)}>
+          {/* <Button onClick={() => setIsEditing(!isEditing)}>
             {isEditing ? "Cancel" : "Edit"}
-          </Button>
+          </Button> */}
         </div>
 
         <div className="space-y-3">

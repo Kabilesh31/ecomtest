@@ -46,7 +46,7 @@ export function AdminSidebar({ open, onToggle }: AdminSidebarProps) {
     <aside
       className={cn(
         "bg-sidebar border-r border-sidebar-border transition-all duration-300 flex flex-col",
-        open ? "w-64" : "w-20"
+        open ? "w-64" : "w-15"
       )}
     >
       <div className="p-4 border-b border-sidebar-border flex items-center justify-between">
@@ -66,7 +66,7 @@ export function AdminSidebar({ open, onToggle }: AdminSidebarProps) {
         </button>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-1 space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = pathname.startsWith(item.href);

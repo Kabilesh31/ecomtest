@@ -8,7 +8,7 @@ export interface CartItem {
   price: number;
   mainImages?: string[];
   quantity: number;
-  stock?: number; // total stock from backend
+  stock?: number; 
 }
 
 interface CartContextType {
@@ -34,7 +34,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  // Load cart from localStorage (client only)
+  
   useEffect(() => {
     if (typeof window === "undefined") return;
     const savedCart = localStorage.getItem("cart");
@@ -48,7 +48,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     setIsHydrated(true);
   }, []);
 
-  // Save cart & promo info to localStorage
+ 
   useEffect(() => {
     if (isHydrated && typeof window !== "undefined") {
       localStorage.setItem("cart", JSON.stringify(items));
@@ -61,7 +61,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, [items, discount, appliedCoupon, isHydrated]);
 
-  // WebSocket stock updates
+ 
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -105,7 +105,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     return () => ws?.close();
   }, []);
 
-  // Cart actions
+ 
   const addToCart = useCallback(
     (product: Omit<CartItem, "quantity">, quantity = 1) => {
       setItems(prev => {
