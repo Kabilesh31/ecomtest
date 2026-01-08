@@ -145,11 +145,24 @@ export function CheckoutForm() {
   };
 
   const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  const { name, value } = e.target;
+
+  // Phone: allow only numbers, max 10 digits
+  if (name === "phone") {
+    if (!/^\d*$/.test(value)) return; // block non-numbers
+    if (value.length > 10) return;    // block >10 digits
+  }
+
+  // Zip code: allow only numbers
+  if (name === "zipCode") {
+    if (!/^\d*$/.test(value)) return;
+  }
+
+  setFormData((prev) => ({ ...prev, [name]: value }));
+};
+
 
   const handleSelectAddress = (address: any) => {
     setSelectedAddress(address);
@@ -443,12 +456,16 @@ export function CheckoutForm() {
               required
             />
             <Input
-              name="phone"
-              value={formData.phone}
-              onChange={handleInputChange}
-              placeholder="Phone"
-              required
-            />
+  name="phone"
+  value={formData.phone}
+  onChange={handleInputChange}
+  placeholder="Phone"
+  maxLength={10}
+  inputMode="numeric"
+  pattern="[0-9]{10}"
+  required
+/>
+
             <Input
               name="address"
               value={formData.address}
@@ -472,12 +489,15 @@ export function CheckoutForm() {
               required
             />
             <Input
-              name="zipCode"
-              value={formData.zipCode}
-              onChange={handleInputChange}
-              placeholder="Zip Code"
-              required
-            />
+  name="zipCode"
+  value={formData.zipCode}
+  onChange={handleInputChange}
+  placeholder="Zip Code"
+  inputMode="numeric"
+  pattern="[0-9]*"
+  required
+/>
+
             <Input
               name="country"
               value={formData.country}
