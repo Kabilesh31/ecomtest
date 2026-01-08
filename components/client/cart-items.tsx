@@ -14,13 +14,16 @@ interface CartItemsProps {
 export function CartItems({ items }: CartItemsProps) {
   const { updateQuantity, removeFromCart } = useCart();
 
-  const handleIncrement = (item: CartItem) => {
-    if (item.quantity < (item.stock ?? Infinity)) {
-      updateQuantity(item.id, item.quantity + 1);
-    } else {
-      toast.error("Requested quantity not available in stock");
-    }
-  };
+ const handleIncrement = (item: CartItem) => {
+  // If stock is defined and already reached
+  if (item.stock !== undefined && item.quantity >= item.stock) {
+    toast.error("Requested quantity not available in stock");
+    return;
+  }
+
+  updateQuantity(item.id, item.quantity + 1);
+};
+
 
   const handleDecrement = (item: CartItem) => {
     if (item.quantity > 1) {
