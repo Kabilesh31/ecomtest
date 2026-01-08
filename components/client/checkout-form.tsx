@@ -119,7 +119,7 @@ export function CheckoutForm() {
 
     try {
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/api/users/saveAddress/${localUser._id}`,
+        `${process.env.NEXT_PUBLIC_API_URL}/users/saveAddress/${localUser._id}`,
         { address }
       );
 
@@ -193,7 +193,7 @@ export function CheckoutForm() {
 
       if (paymentMethod === "COD") {
         const codOrder = await axios.post(
-         `${process.env.NEXT_PUBLIC_API_URL}/api/order/createCODOrder`,
+         `${process.env.NEXT_PUBLIC_API_URL}/order/createCODOrder`,
           {
             customerId: localUser?._id,
             totalAmount: total,
