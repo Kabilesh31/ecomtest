@@ -193,7 +193,7 @@ export function CheckoutForm() {
 
       if (paymentMethod === "COD") {
         const codOrder = await axios.post(
-          "http://localhost:5000/api/order/createCODOrder",
+         `${process.env.NEXT_PUBLIC_API_URL}/api/order/createCODOrder`,
           {
             customerId: localUser?._id,
             totalAmount: total,
@@ -222,7 +222,7 @@ export function CheckoutForm() {
 
       // Razorpay payment
       const orderResponse = await axios.post(
-        "http://localhost:5000/api/order/createOrder",
+        `${process.env.NEXT_PUBLIC_API_URL}/order/createOrder`,
         {
           amount: total,
           appliedCoupon: appliedPromo?.code || null,
@@ -245,7 +245,7 @@ export function CheckoutForm() {
         handler: async function (response: any) {
           try {
             const verifyResponse = await axios.post(
-              "http://localhost:5000/api/order/verifyPayment",
+              `${process.env.NEXT_PUBLIC_API_URL}/order/verifyPayment`,
               {
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,

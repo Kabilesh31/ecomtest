@@ -339,7 +339,7 @@ const [returnDays, setReturnDays] = useState<number | "">("");
                   </select>
                 </div>
               </div>
-              <div>
+              {/* <div>
                 <label className="block text-sm font-medium mb-1">
                   Apply Promo Code
                 </label>
@@ -358,7 +358,7 @@ const [returnDays, setReturnDays] = useState<number | "">("");
                 <p className="text-xs text-gray-500 mt-1">
                   Select a promo code to apply for this product.
                 </p>
-              </div>
+              </div> */}
 
               {/* Review / Rating Toggles */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border p-4 rounded-lg bg-gray-50">
