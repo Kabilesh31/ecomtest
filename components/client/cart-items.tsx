@@ -18,7 +18,7 @@ export function CartItems({ items }: CartItemsProps) {
     if (item.quantity < (item.stock ?? Infinity)) {
       updateQuantity(item.id, item.quantity + 1);
     } else {
-      toast.error("No more stock available!");
+      toast.error("Requested quantity not available in stock");
     }
   };
 
@@ -78,6 +78,7 @@ export function CartItems({ items }: CartItemsProps) {
                   size="sm"
                   onClick={() => handleIncrement(item)}
                   className="w-8 h-8 p-0 flex items-center justify-center"
+                   disabled={item.stock !== undefined && item.quantity >= item.stock}
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
