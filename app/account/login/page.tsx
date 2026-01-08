@@ -25,7 +25,7 @@
 
         try {
           // 🔹 Try admin login first
-          const adminRes = await fetch("http://localhost:5000/api/admin/login", {
+          const adminRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/admin/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
@@ -54,7 +54,7 @@ router.push("/");
         }
 
           // 🔹 If admin login failed, try user login
-          const userRes = await fetch("http://localhost:5000/api/users/login", {
+          const userRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password }),
