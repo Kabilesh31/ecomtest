@@ -77,19 +77,14 @@ export function CartItems({ items }: CartItemsProps) {
                   {item.quantity}
                 </span>
                 <Button
-  variant="outline"
-  size="sm"
-  onClick={() => handleIncrement(item)}
-  className={`w-8 h-8 p-0 flex items-center justify-center
-    ${
-      item.stock !== undefined && item.quantity >= item.stock
-        ? "opacity-50 cursor-not-allowed"
-        : ""
-    }`}
->
-  <Plus className="w-4 h-4" />
-</Button>
-
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleIncrement(item)}
+                  className="w-8 h-8 p-0 flex items-center justify-center"
+                   
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
               </div>
 
               <div className="text-right">
