@@ -403,8 +403,8 @@ useEffect(() => {
                   +
                 </button>
                 <span className="ml-4 font-semibold">
-                  ₹{(product.price * currentQty).toFixed(2)}
-                </span>
+  ₹{(finalPrice * currentQty).toFixed(2)}
+</span>
               </div>
             )}
             <Button
