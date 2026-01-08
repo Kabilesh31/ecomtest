@@ -61,6 +61,9 @@ const highlights = [
     subtitle: "available",
   },
 ];
+
+
+
 export default function ProductDetails({ product }: Props) {
   const router = useRouter();
   const { items, addToCart, removeFromCart, updateQuantity } = useCart();
@@ -86,6 +89,12 @@ const [loading, setLoading] = useState(false);
   const isOut = product.outofstock === true || Number(product.quantity) === 0;
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const offer = product.offerProduct ? product.offerPercentage ?? 0 : 0;
+
+const finalPrice =
+  offer > 0
+    ? Math.round(product.price - (product.price * offer) / 100)
+    : product.price;
   const INITIAL_REVIEWS = 4;
   const featureImages = ["/coin1.png", "/coin2.png", "/clay.png", "/cup.png"];
 
@@ -103,7 +112,7 @@ const [loading, setLoading] = useState(false);
     const updateClick = async () => {
       try {
         await axios.put(
-          `http://localhost:5000/api/products/click/${product._id}`
+          `${process.env.NEXT_PUBLIC_API_URL}/products/click/${product._id}`
         );
         console.log("Click count updated:", product._id);
       } catch (error) {
@@ -118,7 +127,7 @@ const [loading, setLoading] = useState(false);
   useEffect(() => {
     if (product?.category) {
       axios
-        .get(`http://localhost:5000/api/products`)
+        .get(`${process.env.NEXT_PUBLIC_API_URL}/products`)
         .then((res) => {
           const allProducts = res.data;
           const related = allProducts.filter(
@@ -145,7 +154,7 @@ const [loading, setLoading] = useState(false);
     addToCart({
       id: product._id || product.id || "",
       name: product.name,
-      price: product.price,
+      price: finalPrice,
       mainImages: [selectedImage],
       stock: maxStock,
       
@@ -224,7 +233,7 @@ useEffect(() => {
       addToCart({
         id: product._id || product.id || "",
         name: product.name,
-        price: product.price,
+        price: finalPrice,
         mainImages: [selectedImage],
         stock: maxStock,
       });
