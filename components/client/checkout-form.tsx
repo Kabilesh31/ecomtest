@@ -16,7 +16,16 @@ declare global {
     Razorpay: any;
   }
 }
-
+type AddressPayload = {
+  firstName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+};
 export function CheckoutForm() {
   const router = useRouter();
   const { items, discount: cartDiscount, appliedCoupon, clearCart } = useCart();
@@ -151,8 +160,73 @@ export function CheckoutForm() {
     setSelectedAddress(null);
   };
 
+  const validateCheckout = () => {
+  if (items.length === 0) {
+    toast.error("Your cart is empty");
+    return false;
+  }
+
+  if (!showForm && addresses.length > 0 && !selectedAddress) {
+    toast.error("Please select a delivery address");
+    return false;
+  }
+
+  const data: AddressPayload = selectedAddress
+    ? {
+        firstName: selectedAddress.firstName,
+        email: selectedAddress.email,
+        phone: selectedAddress.phone,
+        address: selectedAddress.add,
+        city: selectedAddress.city,
+        state: selectedAddress.state,
+        zipCode: selectedAddress.pincode,
+        country: selectedAddress.country,
+      }
+    : formData;
+
+  const requiredFields: (keyof AddressPayload)[] = [
+    "firstName",
+    "email",
+    "phone",
+    "address",
+    "city",
+    "state",
+    "zipCode",
+    "country",
+  ];
+
+  for (const field of requiredFields) {
+    if (!data[field] || data[field].trim() === "") {
+      toast.error(`Please enter ${field.replace(/([A-Z])/g, " $1")}`);
+      return false;
+    }
+  }
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(data.email)) {
+    toast.error("Please enter a valid email address");
+    return false;
+  }
+
+  const phoneRegex = /^[6-9]\d{9}$/;
+  if (!phoneRegex.test(data.phone)) {
+    toast.error("Please enter a valid 10-digit phone number");
+    return false;
+  }
+
+  if (!["ONLINE", "COD"].includes(paymentMethod)) {
+    toast.error("Please select a payment method");
+    return false;
+  }
+
+  return true;
+};
+
+
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+     if (!validateCheckout()) return; 
     setIsLoading(true);
 
     try {
