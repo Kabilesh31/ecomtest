@@ -363,6 +363,7 @@ export function CheckoutForm() {
 
         {(showForm || addresses.length === 0) && (
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="relative">
             <Input
               name="firstName"
               value={formData.firstName}
@@ -370,6 +371,10 @@ export function CheckoutForm() {
               placeholder="First Name"
               required
             />
+            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-red-500 text-lg">
+    *
+  </span>
+  </div>
             <Input
               name="lastName"
               value={formData.lastName}
