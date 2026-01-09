@@ -45,7 +45,7 @@ export default function OrdersPage() {
 
   const getOrdersByAdmin = async () => {
     try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/order`, {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/order`, {
         params: { role: user?.role, userId: user?._id },
       });
 
