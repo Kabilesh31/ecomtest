@@ -45,7 +45,7 @@ export default function OrdersPage() {
 
   const getOrdersByAdmin = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/order", {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/order`, {
         params: { role: user?.role, userId: user?._id },
       });
 
@@ -60,7 +60,7 @@ export default function OrdersPage() {
   };
   useEffect(() => {
     axios
-      .get("http://localhost:5000/api/products")
+      .get(`${process.env.NEXT_PUBLIC_API_URL}/products`)
       .then((res) => {
         const products = Array.isArray(res.data) ? res.data : res.data.data;
         setAllProducts(products || []);
@@ -151,7 +151,7 @@ function paginateOrders() {
   };
   
   const handleMarkCompleted = async (orderId: string) => {
-    await axios.put("http://localhost:5000/api/order/update-status", {
+    await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/order/update-status`, {
       orderId,
       status: "Completed",
     });
@@ -167,7 +167,7 @@ function paginateOrders() {
     if (!confirmDelete) return;
 
     const response = await axios.delete(
-      `http://localhost:5000/api/order/${orderId}`
+      `${process.env.NEXT_PUBLIC_API_URL}/order/${orderId}`
     );
 
     if (response.data.success !== false) {
