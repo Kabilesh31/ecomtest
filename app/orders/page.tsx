@@ -62,7 +62,7 @@ export default function OrdersPage() {
   const getOrdersByAdmin = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/products/getOrders/${user?._id}`
+        `${process.env.NEXT_PUBLIC_API_URL}/products/getOrders/${user?._id}`
       );
       if (response.status === 200) {
         setOrderDatas(response.data.data);
@@ -269,7 +269,7 @@ const submitReturnRequest = async () => {
   const fetchOrders = async () => {
     if (!token) return;
     try {
-      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/orders`, {
+      const res = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/order`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       setOrders(res.data.data);
@@ -311,7 +311,7 @@ const submitReturnRequest = async () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/order/send-invoice-whatsapp",
+        `${process.env.NEXT_PUBLIC_API_URL}/order/send-invoice-whatsapp`,
         {
           orderId: selectedOrder._id,
         },
@@ -361,7 +361,7 @@ const submitReturnRequest = async () => {
 
       for (const review of reviewsToSubmit) {
         const response = await axios.post(
-          "http://localhost:5000/api/products/addReview",
+          `${process.env.NEXT_PUBLIC_API_URL}/products/addReview`,
           {
             orderId: reviewOrder!._id,
             productId: review.productId,
