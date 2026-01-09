@@ -16,16 +16,7 @@ declare global {
     Razorpay: any;
   }
 }
-type AddressPayload = {
-  firstName: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
-  country: string;
-};
+
 export function CheckoutForm() {
   const router = useRouter();
   const { items, discount: cartDiscount, appliedCoupon, clearCart } = useCart();
@@ -144,23 +135,25 @@ export function CheckoutForm() {
     }
   };
 
-  const handleInputChange = (
-  e: React.ChangeEvent<HTMLInputElement>
-) => {
+ const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
   const { name, value } = e.target;
 
-  // Phone: allow only numbers, max 10 digits
+  // 📱 Phone: only numbers, max 10 digits
   if (name === "phone") {
-    if (!/^\d*$/.test(value)) return; // block non-numbers
-    if (value.length > 10) return;    // block >10 digits
+    if (!/^\d*$/.test(value)) return; // only digits
+    if (value.length > 10) return;
   }
 
-  // Zip code: allow only numbers
+  // 📮 Zip Code: only numbers, max 6 digits
   if (name === "zipCode") {
-    if (!/^\d*$/.test(value)) return;
+    if (!/^\d*$/.test(value)) return; // only digits
+    if (value.length > 6) return;
   }
 
-  setFormData((prev) => ({ ...prev, [name]: value }));
+  setFormData((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
 };
 
 
@@ -173,73 +166,8 @@ export function CheckoutForm() {
     setSelectedAddress(null);
   };
 
-  const validateCheckout = () => {
-  if (items.length === 0) {
-    toast.error("Your cart is empty");
-    return false;
-  }
-
-  if (!showForm && addresses.length > 0 && !selectedAddress) {
-    toast.error("Please select a delivery address");
-    return false;
-  }
-
-  const data: AddressPayload = selectedAddress
-    ? {
-        firstName: selectedAddress.firstName,
-        email: selectedAddress.email,
-        phone: selectedAddress.phone,
-        address: selectedAddress.add,
-        city: selectedAddress.city,
-        state: selectedAddress.state,
-        zipCode: selectedAddress.pincode,
-        country: selectedAddress.country,
-      }
-    : formData;
-
-  const requiredFields: (keyof AddressPayload)[] = [
-    "firstName",
-    "email",
-    "phone",
-    "address",
-    "city",
-    "state",
-    "zipCode",
-    "country",
-  ];
-
-  for (const field of requiredFields) {
-    if (!data[field] || data[field].trim() === "") {
-      toast.error(`Please enter ${field.replace(/([A-Z])/g, " $1")}`);
-      return false;
-    }
-  }
-
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(data.email)) {
-    toast.error("Please enter a valid email address");
-    return false;
-  }
-
-  const phoneRegex = /^[6-9]\d{9}$/;
-  if (!phoneRegex.test(data.phone)) {
-    toast.error("Please enter a valid 10-digit phone number");
-    return false;
-  }
-
-  if (!["ONLINE", "COD"].includes(paymentMethod)) {
-    toast.error("Please select a payment method");
-    return false;
-  }
-
-  return true;
-};
-
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-     if (!validateCheckout()) return; 
     setIsLoading(true);
 
     try {
@@ -449,21 +377,22 @@ export function CheckoutForm() {
               placeholder="Last Name"
             />
             <Input
-              name="email"
-              value={formData.email}
-              onChange={handleInputChange}
-              placeholder="Email"
-              required
-            />
-            <Input
+  name="email"
+  type="email"
+  value={formData.email}
+  onChange={handleInputChange}
+  placeholder="Email"
+  required
+/>
+
+           <Input
   name="phone"
   value={formData.phone}
   onChange={handleInputChange}
   placeholder="Phone"
-  maxLength={10}
-  inputMode="numeric"
-  pattern="[0-9]{10}"
   required
+  inputMode="numeric"
+  maxLength={10}
 />
 
             <Input
@@ -488,14 +417,14 @@ export function CheckoutForm() {
               placeholder="State"
               required
             />
-            <Input
+           <Input
   name="zipCode"
   value={formData.zipCode}
   onChange={handleInputChange}
   placeholder="Zip Code"
-  inputMode="numeric"
-  pattern="[0-9]*"
   required
+  inputMode="numeric"
+  maxLength={6}
 />
 
             <Input
