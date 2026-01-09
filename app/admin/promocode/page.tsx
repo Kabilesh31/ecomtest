@@ -95,40 +95,42 @@ export default function AdminPromoCodePage() {
       setLoading(false);
     }
   };
+const handleSubmit = async () => {
+  if (!title || !description || !code || !discount || !expiry) {
+    toast.error("All fields are required");
+    return;
+  }
 
-  const handleSubmit = async () => {
-    if (!title || !description || !code || !discount || !expiry) {
-      toast.error("All fields are required");
-      return;
-    }
+  setCreating(true);
+  try {
+    // set expiry to END OF DAY
+    const expiryDate = new Date(expiry);
+    expiryDate.setHours(23, 59, 59, 999);
 
-    setCreating(true);
-    try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/promocode/create`, {
-  title,
-  description,
-  code,
-  discountValue: Number(discount),
-  discountType, // percentage | flat
-  expiryDate: new Date(expiry).toISOString(),
-});
+    await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/promocode/create`, {
+      title,
+      description,
+      code,
+      discountValue: Number(discount),
+      discountType, // percentage | flat
+      expiryDate: expiryDate.toISOString(),
+    });
 
+    toast.success("Promocode created successfully");
 
-      toast.success("Promocode created successfully");
+    setTitle("");
+    setDescription("");
+    setCode("");
+    setDiscount("");
+    setExpiry("");
 
-      setTitle("");
-      setDescription("");
-      setCode("");
-      setDiscount("");
-      setExpiry("");
-
-      fetchPromoCodes();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to create promocode");
-    } finally {
-      setCreating(false);
-    }
-  };  
+    fetchPromoCodes();
+  } catch (err: any) {
+    toast.error(err?.response?.data?.message || "Failed to create promocode");
+  } finally {
+    setCreating(false);
+  }
+};
 
   const handleDelete = async (id: string) => {
   try {
